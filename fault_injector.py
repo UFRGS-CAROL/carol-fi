@@ -26,6 +26,7 @@ VERSION = "1.0"
 ### Global variables
 uniqueID = str(uuid.uuid4())
 gdbFIlogFile = "/tmp/carolfi-"+uniqueID+".log"
+summFIlogFile = "summary-carolfi.log"
 if sys.version_info >= (3,0):
     conf = configparser.ConfigParser()
 else:
@@ -58,6 +59,13 @@ class logging:
             d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
             fp.write("[DEBUG -- "+d+"]\n"+msg+"\n")
             fp.close()
+
+    @staticmethod
+    def summary(msg):
+        fp = open(summFIlogFile, "a")
+        d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        fp.write("[SUMMARY -- "+d+"]\nFI-uniqueID="+uniqueID+"\n"+msg+"\n")
+        fp.close()
 
 # Signal the app to stop so GDB can execute the script to flip a value
 class signalApp (threading.Thread):
@@ -139,6 +147,16 @@ def finish(section):
 def saveOutput(section, isSDC, isHang):
     outputFile = conf.get(section,"outputFile")
     flipLogFile = "/tmp/carolfi-flipvalue-"+uniqueID+".log"
+
+
+    fiSucc = False
+    if os.path.isfile(flipLogFile):
+        fp = open(flipLogFile, "r")
+        content = fp.read()
+        if re.search("Fault Injection Successful",content):
+            fiSucc = True
+        fp.close()
+
     
     dt = datetime.datetime.fromtimestamp(time.time())
     ymd = dt.strftime('%Y_%m_%d')
@@ -146,14 +164,21 @@ def saveOutput(section, isSDC, isHang):
     ymdhms = uniqueID+"-"+ymdhms
     dirDT = os.path.join(ymd,ymdhms)
     masked = False
+    if not fiSucc:
+        cpDir = os.path.join('logs',section,'failed-injection',dirDT)
+        logging.summary(section+" - Fault Injection Failed")
     if isHang:
         cpDir = os.path.join('logs',section,'hangs',dirDT)
+        logging.summary(section+" - Hang")
     elif isSDC:
         cpDir = os.path.join('logs',section,'sdcs',dirDT)
+        logging.summary(section+" - SDC")
     elif not os.path.isfile(outputFile):
         cpDir = os.path.join('logs',section,'noOutputGenerated',dirDT)
+        logging.summary(section+" - NoOutputGenerated")
     else:
         cpDir = os.path.join('logs',section,'masked',dirDT)
+        logging.summary(section+" - Masked")
         masked = True
 
     if not os.path.isdir(cpDir):
@@ -161,7 +186,7 @@ def saveOutput(section, isSDC, isHang):
 
     shutil.move(flipLogFile, cpDir)
     shutil.move(gdbFIlogFile, cpDir)
-    if os.path.isfile(outputFile) and not masked:
+    if os.path.isfile(outputFile) and (not masked) and fiSucc:
         shutil.move(outputFile, cpDir)
 
 
