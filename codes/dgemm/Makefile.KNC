@@ -1,0 +1,22 @@
+CC=icc -g -mmic -DMIC_NATIVE
+C++ = g++
+CC_FLAGS=-qopenmp -DBOFFSET=12
+
+destDir = /tmp/dgemm
+
+all: gen_bin mv_bin gen_data
+
+gen_bin: dgemm.c generateMatrices.cpp
+	$(CC) dgemm.c -o dgemm $(CC_FLAGS)
+	$(C++) generateMatrices.cpp -o genMatrices
+
+mv_bin: gen_bin
+	mkdir -p $(destDir)
+	mv dgemm genMatrices $(destDir)
+
+gen_data: mv_bin
+	cd $(destDir); ./genMatrices
+	scp -r $(destDir) mic0:/tmp
+	ssh mic0 'cd $(destDir); ./dgemm 4 2048 32 dgemm_a_8192 dgemm_b_8192 gold_2048'
+	scp -r mic0:$(destDir) /tmp
+

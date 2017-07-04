@@ -13,6 +13,7 @@ gen_bin: dgemm.c generateMatrices.cpp
 	$(C++) generateMatrices.cpp -o genMatrices
 
 gen_data: gen_bin
+	./genMatrices
 	./dgemm 4 2048 32 dgemm_a_8192 dgemm_b_8192 gold_2048
 
 mv_bin: gen_data
