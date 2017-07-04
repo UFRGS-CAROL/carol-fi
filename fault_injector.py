@@ -167,7 +167,7 @@ def saveOutput(section, isSDC, isHang):
     if not fiSucc:
         cpDir = os.path.join('logs',section,'failed-injection',dirDT)
         logging.summary(section+" - Fault Injection Failed")
-    if isHang:
+    elif isHang:
         cpDir = os.path.join('logs',section,'hangs',dirDT)
         logging.summary(section+" - Hang")
     elif isSDC:
@@ -191,9 +191,15 @@ def saveOutput(section, isSDC, isHang):
 
 
 def preExecution(section):
+    script = conf.get(section,"preExecScript")
+    if script != "":
+        os.system(script)
     return
 
 def posExecution(section):
+    script = conf.get(section,"posExecScript")
+    if script != "":
+        os.system(script)
     return
 
 # Check output files for SDCs
