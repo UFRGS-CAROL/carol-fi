@@ -53,7 +53,7 @@ endSignal = 6
 
 ################### LavaMD ###################
 ###    Fault Injection in the end          ###
-[lavamd-f2]
+[lavamd-f3]
 
 # Start and end time to try randomly inject a fault
 initSignal = 6
