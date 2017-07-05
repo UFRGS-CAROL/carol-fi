@@ -13,7 +13,6 @@ gen_bin: lud_gen.c common.c
 mv_bin: gen_bin
 	mkdir -p $(destDir)
 	mv lud lud_gen $(destDir)
-	@echo "All Done, executables should be in the $(destDir)"
 
 gen_data: mv_bin
 	scp -r $(destDir) mic0:/tmp

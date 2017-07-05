@@ -1,7 +1,7 @@
 # C compiler
 CC=icc -g -mmic -DMIC_NATIVE
 CC_FLAGS=-qopenmp 
-GCC = gcc
+GCC = g++
 GCC_FLAGS = -fopenmp
 
 destDir = /tmp/mergesort
