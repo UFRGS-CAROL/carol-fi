@@ -17,7 +17,7 @@ mv_bin: gen_bin
 gen_data: mv_bin
 	cd $(destDir); ./genMatrices
 	scp -r $(destDir) mic0:/tmp
-	ssh mic0 'cd $(destDir); ./dgemm 228 4096 32 dgemm_a_8192 dgemm_b_8192 gold_4096'
+	ssh mic0 'cd $(destDir); ./dgemm 228 2048 32 dgemm_a_8192 dgemm_b_8192 gold_2048'
 	scp -r mic0:$(destDir) /tmp
 	mkdir -p dgemm-mic-files
 	cp -r $(destDir) dgemm-mic-files
