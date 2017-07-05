@@ -1,0 +1,29 @@
+# C compiler
+CC=icc -g -mmic -DMIC_NATIVE
+CC_FLAGS=-qopenmp 
+GCC = gcc
+GCC_FLAGS = -fopenmp
+
+destDir = /tmp/quicksort
+
+all: gen_bin mv_bin gen_data
+
+gen_bin: quicksort.c generateInput.c
+	$(CC) $(CC_FLAGS) quicksort.c -o quicksort
+	$(GCC) $(GCC_FLAGS) generateInput.c -o genInput 
+
+
+mv_bin: gen_bin
+	mkdir -p $(destDir)
+	mv genInput quicksort $(destDir)
+
+gen_data: mv_bin
+	cd $(destDir); ./genInput
+	scp -r $(destDir) mic0:/tmp
+	ssh mic0 'cd $(destDir); ./quicksort 5000000 228 inputsort_134217728 gold_5000000'
+	scp -r mic0:$(destDir) /tmp
+	mkdir -p quicksort-mic-files
+	cp -r $(destDir) quicksort-mic-files
+	@echo "All Done, executables should be in the $(destDir)"
+	@echo "Gold and executables copy are stored in quicksort-mic-files"
+

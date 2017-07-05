@@ -1,0 +1,45 @@
+[DEFAULT]
+
+debug = False
+
+# Name of the gdb executable, usualy is "gdb-mic" for Xeon Phi
+gdbExecName = gdb-mic
+
+
+# Which fault model to use, 0 -> single; 1 -> double; 2 -> random; 3 -> zeros; 4 -> least significant bits (LSB)
+faultModel = 4
+
+goldFile = /tmp/hotspot/gold_1024
+outputFile = /tmp/hotspot/output_1024
+
+# How many interrupt signals to send sequentially
+seqSignals = 5
+# How many random threads will attempt to send interrupt signals
+numThreadsFI = 3
+
+# Max time to send signal. It should be the app exec time in seconds
+maxWaitTime = 4
+
+# Command to run before the fault injection start
+preExecScript = scp /tmp/flip* mic0:/tmp
+
+# Command to run after the fault injection finishes
+posExecScript = scp mic0:/tmp/carolfi*.log /tmp/;scp mic0:/tmp/hotspot/output_1024 /tmp/hotspot/
+
+# Commands to set the session inside GDB environment
+gdbInitStrings = target extended-remote | ssh -T mic0 gdbserver --multi -;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;file /tmp/hotspot/hotspot;set remote exec-file /tmp/hotspot/hotspot;set args 1024 1024 1000 228 /tmp/hotspot/temp_1024 /tmp/hotspot/power_1024 /tmp/hotspot/output_1024
+
+# Shell command to send SIGINT to the application being tested
+signalCmd = ssh -T mic0 killall -2 hotspot
+
+# Kill commands to exit all applications (GDB and the application tested)
+# Need to ensure safe termination before another fault injection test
+killStrs = killall -9 gdb-mic;ssh -T mic0 killall -9 hotspot;ssh -T mic0 killall -9 gdbserver;ssh -T mic0 killall -9 sshd
+
+################### Hotspot ###################
+[hotspot]
+
+# Start and end time to try randomly inject a fault
+initSignal = 0
+endSignal = 3.5
+

@@ -8,8 +8,8 @@ gdbExecName = gdb-mic
 # Which fault model to use, 0 -> single; 1 -> double; 2 -> random; 3 -> zeros; 4 -> least significant bits (LSB)
 faultModel = 4
 
-goldFile = /tmp/dgemm/gold_2048
-outputFile = /tmp/dgemm/output_2048
+goldFile = /tmp/dgemm/gold_4096
+outputFile = /tmp/dgemm/output_4096
 
 # How many interrupt signals to send sequentially
 seqSignals = 5
@@ -23,10 +23,10 @@ maxWaitTime = 15
 preExecScript = scp /tmp/flip* mic0:/tmp
 
 # Command to run after the fault injection finishes
-posExecScript = scp mic0:/tmp/carolfi*.log /tmp/;scp mic0:/tmp/dgemm/output_2048 /tmp/dgemm/
+posExecScript = scp mic0:/tmp/carolfi*.log /tmp/;scp mic0:/tmp/dgemm/output_4096 /tmp/dgemm/
 
 # Commands to set the session inside GDB environment
-gdbInitStrings = target extended-remote | ssh -T mic0 gdbserver --multi -;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;file /tmp/dgemm/dgemm;set remote exec-file /tmp/dgemm/dgemm;set args 4 2048 32 /tmp/dgemm/dgemm_a_8192 /tmp/dgemm/dgemm_b_8192 /tmp/dgemm/output_2048
+gdbInitStrings = target extended-remote | ssh -T mic0 gdbserver --multi -;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;file /tmp/dgemm/dgemm;set remote exec-file /tmp/dgemm/dgemm;set args 228 4096 32 /tmp/dgemm/dgemm_a_8192 /tmp/dgemm/dgemm_b_8192 /tmp/dgemm/output_4096
 
 # Shell command to send SIGINT to the application being tested
 signalCmd = ssh -T mic0 killall -2 dgemm

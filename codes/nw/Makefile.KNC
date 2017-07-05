@@ -1,0 +1,25 @@
+CC=icpc -g -mmic -DMIC_NATIVE
+CC_FLAGS=-qopenmp
+
+destDir = /tmp/nw
+
+all: gen_bin mv_bin gen_data
+
+gen_bin: needle_gen.cpp needle.cpp
+	$(CC) $(CC_FLAGS) needle_gen.cpp -o needle_gen 
+	$(CC) $(CC_FLAGS) needle.cpp -o needle
+
+mv_bin: gen_bin
+	mkdir -p $(destDir)
+	mv needle_gen needle $(destDir)
+
+gen_data: mv_bin
+	scp -r $(destDir) mic0:/tmp
+	ssh mic0 'cd $(destDir); ./needle_gen 16384 10 228'
+	ssh mic0 'cd $(destDir); ./needle 16384 10 228 input_16384_th_228_pen_10 gold_16384_th_228_pen_10'
+	scp -r mic0:$(destDir) /tmp
+	mkdir -p nw-mic-files
+	cp -r $(destDir) nw-mic-files
+	@echo "All Done, executables should be in the $(destDir)"
+	@echo "Gold and executables copy are stored in nw-mic-files"
+

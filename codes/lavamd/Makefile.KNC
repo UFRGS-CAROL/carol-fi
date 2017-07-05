@@ -13,10 +13,14 @@ gen_bin: main_gen.c main.c main.h
 mv_bin: gen_bin
 	mkdir -p $(destDir)
 	mv lavamd_gen lavamd $(destDir)
-	@echo "All Done, executables should be in the $(destDir)"
 
 gen_data: mv_bin
 	scp -r $(destDir) mic0:/tmp
-	ssh mic0 'cd /tmp/lavamd; ./lavamd_gen 228 15'
+	ssh mic0 'cd $(destDir); ./lavamd_gen 228 15'
 	scp -r mic0:$(destDir) /tmp
+	mkdir -p lavamd-mic-files
+	cp -r $(destDir) lavamd-mic-files
+	@echo "All Done, executables should be in the $(destDir)"
+	@echo "Gold and executables copy are stored in lavamd-mic-files"
+
 
