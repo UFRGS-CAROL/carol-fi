@@ -17,7 +17,7 @@ seqSignals = 5
 numThreadsFI = 3
 
 # Max time to send signal. It should be the app exec time in seconds
-maxWaitTime = 15
+maxWaitTime = 50
 
 # Command to run before the fault injection start
 preExecScript = scp /tmp/flip* mic0:/tmp
@@ -41,20 +41,28 @@ killStrs = killall -9 gdb-mic;ssh -T mic0 killall -9 dgemm;ssh -T mic0 killall -
 
 # Start and end time to try randomly inject a fault
 initSignal = 0
-endSignal = 3
+endSignal = 10
 
 ##############################################
 ###    Fault Injection in the middle       ###
 [dgemm-f2]
 
 # Start and end time to try randomly inject a fault
-initSignal = 3
-endSignal = 6
+initSignal = 10
+endSignal = 20
 
 ##############################################
-###    Fault Injection in the end          ###
+###    Fault Injection in the middle       ###
 [dgemm-f3]
 
 # Start and end time to try randomly inject a fault
-initSignal = 6
-endSignal = 9
+initSignal = 20
+endSignal = 30
+
+##############################################
+###    Fault Injection in the end          ###
+[dgemm-f4]
+
+# Start and end time to try randomly inject a fault
+initSignal = 30
+endSignal = 40
