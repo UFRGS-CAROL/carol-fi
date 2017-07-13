@@ -12,6 +12,6 @@ for line in fp:
         line = line.strip()
         events.append(line)
 
-print "FI attempts: ",len(l)
+print "FI attempts: ",len(events)
 for k,v in Counter(events).most_common():
     print v,"\t",k
