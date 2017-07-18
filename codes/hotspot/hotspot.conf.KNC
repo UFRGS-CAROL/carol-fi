@@ -43,7 +43,6 @@ killStrs = killall -9 gdb-mic;ssh -T mic0 killall -9 hotspot;ssh -T mic0 killall
 initSignal = 0
 endSignal = 5
 
-
 ################### Hotspot ###################
 [hotspot-f2]
 
