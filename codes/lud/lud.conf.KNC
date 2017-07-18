@@ -18,27 +18,48 @@ seqSignals = 5
 numThreadsFI = 3
 
 # Max time to send signal. It should be the app exec time in seconds
-maxWaitTime = 20
+maxWaitTime = 40
 
 # Command to run before the fault injection start
-preExecScript = scp /tmp/flip* mic0:/tmp
+preExecScript = scp /tmp/flip* mic1:/tmp
 
 # Command to run after the fault injection finishes
-posExecScript = scp mic0:/tmp/carolfi*.log /tmp/;scp mic0:/tmp/lud/output_4096_th_228 /tmp/lud/
+posExecScript = scp mic1:/tmp/carolfi*.log /tmp/;scp mic1:/tmp/lud/output_4096_th_228 /tmp/lud/
 
 # Commands to set the session inside GDB environment
-gdbInitStrings = target extended-remote | ssh -T mic0 gdbserver --multi -;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;file /tmp/lud/lud;set remote exec-file /tmp/lud/lud;set args -s 4096 -n 228 -i /tmp/lud/input_4096_th_228 -o /tmp/lud/output_4096_th_228
+gdbInitStrings = target extended-remote | ssh -T mic1 gdbserver --multi -;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;set sysroot /opt/mpss/3.7/sysroots/k1om-mpss-linux/;file /tmp/lud/lud;set remote exec-file /tmp/lud/lud;set args -s 4096 -n 228 -i /tmp/lud/input_4096_th_228 -o /tmp/lud/output_4096_th_228
 
 # Shell command to send SIGINT to the application being tested
-signalCmd = ssh -T mic0 killall -2 lud
+signalCmd = ssh -T mic1 killall -2 lud
 
 # Kill commands to exit all applications (GDB and the application tested)
 # Need to ensure safe termination before another fault injection test
-killStrs = killall -9 gdb-mic;ssh -T mic0 killall -9 lud;ssh -T mic0 killall -9 gdbserver;ssh -T mic0 killall -9 sshd
+killStrs = killall -9 gdb-mic;ssh -T mic1 killall -9 lud;ssh -T mic1 killall -9 gdbserver;ssh -T mic1 killall -9 sshd
 
 ################### LUD ###################
-[lud]
+[lud-f1]
 
 # Start and end time to try randomly inject a fault
 initSignal = 0
 endSignal = 10
+
+################### LUD ###################
+[lud-f2]
+
+# Start and end time to try randomly inject a fault
+initSignal = 10
+endSignal = 20
+
+################### LUD ###################
+[lud-f3]
+
+# Start and end time to try randomly inject a fault
+initSignal = 20
+endSignal = 30
+
+################### LUD ###################
+[lud-f4]
+
+# Start and end time to try randomly inject a fault
+initSignal = 30
+endSignal = 40
