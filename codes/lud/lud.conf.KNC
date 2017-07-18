@@ -3,7 +3,7 @@
 debug = False
 
 # Name of the gdb executable, usualy is "gdb-mic" for Xeon Phi
-gdbExecName = gdb
+gdbExecName = gdb-mic
 
 # Which fault model to use, 0 -> single; 1 -> double; 2 -> random; 3 -> zeros; 4 -> least significant bits (LSB)
 faultModel = 4
