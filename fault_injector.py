@@ -191,16 +191,22 @@ def saveOutput(section, isSDC, isHang):
 
 
 def preExecution(section):
-    script = conf.get(section,"preExecScript")
-    if script != "":
-        os.system(script)
-    return
+    try:
+        script = conf.get(section,"preExecScript")
+        if script != "":
+            os.system(script)
+        return
+    except:
+        return
 
 def posExecution(section):
-    script = conf.get(section,"posExecScript")
-    if script != "":
-        os.system(script)
-    return
+    try:
+        script = conf.get(section,"posExecScript")
+        if script != "":
+            os.system(script)
+        return
+    except:
+        return
 
 # Check output files for SDCs
 def checkSDCs(section):
