@@ -30,19 +30,108 @@ signalCmd = killall -2 lavamd
 # Need to ensure safe termination before another fault injection test
 killStrs = killall -9 gdb;killall -9 lavamd
 
-################### LavaMD ###################
-###    Fault Injection in the beginning    ###
-[lavamd-f1]
-
-# Start and end time to try randomly inject a fault
+################### Single ###################
+[lavamd-single-0-1]
 initSignal = 0
-endSignal = 3
+endSignal = 1
+faultModel = 0
 
-################### LavaMD ###################
-###    Fault Injection in the middle       ###
-[lavamd-f2]
+[lavamd-single-1-2]
+initSignal = 1
+endSignal = 2
+faultModel = 0
 
-# Start and end time to try randomly inject a fault
+[lavamd-single-3-4]
 initSignal = 3
-endSignal = 6
+endSignal = 4
+faultModel = 0
+
+[lavamd-single-4-5]
+initSignal = 4
+endSignal = 5
+faultModel = 0
+
+################### Double ###################
+[lavamd-double-0-1]
+initSignal = 0
+endSignal = 1
+faultModel = 1
+
+[lavamd-double-1-2]
+initSignal = 1
+endSignal = 2
+faultModel = 1
+
+[lavamd-double-3-4]
+initSignal = 3
+endSignal = 4
+faultModel = 1
+
+[lavamd-double-4-5]
+initSignal = 4
+endSignal = 5
+faultModel = 1
+
+################### Random ###################
+[lavamd-random-0-1]
+initSignal = 0
+endSignal = 1
+faultModel = 2
+
+[lavamd-random-1-2]
+initSignal = 1
+endSignal = 2
+faultModel = 2
+
+[lavamd-random-3-4]
+initSignal = 3
+endSignal = 4
+faultModel = 2
+
+[lavamd-random-4-5]
+initSignal = 4
+endSignal = 5
+faultModel = 2
+
+################### Zero ###################
+[lavamd-zero-0-1]
+initSignal = 0
+endSignal = 1
+faultModel = 3
+
+[lavamd-zero-1-2]
+initSignal = 1
+endSignal = 2
+faultModel = 3
+
+[lavamd-zero-3-4]
+initSignal = 3
+endSignal = 4
+faultModel = 3
+
+[lavamd-zero-4-5]
+initSignal = 4
+endSignal = 5
+faultModel = 3
+
+################### LSB ###################
+[lavamd-lsb-0-1]
+initSignal = 0
+endSignal = 1
+faultModel = 4
+
+[lavamd-lsb-1-2]
+initSignal = 1
+endSignal = 2
+faultModel = 4
+
+[lavamd-lsb-3-4]
+initSignal = 3
+endSignal = 4
+faultModel = 4
+
+[lavamd-lsb-4-5]
+initSignal = 4
+endSignal = 5
+faultModel = 4
 
