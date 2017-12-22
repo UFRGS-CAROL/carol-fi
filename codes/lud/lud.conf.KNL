@@ -16,11 +16,11 @@ faultModel = 4
 
 ################### LUD general ###################
 
-goldFile = /home/dagoliveira/carol-fi/codes/lud/lud-knl-files-2017-11-20/gold_4096_th_272
+goldFile = /home/dagoliveira/carol-fi/codes/lud/lud-knl-files-2017-11-21/gold_4096_th_272
 outputFile = /tmp/lud_output_4096_th_272
 
 # Commands to set the session inside GDB environment
-gdbInitStrings = file /home/dagoliveira/carol-fi/codes/lud/lud-knl-files-2017-11-20/lud;set args -s 4096 -n 272 -i /home/dagoliveira/carol-fi/codes/lud/lud-knl-files-2017-11-20/input_4096_th_272 -o /tmp/lud_output_4096_th_272
+gdbInitStrings = file /home/dagoliveira/carol-fi/codes/lud/lud-knl-files-2017-11-21/lud;set args -s 4096 -n 272 -i /home/dagoliveira/carol-fi/codes/lud/lud-knl-files-2017-11-21/input_4096_th_272 -o /tmp/lud_output_4096_th_272
 
 # Shell command to send SIGINT to the application being tested
 signalCmd = killall -2 lud
