@@ -1,0 +1,117 @@
+[DEFAULT]
+
+debug = False
+
+# Name of the gdb executable, usualy is "gdb-mic" for Xeon Phi
+gdbExecName = gdb
+
+# Which fault model to use, 0 -> single; 1 -> double; 2 -> random; 3 -> zeros; 4 -> least significant bits (LSB)
+faultModel = 4
+
+
+################### Mergesort ###################
+
+goldFile = /home/dagoliveira/carol-fi/codes/mergesort/mergesort-knl-files-2017-12-27/gold_500000
+outputFile = /home/dagoliveira/carol-fi/codes/mergesort/mergesort-knl-files-2017-12-27/output_500000
+# How many interrupt signals to send sequentially
+seqSignals = 5
+# How many random threads will attempt to send interrupt signals
+numThreadsFI = 5
+
+# Max time to send signal. It should be the app exec time in seconds
+maxWaitTime = 30
+
+# Commands to set the session inside GDB environment
+gdbInitStrings = file /home/dagoliveira/carol-fi/codes/mergesort/mergesort-knl-files-2017-12-27/mergesort;set args 500000 272 /home/dagoliveira/carol-fi/codes/mergesort/mergesort-knl-files-2017-12-27/inputsort_134217728 /home/dagoliveira/carol-fi/codes/mergesort/mergesort-knl-files-2017-12-27/output_500000
+
+# Shell command to send SIGINT to the application being tested
+signalCmd = killall -2 mergesort
+
+# Kill commands to exit all applications (GDB and the application tested)
+# Need to ensure safe termination before another fault injection test
+killStrs = killall -9 gdb;killall -9 mergesort
+
+[mergesort-single-0-6]
+initSignal = 0
+endSignal = 6
+faultModel = 0
+[mergesort-single-6-12]
+initSignal = 6
+endSignal = 12
+faultModel = 0
+[mergesort-single-12-18]
+initSignal = 12
+endSignal = 18
+faultModel = 0
+[mergesort-single-18-24]
+initSignal = 18
+endSignal = 24
+faultModel = 0
+
+[mergesort-double-0-6]
+initSignal = 0
+endSignal = 6
+faultModel = 1
+[mergesort-double-6-12]
+initSignal = 6
+endSignal = 12
+faultModel = 1
+[mergesort-double-12-18]
+initSignal = 12
+endSignal = 18
+faultModel = 1
+[mergesort-double-18-24]
+initSignal = 18
+endSignal = 24
+faultModel = 1
+
+[mergesort-random-0-6]
+initSignal = 0
+endSignal = 6
+faultModel = 2
+[mergesort-random-6-12]
+initSignal = 6
+endSignal = 12
+faultModel = 2
+[mergesort-random-12-18]
+initSignal = 12
+endSignal = 18
+faultModel = 2
+[mergesort-random-18-24]
+initSignal = 18
+endSignal = 24
+faultModel = 2
+
+[mergesort-zero-0-6]
+initSignal = 0
+endSignal = 6
+faultModel = 3
+[mergesort-zero-6-12]
+initSignal = 6
+endSignal = 12
+faultModel = 3
+[mergesort-zero-12-18]
+initSignal = 12
+endSignal = 18
+faultModel = 3
+[mergesort-zero-18-24]
+initSignal = 18
+endSignal = 24
+faultModel = 3
+
+[mergesort-lsb-0-6]
+initSignal = 0
+endSignal = 6
+faultModel = 4
+[mergesort-lsb-6-12]
+initSignal = 6
+endSignal = 12
+faultModel = 4
+[mergesort-lsb-12-18]
+initSignal = 12
+endSignal = 18
+faultModel = 4
+[mergesort-lsb-18-24]
+initSignal = 18
+endSignal = 24
+faultModel = 4
