@@ -1,0 +1,20 @@
+# C compiler
+CC = g++ -g
+CC_FLAGS = -fopenmp
+
+ts = $(shell /bin/date "+%Y-%m-%d")
+folder="nw-knl-files-"$(ts)
+
+all: gen_bin gen_data 
+
+gen_bin: needle_gen.cpp needle.cpp
+	$(CC) $(CC_FLAGS) needle_gen.cpp -o needle_gen 
+	$(CC) $(CC_FLAGS) needle.cpp -o needle
+
+gen_data: gen_bin
+	./needle_gen 16384 10 272
+	./needle 16384 10 272 input_16384_th_272_pen_10 gold_16384_th_272_pen_10
+	mkdir -p $(folder)
+	mv needle needle_gen input_16384_th_272_pen_10 gold_16384_th_272_pen_10 $(folder)
+	@echo "All Done"
+	@echo "Gold and executables copy are stored in $(folder)"
