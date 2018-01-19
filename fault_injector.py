@@ -186,7 +186,7 @@ def saveOutput(section, isSDC, isHang):
 
     shutil.move(flipLogFile, cpDir)
     shutil.move(gdbFIlogFile, cpDir)
-    if os.path.isfile(outputFile) and (not masked) and fiSucc:
+    if os.path.isfile(outputFile) and (not masked) and fiSucc and isSDC and (not isHang):
         shutil.move(outputFile, cpDir)
 
 
