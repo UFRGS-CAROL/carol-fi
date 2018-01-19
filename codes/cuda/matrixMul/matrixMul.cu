@@ -36,6 +36,10 @@
 #include <helper_functions.h>
 #include <helper_cuda.h>
 
+__device__ int test_function(int a, int wA, int ty, int tx){
+    return a + wA * ty + tx;
+}
+
 /**
  * Matrix multiplication (CUDA Kernel) on the device: C = A * B
  * wA is A's width and wB is B's width
@@ -88,8 +92,10 @@ matrixMulCUDA(float *C, float *A, float *B, int wA, int wB)
         // Load the matrices from device memory
         // to shared memory; each thread loads
         // one element of each matrix
-        As[ty][tx] = A[a + wA * ty + tx];
+        As[ty][tx] = A[test_function(a, wA,ty, tx)];
         Bs[ty][tx] = B[b + wB * ty + tx];
+
+        
 
         // Synchronize to make sure the matrices are loaded
         __syncthreads();
