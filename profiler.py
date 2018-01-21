@@ -37,14 +37,21 @@ def get_kernel_names_event(event):
         # Tittle case
         elif tittle.replace(" ", "") not in l.replace(" ", ""):
             m = re.match(
-            "\*[ ]*(\d+)[ ]*-[ ]*(\d+)[ ]*(\d+)[ ]*(\S+)[ ]*([0-9a-fA-F][xX][0-9a-fA-F]+)[ ]*\((\d+),(\d+),(\d+)\)[ ]*\((\d+),(\d+),(\d+)\)[ ]*(\S+)",
+                "\*[ ]*(\d+)[ ]*(\S+).*[\)]*.*(\d+)[ ]*(\d+)[ ]*(\S+)[ ]*([0-9a-fA-F][xX][0-9a-fA-F]+)[ ]*\((\d+),(\d+),(\d+)\)[ ]*\((\d+),(\d+),(\d+)\)[ ]*(\S+)",
             l)
             if m:
                 #  '*      0      -   0    1 Active 0x0fffffff (20,10,1) (32,32,1)
             # matrixMulCUDA<32>(C=0x1020db2c000, A=0x1020da00000, B=0x1020da64000, wA=320, wB=640)'
-                groups = m.groups()
-                for i, t in enumerate(tittle.split()):
-                    kernel_info[t] = groups[i]
+                kernel_info["Kernel"] = m.group(1)
+                kernel_info["Parent"] = m.group(2)
+                kernel_info["Dev"] = m.group(3)
+                kernel_info["Grid"] = m.group(4)
+                kernel_info["Status"] = m.group(5)
+                kernel_info["SMs_Mask"] = m.group(6)
+
+                kernel_info["GridDim"] = [m.group(7), m.group(8), m.group(9)]
+                kernel_info["BlockDim"] = [m.group(10), m.group(11), m.group(12)]
+                kernel_info["Invocation"] = m.group(13)
 
             KERNEL_INFO_LIST.append(kernel_info)
 
