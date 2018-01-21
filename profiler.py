@@ -65,7 +65,7 @@ to fault injection
 """
 def get_kernel_address_event(event):
     global KERNEL_INFO_LIST, KERNEL_INFO_DIR
-    print "Event info" , vars(event.breakpoints)
+    print "Event info" , vars(event)
 
 """
 Set temporary breakpoints.
