@@ -24,7 +24,8 @@ def get_kernel_names_event(event):
     # Get info from gdb
     kernel_names = cf.execute_command("info cuda kernels")
     print kernel_names
-    tittle = "Kernel Parent Dev Grid Status   SMs Mask   GridDim  BlockDim Invocation".split()
+
+    tittle = "Kernel Parent Dev Grid Status   SMs Mask   GridDim  BlockDim Invocation"
 
     # Information for all kernels
     for l in kernel_names:
@@ -34,7 +35,7 @@ def get_kernel_names_event(event):
             return None
 
         # Tittle case
-        elif "Kernel Parent Dev Grid Status   SMs Mask   GridDim  BlockDim Invocation" not in l:
+        elif tittle.replace(" ", "") not in l.replace(" ", ""):
             m = re.match(
             "\*[ ]*(\d+)[ ]*-[ ]*(\d+)[ ]*(\d+)[ ]*(\S+)[ ]*([0-9a-fA-F][xX][0-9a-fA-F]+)[ ]*\((\d+),(\d+),(\d+)\)[ ]*\((\d+),(\d+),(\d+)\)[ ]*(\S+)",
             l)
@@ -42,7 +43,7 @@ def get_kernel_names_event(event):
                 #  '*      0      -   0    1 Active 0x0fffffff (20,10,1) (32,32,1)
             # matrixMulCUDA<32>(C=0x1020db2c000, A=0x1020da00000, B=0x1020da64000, wA=320, wB=640)'
                 groups = m.groups()
-                for i, t in enumerate(tittle):
+                for i, t in enumerate(tittle.split()):
                     kernel_info[t] = groups[i]
 
             KERNEL_INFO_LIST.append(kernel_info)
@@ -74,7 +75,7 @@ def set_breakpoints():
     global KERNEL_INFO_LIST
     for kernel_info in KERNEL_INFO_LIST:
         kernel_info['Invocation'] = (kernel_info['Invocation'].split("("))[0]
-        kernel_info['breakpoint'] = gdb.Breakpoint(kernel_info['Invocation'], type=gdb.BP_BREAKPOINT, temporary=True)
+        kernel_info['breakpoint'] = gdb.Breakpoint(kernel_info['Invocation'], type=gdb.BP_BREAKPOINT)
 
 
 """
