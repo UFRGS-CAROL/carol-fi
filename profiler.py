@@ -60,13 +60,30 @@ def get_kernel_names_event(event):
     cf.execute_command("set cuda break_on_launch none")
 
 """
-Get kernel Threads and addresses necessary
-to fault injection
+Get kernel Threads and addresses information
+necessary to fault injection
 """
+
+
 def get_kernel_address_event(event):
     global KERNEL_INFO_LIST, KERNEL_INFO_DIR
-    ev = vars(event)
-    print "Event info" , ev["breakpoints"][0].location
+
+    # Search all kernels info, and all breakpoints
+    for kernel_info in KERNEL_INFO_LIST:
+        for breakpoint in event.breakpoints:
+
+            # Get the addresses and thread for this kernel
+            if breakpoint.location == kernel_info["Invocation"]:
+                # Thread info
+                kernel_info["threads"] = cf.execute_command("info cuda threads")
+                kernel_info["addresses"] = cf.execute_command("disassemble")
+
+                gdb.flush()
+                breakpoint.delete()
+
+                # Need to continue after get the kernel information
+                gdb.execute("c")
+
 
 """
 Set temporary breakpoints.
@@ -120,12 +137,14 @@ except gdb.error as err:
 # Profiler has two steps
 # First: getting kernel information
 
+
 gdb.events.stop.connect(get_kernel_names_event)
 
 # Set to gdb stop at the first kernel
 cf.execute_command("set cuda break_on_launch application")
 
 # Run app for the first time
+
 gdb.execute("r")
 gdb.execute("c")
 gdb.events.stop.disconnect(get_kernel_names_event)
@@ -136,7 +155,9 @@ set_breakpoints()
 gdb.events.stop.connect(get_kernel_address_event)
 gdb.execute("r")
 
+# Save the informaticon file to the output
+cf.save_file(KERNEL_INFO_DIR, KERNEL_INFO_LIST)
 
 
-
-
+########################################################################
+print "If you are seeing it, profiler has been finished"
