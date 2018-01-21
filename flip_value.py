@@ -22,18 +22,6 @@ def faultInjection(event):
     
     
 
-def littleProfiler(event):
-    global validBlock, validThread 
-    global  validRegisters, validInstruction, validAdress
-    
-    threads = executeToList("info cuda threads")
-    validBlock, validThread = getValidThread(threads)
-     
-    addresses = executeToList("disassemble")
-    with open("addresses.txt", "w") as f:
-        for i in addresses: f.write(str(i) + "\n")
-        
-    validRegisters, validInstruction, validAdress, byteLocation = getValidAddress(addresses)
 
 def getValidAddress(addresses):
     m = None
@@ -81,10 +69,7 @@ def flipInstruction(register, faultModel):
         pass
     
 
-def executeToList(toExecute):
-    ret = gdb.execute(toExecute, to_string=True)
-    return ret.splitlines()
-    
+
 def getValidThread(threads):
     element = random.randrange(0, len(threads) - 4)
     #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
