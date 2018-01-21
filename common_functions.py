@@ -2,14 +2,12 @@ import gdb
 import pickle
 import sys
 
-
-if sys.version_info >= (3,0):
-    import configparser # python 3
+if sys.version_info >= (3, 0):
+    import configparser  # python 3
 else:
-    import ConfigParser # python 2
+    import ConfigParser  # python 2
 
-flipConfigFile = "/home/carol/carol-fi/codes/cuda/matrixMul/matrixmul.conf"
-
+flip_config_file = "/home/carol/carol-fi/codes/cuda/matrixMul/matrixmul.conf"
 
 """
 Support function to execute a command
@@ -48,9 +46,11 @@ def load_file(file_path):
     f_in.close()
     return data
 
+
 """
 Read configuration file
 """
+
 
 def load_config_file():
     # Read configuration file
@@ -59,6 +59,5 @@ def load_config_file():
     else:
         conf = ConfigParser.ConfigParser()
 
-    conf.read(flipConfigFile)
+    conf.read(flip_config_file)
     return conf
-
