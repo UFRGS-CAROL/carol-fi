@@ -50,14 +50,15 @@ def set_breakpoints(kernel_conf_string):
     global KERNEL_INFO_LIST
     breakpoints_list = kernel_conf_string.split(";")
     for kernel_line in breakpoints_list:
-        print kernel_line
-        kernel_info = {
-            'breakpoint': gdb.Breakpoint(kernel_line, type=gdb.BP_BREAKPOINT),
-            'kernel_name': kernel_line.split(":")[0],
-            'kernel_line': kernel_line.split(":")[1]
-            }
+        # Just to make sure things like this: kernel.cu:52;<nothing here>
+        if len(kernel_line) > 0:
+            kernel_info = {
+                'breakpoint': gdb.Breakpoint(kernel_line, type=gdb.BP_BREAKPOINT),
+                'kernel_name': kernel_line.split(":")[0],
+                'kernel_line': kernel_line.split(":")[1]
+                }
 
-        KERNEL_INFO_LIST.append(kernel_info)
+            KERNEL_INFO_LIST.append(kernel_info)
 
 
 """
