@@ -71,10 +71,10 @@ def get_kernel_address_event(event):
     # Search all kernels info, and all breakpoints
     for kernel_info in KERNEL_INFO_LIST:
         for breakpoint in event.breakpoints:
-
+            gdb.execute("stepi")
             # Get the addresses and thread for this kernel
             if breakpoint.location == kernel_info["Invocation"]:
-                print breakpoint, kernel_info["breakpoing"],  breakpoint == kernel_info["breakpoing"]
+                print breakpoint, kernel_info["breakpoint"],  breakpoint == kernel_info["breakpoint"]
                 # Thread info
                 kernel_info["threads"] = cf.execute_command("info cuda threads")
                 kernel_info["addresses"] = cf.execute_command("disassemble")
@@ -158,7 +158,7 @@ gdb.events.stop.connect(get_kernel_address_event)
 gdb.execute("r")
 
 # Save the informaticon file to the output
-cf.save_file(KERNEL_INFO_DIR, KERNEL_INFO_LIST)
+#cf.save_file(KERNEL_INFO_DIR, KERNEL_INFO_LIST)
 
 
 ########################################################################
