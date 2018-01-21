@@ -66,7 +66,7 @@ necessary to fault injection
 
 
 def get_kernel_address_event(event):
-    global KERNEL_INFO_LIST, KERNEL_INFO_DIR
+    global KERNEL_INFO_LIST
 
     # Search all kernels info, and all breakpoints
     for kernel_info in KERNEL_INFO_LIST:
@@ -74,6 +74,7 @@ def get_kernel_address_event(event):
 
             # Get the addresses and thread for this kernel
             if breakpoint.location == kernel_info["Invocation"]:
+                print breakpoint, kernel_info["breakpoing"],  breakpoint == kernel_info["breakpoing"]
                 # Thread info
                 kernel_info["threads"] = cf.execute_command("info cuda threads")
                 kernel_info["addresses"] = cf.execute_command("disassemble")
@@ -81,6 +82,7 @@ def get_kernel_address_event(event):
                 gdb.flush()
                 breakpoint.delete()
 
+                kernel_info['breakpoint'] = None
                 # Need to continue after get the kernel information
                 gdb.execute("c")
 
