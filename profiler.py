@@ -74,7 +74,7 @@ def set_breakpoints():
     # kernel
     global KERNEL_INFO_LIST
     for kernel_info in KERNEL_INFO_LIST:
-        print kernel_info['Invocation']
+        print kernel_info
         kernel_info['Invocation'] = (kernel_info['Invocation'].split("("))[0]
         kernel_info['breakpoint'] = gdb.Breakpoint(kernel_info['Invocation'], type=gdb.BP_BREAKPOINT)
 
