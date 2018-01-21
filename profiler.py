@@ -93,7 +93,7 @@ except gdb.error as err:
 # First: getting kernel information
 # Run app for the first time
 
-kernel_conf_string = conf.get("KERNEL", "kernelBreaks")
+kernel_conf_string = conf.get("DEFAULT", "kernelBreaks")
 set_breakpoints(kernel_conf_string)
 
 gdb.events.stop.connect(get_kernel_address_event)
