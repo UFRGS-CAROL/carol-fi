@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/carol/carol-fi") # I have to fix it
+
 import gdb
 import re
 import common_functions as cf # All common functions will be at common_functions module
