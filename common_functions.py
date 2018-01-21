@@ -1,5 +1,14 @@
 import gdb
 import pickle
+import sys
+
+
+if sys.version_info >= (3,0):
+    import configparser # python 3
+else:
+    import ConfigParser # python 2
+
+flipConfigFile = "/home/carol/carol-fi/codes/cuda/matrixMul/matrixmul.conf"
 
 
 """
@@ -38,3 +47,18 @@ def load_file(file_path):
     data = pickle.load(f_in)
     f_in.close()
     return data
+
+"""
+Read configuration file
+"""
+
+def load_config_file():
+    # Read configuration file
+    if sys.version_info >= (3, 0):
+        conf = configparser.ConfigParser()
+    else:
+        conf = ConfigParser.ConfigParser()
+
+    conf.read(flipConfigFile)
+    return conf
+

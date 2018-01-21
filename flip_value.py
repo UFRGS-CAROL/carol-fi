@@ -3,12 +3,10 @@ import os
 import re
 import random
 
-validAdress = None
-validRegisters = None
-validInstruction = None
+import sys
+sys.path.append("/home/carol/carol-fi") # I have to fix it
+import common_functions as cf # All common functions will be at common_functions module
 
-validThread = None
-validBlock = None
 
 # function called when the execution is stopped
 def faultInjection(event):
@@ -102,11 +100,11 @@ gdb.execute("set confirm off")
 gdb.execute("set pagination off")
 
 
-#gdbInitStrings = file /tmp/quicksort/quicksort;set args 5000000 4 /tmp/quicksort/inputsort_134217728 /tmp/quicksort/output_5000000
 
+conf = cf.load_config_file()
 
 try:
-    gdbInitStrings = "file /home/carol/carol-fi/codes/cuda/matrixMul/matrixMul; set args -wA=512 -hA=512 -hB=512 -wB=512"
+    gdbInitStrings = conf.get("DEFAULT", "gdbInitStrings")
 
     for initStr in gdbInitStrings.split(";"):
         print initStr
@@ -114,29 +112,7 @@ try:
 
 except gdb.error as err:
     print "initializing setup: " + str(err)
-    
-########################################################################
-# Little profiler
-    
-gdb.events.stop.connect(littleProfiler)
-breakpoint = gdb.Breakpoint("matrixMul.cu:51", gdb.BP_BREAKPOINT)
-runString = gdb.execute("r", to_string=True)
-gdb.events.stop.disconnect(littleProfiler)
-breakpoint.delete()
 
-
-########################################################################
-# Fault injection
-
-fiBreakpoint = gdb.Breakpoint("*" + validAdress, gdb.BP_BREAKPOINT)
-gdb.events.stop.connect(faultInjection)
-
-gdb.execute("c")
-fiBreakpoint.delete()
-gdb.events.stop.disconnect(faultInjection)
-gdb.execute("c")
-
-########################################################################
 
 
 
