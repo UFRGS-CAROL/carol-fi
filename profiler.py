@@ -104,64 +104,6 @@ gdb.execute("r")
 # Second: save the retrivied information on a txt file
 # Save the informaticon file to the output
 cf.save_file(KERNEL_INFO_DIR, KERNEL_INFO_LIST)
-print KERNEL_INFO_LIST
 
 ########################################################################
 print "If you are seeing it, profiler has been finished"
-
-
-
-
-
-# gdb.events.stop.connect(get_kernel_names_event)
-#
-# # Set to gdb stop at the first kernel
-# cf.execute_command("set cuda break_on_launch application")
-# """
-# This function will return all names of
-# active kernels at the first executed kernel.
-# This will only be executed when an event is defined
-# for it.
-# """
-#
-#
-# def get_kernel_names_event(event):
-#     global KERNEL_INFO_LIST
-#
-#     # Get info from gdb
-#     kernel_names = cf.execute_command("info cuda kernels")
-#     print kernel_names
-#
-#     tittle = "Kernel Parent Dev Grid Status   SMs Mask   GridDim  BlockDim Invocation"
-#
-#     # Information for all kernels
-#     for l in kernel_names:
-#         kernel_info = {}
-#         # Something went wrong
-#         if "No CUDA kernels" in l:
-#             return None
-#
-#         # Tittle case
-#         elif tittle.replace(" ", "") not in l.replace(" ", ""):
-#             m = re.match(
-#                 "\*[ ]*(\d+)[ ]*(\S+).*[\)]*.*(\d+)[ ]*(\d+)[ ]*(\S+)[ ]*([0-9a-fA-F][xX][0-9a-fA-F]+)[ ]*\((\d+),(\d+),(\d+)\)[ ]*\((\d+),(\d+),(\d+)\)[ ]*(\S+)",
-#             l)
-#             if m:
-#                 #  '*      0      -   0    1 Active 0x0fffffff (20,10,1) (32,32,1)
-#             # matrixMulCUDA<32>(C=0x1020db2c000, A=0x1020da00000, B=0x1020da64000, wA=320, wB=640)'
-#                 kernel_info["Kernel"] = m.group(1)
-#                 kernel_info["Parent"] = m.group(2)
-#                 kernel_info["Dev"] = m.group(3)
-#                 kernel_info["Grid"] = m.group(4)
-#                 kernel_info["Status"] = m.group(5)
-#                 kernel_info["SMs_Mask"] = m.group(6)
-#
-#                 kernel_info["GridDim"] = [m.group(7), m.group(8), m.group(9)]
-#                 kernel_info["BlockDim"] = [m.group(10), m.group(11), m.group(12)]
-#                 kernel_info["Invocation"] = m.group(13)
-#
-#             KERNEL_INFO_LIST.append(kernel_info)
-#
-#
-#     # Need only colect information at the first kernel entry
-#     cf.execute_command("set cuda break_on_launch none")
