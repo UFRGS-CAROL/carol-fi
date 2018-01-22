@@ -101,9 +101,10 @@ set_breakpoints(kernel_conf_string)
 gdb.events.stop.connect(get_kernel_address_event)
 gdb.execute("r")
 
+# Second: save the retrivied information on a txt file
 # Save the informaticon file to the output
-#cf.save_file(KERNEL_INFO_DIR, KERNEL_INFO_LIST)
-
+cf.save_file(KERNEL_INFO_DIR, KERNEL_INFO_LIST)
+print KERNEL_INFO_LIST
 
 ########################################################################
 print "If you are seeing it, profiler has been finished"
