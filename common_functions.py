@@ -7,7 +7,7 @@ if sys.version_info >= (3, 0):
 else:
     import ConfigParser  # python 2
 
-flip_config_file = "/home/carol/carol-fi/codes/cuda/matrixMul/matrixmul.conf"
+flip_config_file = "/home/carol/carol-fi/codes/matrixMul/matrixmul.conf"
 
 """
 Support function to execute a command
