@@ -3,17 +3,19 @@ import gdb
 import sys
 import re
 
-sys.path.append() # I have to fix it
-import common_functions as cf # All common functions will be at common_functions module
-
+########################################################################
+# Global vars
+# Unfortunately gdb cannot see common_functions.py
 HOME_DIR = "<home-location>"
-CONF_LOCATION = "<conf-location>"
+sys.path.append(HOME_DIR)
+import common_functions as cf  # All common functions will be at common_functions module
 
+CONF_LOCATION = "<conf-location>"
 VALID_BLOCK = None
 VALID_THREAD = None
 VALID_REGISTER = None
-BITS_TO_FLIP = None
-FAULT_MODEL = None
+BITS_TO_FLIP =
+FAULT_MODEL = "<fault-model>"
 
 """
 function called when the execution is stopped
@@ -76,6 +78,13 @@ def generic_injector(register, bits_to_flip, fault_model):
     return reg_cmd_flipped
 
 
+"""
+Load temporary configuration file
+"""
+
+
+def load_conf_file()
+    global CONF_LOCATION
 
 
 ########################################################################
