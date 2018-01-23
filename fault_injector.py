@@ -25,9 +25,10 @@ else:
 VERSION = "1.0"
 
 ### Global variables
-uniqueID = str(uuid.uuid4())
-gdbFIlogFile = "/tmp/carolfi-" + uniqueID + ".log"
-summFIlogFile = "summary-carolfi.log"
+unique_id = str(uuid.uuid4())
+gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
+summ_fi_log_file = "summary-carolfi.log"
+
 if sys.version_info >= (3, 0):
     conf = configparser.ConfigParser()
 else:
@@ -37,7 +38,7 @@ else:
 class logging:
     @staticmethod
     def info(msg):
-        fp = open(gdbFIlogFile, "a")
+        fp = open(gdb_fi_log_file, "a")
         # fp = open(conf.get("DEFAULT","gdbFIlogFile"), "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         fp.write("[INFO -- " + d + "]\n" + msg + "\n")
@@ -45,7 +46,7 @@ class logging:
 
     @staticmethod
     def error(msg):
-        fp = open(gdbFIlogFile, "a")
+        fp = open(gdb_fi_log_file, "a")
         # fp = open(conf.get("DEFAULT","gdbFIlogFile"), "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         fp.write("[ERROR -- " + d + "]\n" + msg + "\n")
@@ -54,7 +55,7 @@ class logging:
     @staticmethod
     def debug(msg):
         if conf.getboolean("DEFAULT", "debug"):
-            fp = open(gdbFIlogFile, "a")
+            fp = open(gdb_fi_log_file, "a")
             # fp = open(conf.get(section,"gdbFIlogFile"), "a")
             d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
             fp.write("[DEBUG -- " + d + "]\n" + msg + "\n")
@@ -62,40 +63,11 @@ class logging:
 
     @staticmethod
     def summary(msg):
-        fp = open(summFIlogFile, "a")
+        fp = open(summ_fi_log_file, "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        fp.write("[SUMMARY -- " + d + "]\nFI-uniqueID=" + uniqueID + "\n" + msg + "\n")
+        fp.write("[SUMMARY -- " + d + "]\nFI-uniqueID=" + unique_id + "\n" + msg + "\n")
         fp.close()
 
-
-# Signal the app to stop so GDB can execute the script to flip a value
-class signalApp(threading.Thread):
-    def __init__(self, section):
-        threading.Thread.__init__(self)
-        self.section = section
-
-    def run(self):
-        global timestampStart
-        timestampStart = int(time.time())
-        signalCmd = conf.get(self.section, "signalCmd")
-        maxWaitTime = conf.getfloat(self.section, "maxWaitTime")
-        init = conf.getfloat(self.section, "initSignal")
-        end = conf.getfloat(self.section, "endSignal")
-        seqSignals = conf.getint(self.section, "seqSignals")
-        # Sleep for a random time
-        waitTime = random.uniform(init, end)
-        time.sleep(waitTime)
-        # Send a series of signal to make sure gdb will flip a value in one of the interupt signals
-        logging.info(
-            "sending " + str(seqSignals) + " signals using command: '" + signalCmd + "' after " + str(waitTime) + "s")
-        for i in range(0, seqSignals):
-            proc = subprocess.Popen(signalCmd, stdout=subprocess.PIPE, shell=True)
-            (out, err) = proc.communicate()
-            if out is not None:
-                logging.info("shell stdout: " + str(out))
-            if err is not None:
-                logging.error("shell stderr: " + str(err))
-            time.sleep(0.01)
 
 
 # Start the gdb script
@@ -105,7 +77,7 @@ class runGDB(threading.Thread):
         self.section = section
 
     def run(self):
-        startCmd = conf.get(self.section, "gdbExecName") + " -n -q -batch -x " + "/tmp/flip-" + uniqueID + ".py"
+        startCmd = conf.get(self.section, "gdbExecName") + " -n -q -batch -x " + "/tmp/flip-" + unique_id + ".py"
         os.system(startCmd)
 
 
@@ -152,7 +124,7 @@ def finish(section):
 # Copy the logs and output(if fault not masked) to a selected folder
 def saveOutput(section, isSDC, isHang):
     outputFile = conf.get(section, "outputFile")
-    flipLogFile = "/tmp/carolfi-flipvalue-" + uniqueID + ".log"
+    flipLogFile = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
 
     fiSucc = False
     if os.path.isfile(flipLogFile):
@@ -165,7 +137,7 @@ def saveOutput(section, isSDC, isHang):
     dt = datetime.datetime.fromtimestamp(time.time())
     ymd = dt.strftime('%Y_%m_%d')
     ymdhms = dt.strftime('%Y_%m_%d_%H_%M_%S')
-    ymdhms = uniqueID + "-" + ymdhms
+    ymdhms = unique_id + "-" + ymdhms
     dirDT = os.path.join(ymd, ymdhms)
     masked = False
     if not fiSucc:
@@ -189,7 +161,7 @@ def saveOutput(section, isSDC, isHang):
         os.makedirs(cpDir)
 
     shutil.move(flipLogFile, cpDir)
-    shutil.move(gdbFIlogFile, cpDir)
+    shutil.move(gdb_fi_log_file, cpDir)
     if os.path.isfile(outputFile) and (not masked) and fiSucc:
         shutil.move(outputFile, cpDir)
 
@@ -226,8 +198,12 @@ def checkSDCs(section):
         return False
 
 
-# Main function to run one execution of the fault injector
-def runGDBFaultInjection(section):
+"""
+Main function to run one execution of the fault injector
+"""
+
+
+def run_gdb_fault_injection(section):
     isSDC = False
     isHang = False
 
@@ -244,7 +220,7 @@ def runGDBFaultInjection(section):
     genConfFile(section)
 
     # Generate python script for GDB
-    genFlipScript(section)
+    gen_flip_script(section)
 
     # Run pre execution function
     preExecution(section)
@@ -255,7 +231,7 @@ def runGDBFaultInjection(section):
     numThreadsFI = conf.getint(section, "numThreadsFI")
     sigThs = list()
     for i in range(0, numThreadsFI):
-        sigThs.append(signalApp(section))
+        sigThs.append(signal_app(section))
     # Start threads
     th.start()
     for sig in sigThs:
@@ -287,7 +263,7 @@ def genConfFile(section):
     else:
         fconf = ConfigParser.SafeConfigParser()
     # fconf.set("DEFAULT", "flipLogFile", conf.get(section,"flipLogFile"))
-    fconf.set("DEFAULT", "flipLogFile", "/tmp/carolfi-flipvalue-" + uniqueID + ".log")
+    fconf.set("DEFAULT", "flipLogFile", "/tmp/carolfi-flipvalue-" + unique_id + ".log")
     fconf.set("DEFAULT", "debug", conf.get(section, "debug"))
     fconf.set("DEFAULT", "gdbInitStrings", conf.get(section, "gdbInitStrings"))
     fconf.set("DEFAULT", "initSignal", conf.get(section, "initSignal"))
@@ -295,23 +271,98 @@ def genConfFile(section):
     fconf.set("DEFAULT", "seqSignals", conf.get(section, "seqSignals"))
     fconf.set("DEFAULT", "faultModel", conf.get(section, "faultModel"))
 
-    fp = open("/tmp/flip-" + uniqueID + ".conf", "w")
+    fp = open("/tmp/flip-" + unique_id + ".conf", "w")
     fconf.write(fp)
     fp.close()
 
 
-# Generate the gdb flip_value script
-def genFlipScript(section):
+"""
+Generate the gdb flip_value script
+"""
+def gen_flip_script(section):
     fp = open("flip_value.py", "r")
     pscript = fp.read()
     fp.close()
-    fp = open("/tmp/flip-" + uniqueID + ".py", "w")
-    fp.write(pscript.replace("<conf-location>", "/tmp/flip-" + uniqueID + ".conf"))
+    fp = open("/tmp/flip-" + unique_id + ".py", "w")
+    #"/home/carol/carol-fi"
+    #
+    fp.write(pscript.replace("<conf-location>", "/tmp/flip-" + unique_id + ".conf"))
     fp.close()
-    os.chmod("/tmp/flip-" + uniqueID + ".py", 0775)
+    os.chmod("/tmp/flip-" + unique_id + ".py", 0775)
 
 
-######################## Main ########################
+"""
+Select a valid stop address
+from the file created in the profiler
+step
+"""
+
+
+def get_valid_address(addresses):
+    m = None
+    registers = []
+    instruction = ''
+    address = ''
+    byteLocation = ''
+
+    # search for a valid instruction
+    while not m:
+        element = random.randrange((len(addresses) - 1) / 2, len(addresses) - 1)
+        instructionLine = addresses[element]
+
+        expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+)"
+
+        for i in [1, 3, 4, 5]:
+            # INSTRUCTION R1, R2...
+            # 0x0000000000b418e8 <+40>: MOV R4, R2...
+            expression += ",[ ]*(\S+)"
+            m = re.match(expression + ".*", instructionLine)
+
+            if m:
+                address = m.group(1)
+                byteLocation = m.group(2)
+                instruction = m.group(3)
+                registers.extend([m.group(3 + t) for t in range(0, i)])
+                break
+
+        if not m:
+            print("it is stoped here:", instructionLine)
+        else:
+            print("it choose something:", instructionLine)
+
+    return registers, instruction, address, byteLocation
+
+"""
+
+"""
+
+
+def get_valid_thread(threads):
+    element = random.randrange(0, len(threads) - 4)
+    #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
+    splited = threads[element].replace("\n", "").split()
+
+    # randomly chosen first block and thread
+    block = re.match(".*\((\d+),(\d+),(\d+)\).*", splited[0])
+    threa = re.match(".*\((\d+),(\d+),(\d+)\).*", splited[1])
+
+    blockX = blockY = blockZ = 0
+    threadX = threadY = threadZ = 0
+    try:
+        blockX = block.group(1)
+        blockY = block.group(2)
+        blockZ = block.group(3)
+
+        threadX = threa.group(1)
+        threadY = threa.group(2)
+        threadZ = threa.group(3)
+    except:
+        raise ValueError
+
+    return [blockX, blockY, blockZ], [threadX, threadY, threadZ]
+
+
+
 def checkmd5():
     md5 = hashlib.md5(open("flip_value.py", 'rb').read()).hexdigest()
     if str(md5) != "260a2ce0736f2132a82053246e3272e7":
@@ -320,7 +371,9 @@ def checkmd5():
         sys.exit(0)
 
 
-def main():
+######################## Main ########################
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="configFile", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
@@ -330,25 +383,53 @@ def main():
     args = parser.parse_args()
     if args.iterations < 1:
         parser.error('Iterations must be greater than zero')
-    # print ("args:",args)
+
+
     checkmd5()
-    # sys.exit(0)
 
     # Start with a different seed every time to vary the random numbers generated
-    random.seed()  # the seed will be the current number of second since 01/01/70
+    # the seed will be the current number of second since 01/01/70
+    random.seed()
 
     # Read the configuration file with data for all the apps that will be executed
     conf.read(args.configFile)
 
-    numRounds = 0
-    while numRounds < args.iterations:
+    num_rounds = 0
+    while num_rounds < args.iterations:
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for sec in conf.sections():
             # Execute one fault injection for a specific app
-            runGDBFaultInjection(sec)
-        numRounds += 1
-    os.system("rm -f /tmp/*" + uniqueID + "*")
+            run_gdb_fault_injection(sec)
+        num_rounds += 1
+    os.system("rm -f /tmp/*" + unique_id + "*")
 
 
-if __name__ == "__main__":
-    main()
+#
+# # Signal the app to stop so GDB can execute the script to flip a value
+# class signal_app(threading.Thread):
+#     def __init__(self, section):
+#         threading.Thread.__init__(self)
+#         self.section = section
+#
+#     def run(self):
+#         global timestampStart
+#         timestampStart = int(time.time())
+#         signalCmd = conf.get(self.section, "signalCmd")
+#         maxWaitTime = conf.getfloat(self.section, "maxWaitTime")
+#         init = conf.getfloat(self.section, "initSignal")
+#         end = conf.getfloat(self.section, "endSignal")
+#         seqSignals = conf.getint(self.section, "seqSignals")
+#         # Sleep for a random time
+#         waitTime = random.uniform(init, end)
+#         time.sleep(waitTime)
+#         # Send a series of signal to make sure gdb will flip a value in one of the interupt signals
+#         logging.info(
+#             "sending " + str(seqSignals) + " signals using command: '" + signalCmd + "' after " + str(waitTime) + "s")
+#         for i in range(0, seqSignals):
+#             proc = subprocess.Popen(signalCmd, stdout=subprocess.PIPE, shell=True)
+#             (out, err) = proc.communicate()
+#             if out is not None:
+#                 logging.info("shell stdout: " + str(out))
+#             if err is not None:
+#                 logging.error("shell stderr: " + str(err))
+#             time.sleep(0.01)
