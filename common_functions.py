@@ -1,13 +1,14 @@
+import datetime
 import gdb
 import pickle
 import sys
+import time
 
 if sys.version_info >= (3, 0):
     import configparser  # python 3
 else:
     import ConfigParser  # python 2
 
-flip_config_file = "/home/carol/carol-fi/codes/matrixMul/matrixmul.conf"
 
 """
 Support function to execute a command
@@ -52,7 +53,7 @@ Read configuration file
 """
 
 
-def load_config_file():
+def load_config_file(flip_config_file):
     # Read configuration file
     if sys.version_info >= (3, 0):
         conf = configparser.ConfigParser()
@@ -61,3 +62,36 @@ def load_config_file():
 
     conf.read(flip_config_file)
     return conf
+
+
+class Logging:
+    conf = None
+
+    def __init__(self, config_file):
+        self.conf = config_file
+
+    def info(self, msg):
+        fp = open(self.conf.get("DEFAULT", "flipLogFile"), "a")
+        d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        fp.write("[INFO -- "+d+"]\n"+msg+"\n")
+        fp.close()
+
+    def exception(self, msg):
+        fp = open(self.conf.get("DEFAULT", "flipLogFile"), "a")
+        d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        fp.write("[EXCEPTION -- "+d+"]\n"+msg+"\n")
+        fp.close()
+
+    def error(self, msg):
+        fp = open(self.conf.get("DEFAULT", "flipLogFile"), "a")
+        d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        fp.write("[ERROR -- "+d+"]\n"+msg+"\n")
+        fp.close()
+
+
+    def debug(self, msg):
+        if self.conf.getboolean("DEFAULT", "debug"):
+            fp = open(self.conf.get("DEFAULT", "flipLogFile"), "a")
+            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+            fp.write("[DEBUG -- "+d+"]\n"+msg+"\n")
+            fp.close()
