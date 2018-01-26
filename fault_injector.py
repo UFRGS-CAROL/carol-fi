@@ -255,7 +255,6 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
 
     # Information about this fault
 
-
     # Generate configuration file for specific test
     gen_conf_file(gdb_init_strings=conf.get(section, "gdbInitStrings"),
                   debug=conf.get(section, "debug"),
