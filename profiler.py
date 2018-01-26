@@ -3,10 +3,10 @@ import sys
 sys.path.append("/home/carol/carol-fi") # I have to fix it
 import common_functions as cf # All common functions will be at common_functions module
 
-KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
+kernel_info_dir = "/tmp/carol-fi-kernel-info.txt"
 
 # This list will contains all kernel info
-KERNEL_INFO_LIST = []
+kernel_info_list = []
 
 """
 Get kernel Threads and addresses information
@@ -15,10 +15,10 @@ necessary to fault injection
 
 
 def get_kernel_address_event(event):
-    global KERNEL_INFO_LIST
+    global kernel_info_list
 
     # Search all kernels info, and all breakpoints
-    for kernel_info in KERNEL_INFO_LIST:
+    for kernel_info in kernel_info_list:
         for breakpoint in event.breakpoints:
 
             # Get the addresses and thread for this kernel
@@ -47,7 +47,7 @@ def set_breakpoints(kernel_conf_string):
     # temporary breakpoints
     # to retrieve info of each
     # kernel
-    global KERNEL_INFO_LIST
+    global kernel_info_list
     breakpoints_list = kernel_conf_string.split(";")
     for kernel_line in breakpoints_list:
         # Just to make sure things like this: kernel.cu:52;<nothing here>
@@ -58,7 +58,7 @@ def set_breakpoints(kernel_conf_string):
                 'kernel_line': kernel_line.split(":")[1]
                 }
 
-            KERNEL_INFO_LIST.append(kernel_info)
+            kernel_info_list.append(kernel_info)
 
 
 """
@@ -88,7 +88,7 @@ try:
         gdb.execute(init_str)
 
 except gdb.error as err:
-    print "initializing setup: " + str(err)
+    print ("initializing setup: " + str(err))
 
 ########################################################################
 # Profiler has two steps
@@ -103,7 +103,7 @@ gdb.execute("r")
 
 # Second: save the retrivied information on a txt file
 # Save the informaticon file to the output
-cf.save_file(KERNEL_INFO_DIR, KERNEL_INFO_LIST)
+cf.save_file(kernel_info_dir, kernel_info_list)
 
 ########################################################################
-print "If you are seeing it, profiler has been finished"
+print ("If you are seeing it, profiler has been finished")

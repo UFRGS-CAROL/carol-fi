@@ -13,15 +13,19 @@ import common_functions as cf  # All common functions will be at common_function
 
 # global vars loaded from config file
 conf_location = "<conf-location>"
-valid_block = None
-valid_thread = None
-valid_register = None
-bits_to_flip = None
-fault_model = None
-injection_site = None
 
-# version
-version = 1.0
+
+"""
+Function called at first breakpoint stop
+to avoid memory error
+"""
+
+
+def delete_temporary_breakpoint(event):
+    # Place the injection breakpoint
+    breakpoing_info = cf.execute_command("break " + str(injection_site))
+    logging.debug("breakpoint: " + str(breakpoing_info))
+
 
 """
 function called when the execution is stopped
@@ -42,7 +46,7 @@ def fault_injection(event):
     for i in thread_focus:
         logging.info(i)
 
-    generic_injector(valid_register, bits_to_flip, fault_model)
+    generic_injector()
 
 
 """
@@ -61,9 +65,10 @@ Flip a bit or multiple based on a fault model
 """
 
 
-def generic_injector(register, bits_to_flip, fault_model):
+def generic_injector():
+    global valid_register, bits_to_flip, fault_model
     # get register content
-    reg_cmd = cf.execute_command("p/t $" + str(register))
+    reg_cmd = cf.execute_command("p/t $" + str(valid_register))
 
     # Logging info result extracted from register
     logging.info("reg old value: " + str(reg_cmd[0]))
@@ -72,24 +77,32 @@ def generic_injector(register, bits_to_flip, fault_model):
     if m:
         reg_content = str(m.group(2))
 
-        if fault_model == "single":
+        # Single bit flip
+        if fault_model == 0:
             # single bit flip
             reg_content = flip_a_bit(bits_to_flip[0], reg_content)
 
-        elif fault_model == "multiple":
+        # Double bit flip
+        elif fault_model == 1:
             # multiple bit flip
             for bit_to_flip in bits_to_flip:
                 reg_content = flip_a_bit(bit_to_flip, reg_content)
 
-        elif fault_model == "random":
+        # Random value
+        elif fault_model == 2:
             # random value is stored at bits_to_flip[0]
             reg_content = str(bits_to_flip[0])
 
-        elif fault_model == "zero":
+        # Zero values
+        elif fault_model == 3:
             reg_content = '0'
 
+        # Least significant bits, not implemented
+        elif fault_model == 4:
+            raise NotImplementedError
+
         # send the new value to gdb
-        reg_cmd_flipped = cf.execute_command("set $" + str(register) + " = " + reg_content)
+        reg_cmd_flipped = cf.execute_command("set $" + str(valid_register) + " = " + reg_content)
 
     else:
         raise NotImplementedError
@@ -103,7 +116,7 @@ def generic_injector(register, bits_to_flip, fault_model):
 def exit_handler(event):
     logging.info(str("event type: exit"))
     try:
-        logging.info(str("exit code: %d" % (event.exit_code)))
+        logging.info(str("exit code: %d" % event.exit_code))
     except:
         logging.exception(str("exit code: no exit code available"))
 
@@ -120,11 +133,20 @@ gdb.execute("set pagination off")
 # Connecting to a exit handler event
 gdb.events.exited.connect(exit_handler)
 
-# Setting conf and logging
+# Setting conf and loading global vars
 conf = cf.load_config_file(conf_location)
-logging = cf.Logging(conf)
+valid_block = conf.get("DEFAULT", "validBlock").split(";")
+valid_thread = conf.get("DEFAULT", "validThread").split(";")
+valid_register = conf.get("DEFAULT", "validRegister")
+bits_to_flip = [int(i) for i in conf.get("DEFAULT", "bitsToFlip").split(";")]
+fault_model = conf.get("DEFAULT", "faultModel")
+injection_site = conf.get("DEFAULT", "injectionSite")
+breakpoint_location = conf.get("DEFAULT", "breakpointLocation")
 
-logging.info("Starting flip_value script\nversion: " + str(version))
+# Logging
+# get("DEFAULT", "flipLogFile"
+logging = cf.Logging(conf)
+logging.info("Starting flip_value script\n")
 
 try:
     gdbInitStrings = conf.get("DEFAULT", "gdbInitStrings")
@@ -136,14 +158,23 @@ try:
 except gdb.error as err:
     print("initializing setup: " + str(err))
 
+
+# Place the first breakpoint, it is only to avoid
+# address memory error
+breakpoint_kernel = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT, temporary=True)
+gdb.events.stop.connect(delete_temporary_breakpoint)
+
+# Start app execution
+gdb.execute("r")
+
+gdb.events.stop.disconnect(delete_temporary_breakpoint)
+
+
 # Define which function to call when the execution stops, e.g. when a breakpoint is hit
 # or a interruption signal is received
 gdb.events.stop.connect(fault_injection)
 
-# Place the injection breakpoint
-breakpoing_info = cf.execute_command("break " + str(injection_site))
+gdb.execute("c")
 
-logging.debug("breakpoint: " + str(breakpoing_info))
 
-# Start app execution
-gdb.execute("r")
+

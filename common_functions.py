@@ -65,33 +65,35 @@ def load_config_file(flip_config_file):
 
 
 class Logging:
-    conf = None
+    log_file = None
+    debug_var = None
 
     def __init__(self, config_file):
-        self.conf = config_file
+        self.log_file = config_file.get("DEFAULT", "flipLogFile")
+        self.debug_var = config_file.getboolean("DEFAULT", "debug")
 
     def info(self, msg):
-        fp = open(self.conf.get("DEFAULT", "flipLogFile"), "a")
+        fp = open(self.log_file, "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         fp.write("[INFO -- "+d+"]\n"+msg+"\n")
         fp.close()
 
     def exception(self, msg):
-        fp = open(self.conf.get("DEFAULT", "flipLogFile"), "a")
+        fp = open(self.log_file, "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         fp.write("[EXCEPTION -- "+d+"]\n"+msg+"\n")
         fp.close()
 
     def error(self, msg):
-        fp = open(self.conf.get("DEFAULT", "flipLogFile"), "a")
+        fp = open(self.log_file, "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         fp.write("[ERROR -- "+d+"]\n"+msg+"\n")
         fp.close()
 
 
     def debug(self, msg):
-        if self.conf.getboolean("DEFAULT", "debug"):
-            fp = open(self.conf.get("DEFAULT", "flipLogFile"), "a")
+        if self.debug_var:
+            fp = open(self.log_file, "a")
             d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
             fp.write("[DEBUG -- "+d+"]\n"+msg+"\n")
             fp.close()

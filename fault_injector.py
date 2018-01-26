@@ -13,16 +13,17 @@ import shutil
 import argparse
 import uuid
 import common_functions as cf
-import profiler
 
 if sys.version_info >= (3, 0):
     import configparser  # python 3
 else:
     import ConfigParser  # python 2
 
-"""
-Start the gdb script
-"""
+# Debug env var
+DEBUG = True
+
+# Max size of register
+max_size_register = 32
 
 
 class RunGDB(threading.Thread):
@@ -37,6 +38,8 @@ class RunGDB(threading.Thread):
         self.conf = conf
 
     def run(self):
+        if DEBUG:
+            print("GDB Thread run, section and id: ", self.section, self.unique_id)
         start_cmd = self.conf.get(self.section,
                                   "gdbExecName") + " -n -q -batch -x " + "/tmp/flip-" + self.unique_id + ".py"
         os.system(start_cmd)
@@ -98,9 +101,10 @@ Copy the logs and output(if fault not masked) to a selected folder
 """
 
 
-def save_output(section, is_sdc, is_hang, conf, logging):
+def save_output(section, is_sdc, is_hang, conf, logging, unique_id):
     output_file = conf.get(section, "outputFile")
     flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
+    gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
 
     fi_succ = False
     if os.path.isfile(flip_log_file):
@@ -147,9 +151,8 @@ Pre execution commands
 """
 
 
-def pre_execution(section, conf):
+def pre_execution(script):
     try:
-        script = conf.get(section, "preExecScript")
         if script != "":
             os.system(script)
         return
@@ -162,9 +165,9 @@ Pos execution commands
 """
 
 
-def pos_execution(section, conf):
+def pos_execution(script):
     try:
-        script = conf.get(section, "posExecScript")
+
         if script != "":
             os.system(script)
         return
@@ -177,36 +180,45 @@ Check output files for SDCs
 """
 
 
-def check_sdcs(section, conf, logging):
-    goldFile = conf.get(section, "goldFile")
-    outputFile = conf.get(section, "outputFile")
-    if not os.path.isfile(outputFile):
-        logging.error("outputFile not found: " + str(outputFile))
-    if os.path.isfile(goldFile) and os.path.isfile(outputFile):
-        return (not filecmp.cmp(goldFile, outputFile, shallow=False))
+def check_sdcs(gold_file, output_file, logging):
+    if not os.path.isfile(output_file):
+        logging.error("outputFile not found: " + str(output_file))
+    if os.path.isfile(gold_file) and os.path.isfile(output_file):
+        return not filecmp.cmp(gold_file, output_file, shallow=False)
     else:
         return False
+
 
 """
 Generate config file for the gdb flip_value script
 """
 
 
-def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block, valid_thread, bits_to_flip, fault_model,
+def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block, valid_thread, valid_register, bits_to_flip,
+                  fault_model,
                   injection_site):
     if sys.version_info >= (3, 0):
         fconf = configparser.SafeConfigParser()
     else:
         fconf = ConfigParser.SafeConfigParser()
 
+    # valid_block = conf.get("DEFAULT", "validBlock").split(";")
+    # valid_thread = conf.get("DEFAULT", "validThread").split(";")
+    # valid_register = conf.get("DEFAULT", "validRegister")
+    # bits_to_flip = [int(i) for i in conf.get("DEFAULT", "bitsToFlip").split(";")]
+    # fault_model = conf.get("DEFAULT", "faultModel")
+    # injection_site = conf.get("DEFAULT", "injectionSite")
+    # breakpoint_location = conf.get("DEFAULT", "breakpointLocation")
+
     fconf.set("DEFAULT", "flipLogFile", "/tmp/carolfi-flipvalue-" + unique_id + ".log")
     fconf.set("DEFAULT", "debug", debug)
     fconf.set("DEFAULT", "gdbInitStrings", gdb_init_strings)
     fconf.set("DEFAULT", "faultModel", fault_model)
     fconf.set("DEFAULT", "injectionSite", injection_site)
-    fconf.set("DEFAULT", "validThread", valid_thread)
-    fconf.set("DEFAULT", "validBlock", valid_block)
-    fconf.set("DEFAULT", "bits_to_flip", bits_to_flip)
+    fconf.set("DEFAULT", "validThread", ";".join(valid_thread))
+    fconf.set("DEFAULT", "validBlock", ";".join(valid_block))
+    fconf.set("DEFAULT", "validRegister", ";".join(valid_register))
+    fconf.set("DEFAULT", "bitsToFlip", ";".join(bits_to_flip))
 
     fp = open("/tmp/flip-" + unique_id + ".conf", "w")
     fconf.write(fp)
@@ -227,7 +239,66 @@ def gen_flip_script(unique_id):
     fp.write(pscript.replace("<conf-location>", "/tmp/flip-" + unique_id + ".conf"))
     fp.write(pscript.replace("<home-location>", "/home/carol/carol-fi"))
     fp.close()
-    os.chmod("/tmp/flip-" + unique_id + ".py", 0775)
+    os.chmod("/tmp/flip-" + unique_id + ".py", 0o775)
+
+
+"""
+Function to run one execution of the fault injector
+"""
+
+
+def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread, bits_to_flip, fault_model,
+                            injection_site):
+    logging = cf.Logging(config_file=conf)
+
+    logging.info("Starting GDB script")
+
+    # Information about this fault
+
+
+    # Generate configuration file for specific test
+    gen_conf_file(gdb_init_strings=conf.get(section, "gdbInitStrings"),
+                  debug=conf.get(section, "debug"),
+                  unique_id=unique_id,
+                  valid_block=valid_block,
+                  valid_thread=valid_thread,
+                  bits_to_flip=bits_to_flip,
+                  fault_model=fault_model,
+                  injection_site=injection_site)
+
+    # Generate python script for GDB
+    gen_flip_script(unique_id=unique_id)
+
+    # Run pre execution function
+    script = conf.get(section, "preExecScript")
+    pre_execution(script=script)
+
+    # Create one thread to start gdb script
+    th = RunGDB(section, conf, unique_id)
+
+    # Start couting time
+    timestamp_start = int(time.time())
+
+    # Start fault injection tread
+    th.start()
+
+    # Check if app stops execution (otherwise kill it after a time)
+    isHang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start)
+
+    # Run pos execution function
+    script = conf.get(section, "posExecScript")
+    pos_execution(script=script)
+
+    # Check output files for SDCs
+    gold_file = conf.get(section, "goldFile")
+    output_file = conf.get(section, "outputFile")
+    # isSDC = check_sdcs(gold_file=gold_file, output_file=output_file, logging=logging)
+
+    # Copy output files to a folder
+    # save_output(section, isSDC, isHang)
+
+    # Make sure threads finish before trying to execute again
+    th.join()
 
 
 """
@@ -246,7 +317,7 @@ def get_valid_address(addresses):
 
     # search for a valid instruction
     while not m:
-        element = random.randrange((len(addresses) - 1) / 2, len(addresses) - 1)
+        element = random.randrange(2, len(addresses) - 1)
         instruction_line = addresses[element]
 
         expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+)"
@@ -264,10 +335,11 @@ def get_valid_address(addresses):
                 registers.extend([m.group(3 + t) for t in range(0, i)])
                 break
 
-        if not m:
-            print("it is stoped here:", instruction_line)
-        else:
-            print("it choose something:", instruction_line)
+        if DEBUG:
+            if not m:
+                print("it is stoped here:", instruction_line)
+            else:
+                print("it choose something:", instruction_line)
 
     return registers, instruction, address, byte_location
 
@@ -278,7 +350,7 @@ def get_valid_address(addresses):
 
 
 def get_valid_thread(threads):
-    element = random.randrange(0, len(threads) - 4)
+    element = random.randrange(2, len(threads) - 4)
     #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
     splited = threads[element].replace("\n", "").split()
 
@@ -300,74 +372,31 @@ def get_valid_thread(threads):
     return [block_x, block_y, block_z], [thread_x, thread_y, thread_z]
 
 
-
 """
-Function to run one execution of the fault injector
+Randomly selects a thread, address and a bit location
+to inject a fault.
 """
 
 
-def run_gdb_fault_injection(section, conf, unique_id):
+def gen_injection_site(kernel_info_dict):
+    global max_size_register
+    # A valid block is a [block_x, block_y, block_z] coordinate
+    # A valid thread is a [thread_x, thread_y, thread_z] coordinate
+    valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
-    ######################## Profiler ########################
-    pf = profiler.
+    # A injection site is a list of [registers, instruction, address, byte_location]
+    injection_site = get_valid_address(kernel_info_dict["addresses"])
 
+    # Randomly select (a) bit(s) to flip
+    # Max double bit flip
+    bits_to_flip = [0] * 2
+    bits_to_flip[0] = random.randint(0, max_size_register - 1)
 
+    # Make sure that the same bit is not going to be selected
+    r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register)
+    bits_to_flip[1] = random.choice(r)
 
-    ######################## Injector ########################
-
-    logging = cf.Logging(conf)
-
-    logging.info("Starting GDB script")
-    init = conf.getfloat(section, "initSignal")
-    end = conf.getfloat(section, "endSignal")
-    seqSignals = conf.getint(section, "seqSignals")
-    logging.info("initSignal:" + str(init))
-    logging.info("endSignal:" + str(end))
-    logging.info("seqSignal:" + str(seqSignals))
-    timestampStart = int(time.time())
-
-
-
-    # Generate configuration file for specific test
-    gen_conf_file(conf.get(section, "gdbInitStrings"), conf.get(section, "debug"), unique_id,
-                  valid_block, valid_thread, bits_to_flip, fault_model,
-                  injection_site)
-
-    # Generate python script for GDB
-    gen_flip_script(section)
-
-    # Run pre execution function
-    pre_execution(section)
-
-    # Create one thread to start gdb script
-    th = RunGDB(section, conf, unique_id)
-    # Create numThreadsFI threads to signal app at a random time
-    numThreadsFI = conf.getint(section, "numThreadsFI")
-    sigThs = list()
-    # for i in range(0, numThreadsFI):
-    #     sigThs.append(signal_app(section))
-    # Start threads
-    th.start()
-    for sig in sigThs:
-        sig.start()
-
-    # Check if app stops execution (otherwise kill it after a time)
-    isHang = finish(section)
-
-    # Run pos execution function
-    pos_execution(section)
-
-    # Check output files for SDCs
-    isSDC = check_sdcs(section)
-
-    # Copy output files to a folder
-    save_output(section, isSDC, isHang)
-
-    # Make sure threads finish before trying to execute again
-    th.join()
-    for sig in sigThs:
-        sig.join()
-    del sigThs[:]
+    return valid_thread, valid_block, bits_to_flip, injection_site
 
 
 def main():
@@ -375,13 +404,6 @@ def main():
     parser.add_argument('-c', '--conf', dest="configFile", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
                         help='How many times to repeat the programs in the configuration file', required=True, type=int)
-
-
-
-
-    #
-    unique_id = str(uuid.uuid4())
-    gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
 
     args = parser.parse_args()
     if args.iterations < 1:
@@ -394,17 +416,48 @@ def main():
     # Read the configuration file with data for all the apps that will be executed
     conf = cf.load_config_file(args.configFile)
 
-    num_rounds = 0
-    while num_rounds < args.iterations:
+    # Generate an unique id for this fault injection
+    unique_id = str(uuid.uuid4())
+
+    ########################################################################
+    # Profiler step
+    profiler_file = os.path.dirname(os.path.abspath(__file__)) + "/profiler.py"
+    profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x " + profiler_file
+    if os.path.isfile(profiler_file):
+        os.system(profiler_cmd)
+    else:
+        print(profiler_file, "not found, please set the correct profiler file before trying again.")
+        raise IOError
+
+    ########################################################################
+    # Fault injection
+
+    # Load information file generated in profiler step
+    kernel_info_dir = "/tmp/carol-fi-kernel-info.txt"
+    kernel_info_dict = cf.load_file(kernel_info_dir)
+
+    # Get fault models
+    fault_models = range(0, conf.get("DEFAULT", "faultModel") + 1)
+
+    # noinspection PyCompatibility
+    for num_rounds in range(args.iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
-        for sec in conf.sections():
+        for fault_model in fault_models:
             # Execute one fault injection for a specific app
-            run_gdb_fault_injection(sec)
-        num_rounds += 1
+            valid_thread, valid_block, bits_to_flip, injection_site = gen_injection_site(kernel_info_dict)
+            run_gdb_fault_injection(section="DEFAULT", conf=conf,
+                                    unique_id=unique_id, valid_block=valid_block,
+                                    valid_thread=valid_thread, bits_to_flip=bits_to_flip, fault_model=fault_model,
+                                    injection_site=injection_site)
+
+    # Clear /tmp files generated
     os.system("rm -f /tmp/*" + unique_id + "*")
+    os.system("rm -f /tmp/carol-fi-kernel-info.txt")
 
 
-######################## Main ########################
+########################################################################
+#                                   Main                               #
+########################################################################
 
 if __name__ == "__main__":
     main()
