@@ -436,7 +436,7 @@ def main():
     kernel_info_dict = cf.load_file(kernel_info_dir)
 
     # Get fault models
-    fault_models = range(0, conf.get("DEFAULT", "faultModel") + 1)
+    fault_models = range(0, conf.get('DEFAULT', 'faultModel') + '1')
 
     # noinspection PyCompatibility
     for num_rounds in range(args.iterations):
