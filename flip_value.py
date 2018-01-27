@@ -23,7 +23,7 @@ to avoid memory error
 
 def delete_temporary_breakpoint(event):
     # Place the injection breakpoint
-    breakpoing_info = cf.execute_command("break " + str(injection_site))
+    breakpoing_info = cf.execute_command(gdb, "break " + str(injection_site))
     logging.debug("breakpoint: " + str(breakpoing_info))
 
 
@@ -68,7 +68,7 @@ Flip a bit or multiple based on a fault model
 def generic_injector():
     global valid_register, bits_to_flip, fault_model
     # get register content
-    reg_cmd = cf.execute_command("p/t $" + str(valid_register))
+    reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
 
     # Logging info result extracted from register
     logging.info("reg old value: " + str(reg_cmd[0]))
@@ -102,7 +102,7 @@ def generic_injector():
             raise NotImplementedError
 
         # send the new value to gdb
-        reg_cmd_flipped = cf.execute_command("set $" + str(valid_register) + " = " + reg_content)
+        reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content)
 
     else:
         raise NotImplementedError
