@@ -144,7 +144,6 @@ injection_site = conf.get("DEFAULT", "injectionSite")
 breakpoint_location = conf.get("DEFAULT", "breakpointLocation")
 
 # Logging
-# get("DEFAULT", "flipLogFile"
 logging = cf.Logging(conf)
 logging.info("Starting flip_value script\n")
 

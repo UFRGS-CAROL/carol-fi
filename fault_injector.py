@@ -384,7 +384,7 @@ def gen_injection_site(kernel_info_dict):
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
     # A injection site is a list of [registers, instruction, address, byte_location]
-    injection_site = get_valid_address(kernel_info_dict["addresses"])
+    _,_,injection_site,_ = get_valid_address(kernel_info_dict["addresses"])
 
     # Randomly select (a) bit(s) to flip
     # Max double bit flip
