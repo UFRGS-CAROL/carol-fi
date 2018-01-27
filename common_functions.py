@@ -1,5 +1,4 @@
 import datetime
-import gdb
 import pickle
 import sys
 import time
@@ -18,7 +17,7 @@ it will result in a list.
 """
 
 
-def execute_command(to_execute):
+def execute_command(gdb, to_execute):
     ret = gdb.execute(to_execute, to_string=True)
     return ret.splitlines()
 
