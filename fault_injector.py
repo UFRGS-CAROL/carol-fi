@@ -460,6 +460,7 @@ def main():
 
     profiler_file = gen_profiler_script(unique_id=unique_id, conf_filename=args.configFile)
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x " + profiler_file
+    print(profiler_cmd)
     if os.path.isfile(profiler_file):
         os.system(profiler_cmd)
     else:
