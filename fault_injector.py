@@ -215,7 +215,7 @@ def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block, valid_thread,
     fconf.set("DEFAULT", "flipLogFile", "/tmp/carolfi-flipvalue-" + unique_id + ".log")
     fconf.set("DEFAULT", "debug", debug)
     fconf.set("DEFAULT", "gdbInitStrings", gdb_init_strings)
-    fconf.set("DEFAULT", "faultModel", fault_model)
+    fconf.set("DEFAULT", "faultModel", str(fault_model))
     fconf.set("DEFAULT", "injectionSite", injection_site)
     fconf.set("DEFAULT", "validThread", ";".join(valid_thread))
     fconf.set("DEFAULT", "validBlock", ";".join(valid_block))
