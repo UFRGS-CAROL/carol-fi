@@ -101,10 +101,8 @@ Copy the logs and output(if fault not masked) to a selected folder
 """
 
 
-def save_output(section, is_sdc, is_hang, conf, logging, unique_id):
+def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_file, gdb_fi_log_file):
     output_file = conf.get(section, "outputFile")
-    flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
-    gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
 
     fi_succ = False
     if os.path.isfile(flip_log_file):
@@ -249,7 +247,10 @@ Function to run one execution of the fault injector
 
 def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread, bits_to_flip, fault_model,
                             injection_address):
-    logging = cf.Logging(config_file=conf)
+    flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
+    gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
+
+    logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"))
 
     logging.info("Starting GDB script")
 

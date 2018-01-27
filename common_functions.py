@@ -67,9 +67,9 @@ class Logging:
     log_file = None
     debug_var = None
 
-    def __init__(self, config_file):
-        self.log_file = config_file.get("DEFAULT", "flipLogFile")
-        self.debug_var = config_file.getboolean("DEFAULT", "debug")
+    def __init__(self, log_file, debug):
+        self.log_file = log_file
+        self.debug_var = debug
 
     def info(self, msg):
         fp = open(self.log_file, "a")
