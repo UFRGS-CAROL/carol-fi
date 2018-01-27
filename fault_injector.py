@@ -248,7 +248,7 @@ Function to run one execution of the fault injector
 
 
 def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread, bits_to_flip, fault_model,
-                            injection_site):
+                            injection_address):
     logging = cf.Logging(config_file=conf)
 
     logging.info("Starting GDB script")
@@ -263,7 +263,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
                   valid_thread=valid_thread,
                   bits_to_flip=bits_to_flip,
                   fault_model=fault_model,
-                  injection_site=injection_site)
+                  injection_site=injection_address)
 
     # Generate python script for GDB
     gen_flip_script(unique_id=unique_id)
@@ -433,7 +433,7 @@ def main():
 
     # Load information file generated in profiler step
     kernel_info_dir = "/tmp/carol-fi-kernel-info.txt"
-    kernel_info_dict = cf.load_file(kernel_info_dir)
+    kernel_info_list = cf.load_file(kernel_info_dir)
 
     # Get fault models
     fault_models = range(0, int(conf.get('DEFAULT', 'faultModel')) + 1)
@@ -443,11 +443,13 @@ def main():
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
             # Execute one fault injection for a specific app
-            valid_thread, valid_block, bits_to_flip, injection_site = gen_injection_site(kernel_info_dict)
-            run_gdb_fault_injection(section="DEFAULT", conf=conf,
-                                    unique_id=unique_id, valid_block=valid_block,
-                                    valid_thread=valid_thread, bits_to_flip=bits_to_flip, fault_model=fault_model,
-                                    injection_site=injection_site)
+            # For each kernel
+            for kernel_info_dict in kernel_info_list:
+                valid_thread, valid_block, bits_to_flip, injection_address = gen_injection_site(kernel_info_dict=kernel_info_dict)
+                run_gdb_fault_injection(section="DEFAULT", conf=conf,
+                                        unique_id=unique_id, valid_block=valid_block,
+                                        valid_thread=valid_thread, bits_to_flip=bits_to_flip, fault_model=fault_model,
+                                        injection_address=injection_address)
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/*" + unique_id + "*")
