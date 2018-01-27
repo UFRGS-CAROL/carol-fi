@@ -153,8 +153,9 @@ Pre execution commands
 """
 
 
-def pre_execution(script):
+def pre_execution(conf, section):
     try:
+        script = conf.get(section, "preExecScript")
         if script != "":
             os.system(script)
         return
@@ -167,9 +168,9 @@ Pos execution commands
 """
 
 
-def pos_execution(script):
+def pos_execution(conf, section):
     try:
-
+        script = conf.get(section, "posExecScript")
         if script != "":
             os.system(script)
         return
@@ -276,8 +277,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     gen_flip_script(unique_id=unique_id)
 
     # Run pre execution function
-    script = conf.get(section, "preExecScript")
-    pre_execution(script=script)
+    pre_execution(conf=conf, section=section)
 
     # Create one thread to start gdb script
     th = RunGDB(section, conf, unique_id)
@@ -292,8 +292,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     isHang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start)
 
     # Run pos execution function
-    script = conf.get(section, "posExecScript")
-    pos_execution(script=script)
+    pos_execution(conf=conf, section=section)
 
     # Check output files for SDCs
     gold_file = conf.get(section, "goldFile")
