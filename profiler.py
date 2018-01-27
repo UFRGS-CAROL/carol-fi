@@ -8,6 +8,10 @@ kernel_info_dir = "/tmp/carol-fi-kernel-info.txt"
 # This list will contains all kernel info
 kernel_info_list = []
 
+# global vars loaded from config file
+conf_location = "<conf-location>"
+
+
 """
 Get kernel Threads and addresses information
 necessary to fault injection
@@ -79,7 +83,7 @@ def get_kernel_threads():
 gdb.execute("set confirm off")
 gdb.execute("set pagination off")
 
-conf = cf.load_config_file()
+conf = cf.load_config_file(conf_location)
 
 try:
     gdb_init_strings = conf.get("DEFAULT", "gdbInitStrings")

@@ -246,6 +246,24 @@ def gen_flip_script(unique_id):
 
 
 """
+Generate the gdb profiler script
+"""
+
+
+def gen_profiler_script(unique_id, conf_filename):
+    fp = open("profiler.py", "r")
+    pscript = fp.read()
+    fp.close()
+    profiler_filename = "/tmp/profiler-" + unique_id + ".py"
+    fp = open(profiler_filename, "w")
+
+    fp.write(pscript.replace("<conf-location>", conf_filename))
+    fp.close()
+    os.chmod(profiler_filename, 0o775)
+    return profiler_filename
+
+
+"""
 Function to run one execution of the fault injector
 """
 
@@ -350,7 +368,10 @@ def get_valid_address(addresses):
 
 
 """
-
+Selects a valid thread for a specific
+kernel
+return the coordinates for the block
+and the thread
 """
 
 
@@ -436,7 +457,8 @@ def main():
 
     ########################################################################
     # Profiler step
-    profiler_file = os.path.dirname(os.path.abspath(__file__)) + "/profiler.py"
+
+    profiler_file = gen_profiler_script(unique_id=unique_id, conf_filename=args.configFile)
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x " + profiler_file
     if os.path.isfile(profiler_file):
         os.system(profiler_cmd)
