@@ -25,6 +25,10 @@ DEBUG = True
 # Max size of register
 max_size_register = 32
 
+# Injection mode
+# 0 -> Instruction output
+injection_mode = 0
+
 
 class RunGDB(threading.Thread):
     section = None
@@ -245,8 +249,9 @@ Function to run one execution of the fault injector
 """
 
 
-def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread, bits_to_flip, fault_model,
-                            injection_address):
+def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread, valid_register, bits_to_flip,
+                            injection_address,
+                            fault_model):
     flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
     gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
 
@@ -262,6 +267,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
                   unique_id=unique_id,
                   valid_block=valid_block,
                   valid_thread=valid_thread,
+                  valid_register=valid_register,
                   bits_to_flip=bits_to_flip,
                   fault_model=fault_model,
                   injection_site=injection_address)
@@ -379,24 +385,34 @@ to inject a fault.
 
 
 def gen_injection_site(kernel_info_dict):
-    global max_size_register
+    global max_size_register, injection_mode
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
     # A injection site is a list of [registers, instruction, address, byte_location]
-    _,_,injection_site,_ = get_valid_address(kernel_info_dict["addresses"])
+    registers, _, injection_site, _ = get_valid_address(kernel_info_dict["addresses"])
 
     # Randomly select (a) bit(s) to flip
     # Max double bit flip
     bits_to_flip = [0] * 2
     bits_to_flip[0] = random.randint(0, max_size_register - 1)
 
+    # Selects it it is in the instruction output
+    # or register file
+    valid_register = None
+    if injection_mode == 0:
+        valid_register = registers[-1]
+
+    # Register file
+    elif injection_mode == 1:
+        raise NotImplementedError
+
     # Make sure that the same bit is not going to be selected
     r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register)
     bits_to_flip[1] = random.choice(r)
 
-    return valid_thread, valid_block, bits_to_flip, injection_site
+    return valid_thread, valid_block, valid_register, bits_to_flip, injection_site
 
 
 def main():
@@ -446,10 +462,12 @@ def main():
             # Execute one fault injection for a specific app
             # For each kernel
             for kernel_info_dict in kernel_info_list:
-                valid_thread, valid_block, bits_to_flip, injection_address = gen_injection_site(kernel_info_dict=kernel_info_dict)
+                valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
+                    kernel_info_dict=kernel_info_dict)
                 run_gdb_fault_injection(section="DEFAULT", conf=conf,
                                         unique_id=unique_id, valid_block=valid_block,
-                                        valid_thread=valid_thread, bits_to_flip=bits_to_flip, fault_model=fault_model,
+                                        valid_thread=valid_thread, valid_register=valid_register,
+                                        bits_to_flip=bits_to_flip, fault_model=fault_model,
                                         injection_address=injection_address)
 
     # Clear /tmp files generated
