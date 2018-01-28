@@ -31,10 +31,16 @@ def fault_injection(event):
         logging.debug("Trying Fault Injection")
 
         print('\n\n----Fault injecting----\n\n')
+        change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(valid_block[0]),
+                                                                                       str(valid_block[1]),
+                                                                                       str(valid_block[2]),
+                                                                                       str(valid_thread[0]),
+                                                                                       str(valid_thread[1]),
+                                                                                       str(valid_thread[2]))
+        thread_focus = gdb.execute(change_focus_cmd, to_string=True)
 
-        thread_focus = gdb.execute(
-            "cuda kernel 0 block " + str(valid_block[0]) + "," + str(valid_block[1]) + "," + str(valid_block[2]) +
-            " thread " + str(valid_thread[0]) + "," + str(valid_thread[1]) + "," + str(valid_thread[2]), to_string=True)
+        print thread_focus
+        print change_focus_cmd
 
         # Thread focus return information
         for i in thread_focus:
