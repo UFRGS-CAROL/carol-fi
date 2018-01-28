@@ -239,7 +239,7 @@ def gen_flip_script(unique_id):
     fp.close()
     fp = open("/tmp/flip-" + unique_id + ".py", "w")
 
-    fp.write(pscript.replace("<conf-location>", "/tmp/flip-" + unique_id + ".conf"))
+    pscript.replace("<conf-location>", "/tmp/flip-" + unique_id + ".conf")
     fp.write(pscript.replace("<home-location>", "/home/carol/carol-fi"))
     fp.close()
     os.chmod("/tmp/flip-" + unique_id + ".py", 0o775)
