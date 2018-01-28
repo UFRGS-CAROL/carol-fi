@@ -39,13 +39,11 @@ def fault_injection(event):
                                                                                        str(valid_thread[2]))
         thread_focus = gdb.execute(change_focus_cmd, to_string=True)
 
-        print thread_focus
-        print change_focus_cmd
-
         # Thread focus return information
         for i in thread_focus:
             logging.info(i)
 
+        # Do the fault injection magic
         generic_injector()
 
     else:
@@ -71,6 +69,7 @@ def generic_injector():
     global valid_register, bits_to_flip, fault_model
     # get register content
     reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
+    print reg_cmd
 
     # Logging info result extracted from register
     logging.info("reg old value: " + str(reg_cmd[0]))
