@@ -32,12 +32,14 @@ def fault_injection(event):
     global valid_block, valid_thread, valid_register
     global bits_to_flip, fault_model, fi
 
+    print ("\n\nFI ", fi)
+
+
     if fi:
 
         logging.debug("Trying Fault Injection")
 
         print('\n\n----Fault injecting----\n\n')
-
 
         thread_focus = gdb.execute(
             "cuda kernel 0 block " + str(valid_block[0]) + "," + str(valid_block[1]) + "," + str(valid_block[2]) +
