@@ -359,6 +359,7 @@ def get_valid_address(addresses):
                 byte_location = m.group(2)
                 instruction = m.group(3)
                 registers.extend([m.group(3 + t) for t in range(0, i)])
+                print(registers, m.groups())
                 break
 
         if DEBUG:
