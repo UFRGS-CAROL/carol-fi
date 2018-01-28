@@ -178,8 +178,7 @@ def main():
 
     # Define which function to call when the execution stops, e.g. when a breakpoint is hit
     # or a interruption signal is received
-    breakpoint_kernel_address.delete()
     gdb.execute("c")
-
+    breakpoint_kernel_address.delete()
 
 main()
