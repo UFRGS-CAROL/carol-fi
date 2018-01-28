@@ -336,7 +336,7 @@ step
 
 def get_valid_address(addresses):
     m = registers = instruction = address = byte_location = None
-    c = 0
+
     # search for a valid instruction
     while not m:
         element = random.randrange(2, len(addresses) - 1)
@@ -350,10 +350,11 @@ def get_valid_address(addresses):
             else:
                 print("it choose something:", instruction_line)
 
-        if c > 10:
-            break
-        c += 1
     return registers, instruction, address, byte_location
+
+"""
+Support function to parse a line of disassembled code
+"""
 
 
 def parse_line(instruction_line):
@@ -367,17 +368,14 @@ def parse_line(instruction_line):
     # INSTRUCTION R1, R2...
     # 0x0000000000b418e8 <+40>: MOV R4, R2
     expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\r\f\v]*(\S+)[ ]*(\S+)" + str(",[ ]*(\S+)" * comma_line_count)
-    print("EXPRESSION", expression)
 
     m = re.match(expression + ".*", instruction_line)
     if m:
-        print("PASSSOU AQUI", m.groups())
         address = m.group(1)
         byte_location = m.group(2)
         instruction = m.group(3)
         registers.extend([m.group(4 + i) for i in range(0, comma_line_count + 1)])
 
-    print("REGISTERS", registers)
     return registers, address, byte_location, instruction, m
 
 
@@ -435,13 +433,13 @@ def gen_injection_site(kernel_info_dict):
     # Selects it it is in the instruction output
     # or register file
     valid_register = None
-    print("Inside injector", registers)
     if injection_mode == 0:
         valid_register = registers[-1]
-
     # Register file
     elif injection_mode == 1:
         raise NotImplementedError
+
+    print("VALIDREGISTER ", valid_register)
 
     # Make sure that the same bit is not going to be selected
     r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register)
