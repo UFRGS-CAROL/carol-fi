@@ -20,10 +20,7 @@ to avoid memory error
 """
 
 
-def delete_temporary_breakpoint(event):
-    global breakpoint_kernel_line
-    # Place the injection breakpoint
-    breakpoint_kernel_line.delete()
+def delete_temporary_breakpoint(event): pass
 
 
 """
@@ -37,7 +34,7 @@ def fault_injection(event):
 
     logging.debug("Trying Fault Injection")
 
-    print("\n\n----Fault injecting----\n\n")
+    print('\n\n----Fault injecting----\n\n')
 
 
     thread_focus = gdb.execute(
@@ -171,6 +168,8 @@ gdb.events.stop.connect(delete_temporary_breakpoint)
 
 # Start app execution
 gdb.execute("r")
+
+breakpoint_kernel_line.delete()
 
 gdb.events.stop.disconnect(delete_temporary_breakpoint)
 
