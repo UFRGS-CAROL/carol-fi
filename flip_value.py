@@ -14,15 +14,6 @@ import common_functions as cf  # All common functions will be at common_function
 conf_location = "<conf-location>"
 
 
-# """
-# Function called at first breakpoint stop
-# to avoid memory error
-# """
-#
-#
-# def delete_temporary_breakpoint(event): pass
-
-
 """
 function called when the execution is stopped
 """
@@ -32,8 +23,9 @@ def fault_injection(event):
     global valid_block, valid_thread, valid_register
     global bits_to_flip, fault_model, fi
 
-    print ("\n\nFI ", fi)
-
+    # This if avoid the creation of another event connection
+    # for some reason gdb cannot breakpoint addresses before
+    # a normal breakpoint is hit
     if fi:
 
         logging.debug("Trying Fault Injection")
@@ -50,6 +42,8 @@ def fault_injection(event):
 
         generic_injector()
 
+    else:
+        fi = True
 
 """
 Flip only a bit in a register content
@@ -128,11 +122,12 @@ def abnormal_stop(event):
 
 
 def main():
-    global valid_block, valid_thread, valid_register, bits_to_flip, fault_model, logging, fi
+    global valid_block, valid_thread, valid_register, bits_to_flip, fault_model, logging
 
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
+
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
 
@@ -165,20 +160,28 @@ def main():
     # address memory error
     breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
 
-    # This will be the second breakpoint
-    # breakpoint_kernel_address = None
+    # Define which function to call when the execution stops, e.g. when a breakpoint is hit
+    # or a interruption signal is received
     gdb.events.stop.connect(fault_injection)
-    fi = False
 
     # Start app execution
     gdb.execute("r")
     breakpoint_kernel_line.delete()
-    fi = True
     breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
-    # Define which function to call when the execution stops, e.g. when a breakpoint is hit
-    # or a interruption signal is received
+    # Continue execution untill the next breakpoint
     gdb.execute("c")
     breakpoint_kernel_address.delete()
 
+
+# Set global vars
+valid_block= None
+valid_thread = None
+valid_register= None
+bits_to_flip= None
+fault_model = None
+logging = None
+fi = False
+
+# Call main execution
 main()

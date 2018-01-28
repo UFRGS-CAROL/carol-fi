@@ -1,16 +1,14 @@
 import gdb
 import sys
-sys.path.append("/home/carol/carol-fi") # I have to fix it
-import common_functions as cf # All common functions will be at common_functions module
 
-kernel_info_dir = "/tmp/carol-fi-kernel-info.txt"
+sys.path.append("/home/carol/carol-fi")  # I have to fix it
+import common_functions as cf  # All common functions will be at common_functions module
 
 # This list will contains all kernel info
 kernel_info_list = []
 
 # global vars loaded from config file
 conf_location = "<conf-location>"
-
 
 """
 Get kernel Threads and addresses information
@@ -27,7 +25,6 @@ def get_kernel_address_event(event):
 
             # Get the addresses and thread for this kernel
             if breakpoint == kernel_info["breakpoint"]:
-
                 # Thread info
                 kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
                 kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
@@ -60,7 +57,7 @@ def set_breakpoints(kernel_conf_string):
                 'breakpoint': gdb.Breakpoint(kernel_line, type=gdb.BP_BREAKPOINT),
                 'kernel_name': kernel_line.split(":")[0],
                 'kernel_line': kernel_line.split(":")[1]
-                }
+            }
 
             kernel_info_list.append(kernel_info)
 
@@ -77,37 +74,34 @@ def get_kernel_threads():
     addresses = cf.execute_command(gdb, "disassemble")
 
 
+def main():
+    kernel_info_dir = "/tmp/carol-fi-kernel-info.txt"
 
-########################################################################
-# Initialize GDB to run the app
-gdb.execute("set confirm off")
-gdb.execute("set pagination off")
+    # Initialize GDB to run the app
+    gdb.execute("set confirm off")
+    gdb.execute("set pagination off")
+    conf = cf.load_config_file(conf_location)
+    try:
+        gdb_init_strings = conf.get("DEFAULT", "gdbInitStrings")
 
-conf = cf.load_config_file(conf_location)
+        for init_str in gdb_init_strings.split(";"):
+            gdb.execute(init_str)
 
-try:
-    gdb_init_strings = conf.get("DEFAULT", "gdbInitStrings")
+    except gdb.error as err:
+        print ("initializing setup: " + str(err))
 
-    for init_str in gdb_init_strings.split(";"):
-        gdb.execute(init_str)
+    # Profiler has two steps
+    # First: getting kernel information
+    # Run app for the first time
+    kernel_conf_string = conf.get("DEFAULT", "kernelBreaks")
+    set_breakpoints(kernel_conf_string)
+    gdb.events.stop.connect(get_kernel_address_event)
+    gdb.execute("r")
 
-except gdb.error as err:
-    print ("initializing setup: " + str(err))
+    # Second: save the retrieved information on a txt file
+    # Save the informaticon file to the output
+    cf.save_file(kernel_info_dir, kernel_info_list)
+    print ("If you are seeing it, profiler has been finished")
 
-########################################################################
-# Profiler has two steps
-# First: getting kernel information
-# Run app for the first time
 
-kernel_conf_string = conf.get("DEFAULT", "kernelBreaks")
-set_breakpoints(kernel_conf_string)
-
-gdb.events.stop.connect(get_kernel_address_event)
-gdb.execute("r")
-
-# Second: save the retrivied information on a txt file
-# Save the informaticon file to the output
-cf.save_file(kernel_info_dir, kernel_info_list)
-
-########################################################################
-print ("If you are seeing it, profiler has been finished")
+main()
