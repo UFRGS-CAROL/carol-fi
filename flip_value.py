@@ -21,9 +21,10 @@ to avoid memory error
 
 
 def delete_temporary_breakpoint(event):
+    global breakpoint_kernel_line, breakpoint_kernel_address, injection_site
     # Place the injection breakpoint
-    breakpoing_info = cf.execute_command(gdb, "break " + str(injection_site))
-    logging.debug("breakpoint: " + str(breakpoing_info))
+    breakpoint_kernel_address = gdb.Breakpoint(spec=injection_site, type=gdb.BP_BREAKPOINT)
+    breakpoint_kernel_line.delete()
 
 
 """
@@ -159,7 +160,11 @@ except gdb.error as err:
 
 # Place the first breakpoint, it is only to avoid
 # address memory error
-breakpoint_kernel = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT, temporary=True)
+breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
+
+# This will be the second breakpoint
+breakpoint_kernel_address = None
+
 gdb.events.stop.connect(delete_temporary_breakpoint)
 
 # Start app execution
