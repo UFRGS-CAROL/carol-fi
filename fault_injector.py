@@ -366,7 +366,7 @@ def parse_line(instruction_line):
 
     # INSTRUCTION R1, R2...
     # 0x0000000000b418e8 <+40>: MOV R4, R2
-    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+),[ ]*(\S+)" + ",[ ]*(\S+)" * comma_line_count
+    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+)" + str(",[ ]*(\S+)" * comma_line_count)
     print("EXPRESSION", expression)
 
     m = re.match(expression + ".*", instruction_line)
