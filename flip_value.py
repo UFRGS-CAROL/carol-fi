@@ -2,11 +2,17 @@ import gdb
 import sys
 import re
 
+########################################################################
+# Global vars
+# Unfortunately gdb cannot see common_functions.py
 home_dir = "<home-location>"
 sys.path.append(home_dir)
-import common_functions as cf
+import common_functions as cf  # All common functions will be at common_functions module
 
+
+# global vars loaded from config file
 conf_location = "<conf-location>"
+
 
 """
 Function called at first breakpoint stop
@@ -150,6 +156,7 @@ try:
 except gdb.error as err:
     print("initializing setup: " + str(err))
 
+
 # Place the first breakpoint, it is only to avoid
 # address memory error
 breakpoint_kernel = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT, temporary=True)
@@ -160,8 +167,12 @@ gdb.execute("r")
 
 gdb.events.stop.disconnect(delete_temporary_breakpoint)
 
+
 # Define which function to call when the execution stops, e.g. when a breakpoint is hit
 # or a interruption signal is received
 gdb.events.stop.connect(fault_injection)
 
 gdb.execute("c")
+
+
+
