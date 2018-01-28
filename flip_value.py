@@ -21,9 +21,8 @@ to avoid memory error
 
 
 def delete_temporary_breakpoint(event):
-    global breakpoint_kernel_line, breakpoint_kernel_address, injection_site
+    global breakpoint_kernel_line
     # Place the injection breakpoint
-    breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
     breakpoint_kernel_line.delete()
 
 
@@ -163,7 +162,7 @@ except gdb.error as err:
 breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
 
 # This will be the second breakpoint
-breakpoint_kernel_address = None
+# breakpoint_kernel_address = None
 
 gdb.events.stop.connect(delete_temporary_breakpoint)
 
@@ -172,10 +171,13 @@ gdb.execute("r")
 
 gdb.events.stop.disconnect(delete_temporary_breakpoint)
 
+breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
 # Define which function to call when the execution stops, e.g. when a breakpoint is hit
 # or a interruption signal is received
 gdb.events.stop.connect(fault_injection)
+
+breakpoint_kernel_address.delete()
 
 gdb.execute("c")
 
