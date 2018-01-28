@@ -348,7 +348,7 @@ def get_valid_address(addresses):
 
         expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+)"
 
-        for i in [1, 3, 4, 5]:
+        for i in [2, 3, 4, 5]:
             # INSTRUCTION R1, R2...
             # 0x0000000000b418e8 <+40>: MOV R4, R2...
             expression += ",[ ]*(\S+)"
