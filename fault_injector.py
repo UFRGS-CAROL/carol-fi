@@ -375,7 +375,7 @@ def parse_line(instruction_line):
         address = m.group(1)
         byte_location = m.group(2)
         instruction = m.group(3)
-        registers.extend([m.group(4 + i) for i in range(0, comma_line_count)])
+        registers.extend([m.group(4 + i) for i in range(0, comma_line_count + 1)])
 
     print("REGISTERS", registers)
     return registers, address, byte_location, instruction, m
