@@ -220,7 +220,7 @@ def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block, valid_thread,
     fconf.set("DEFAULT", "injectionSite", injection_site)
     fconf.set("DEFAULT", "validThread", ";".join(valid_thread))
     fconf.set("DEFAULT", "validBlock", ";".join(valid_block))
-    fconf.set("DEFAULT", "validRegister", ";".join(valid_register))
+    fconf.set("DEFAULT", "validRegister", valid_register)
     fconf.set("DEFAULT", "bitsToFlip", ";".join(str(i) for i in bits_to_flip))
     fconf.set("DEFAULT", "breakpointLocation", breakpoint_location)
 
@@ -438,8 +438,6 @@ def gen_injection_site(kernel_info_dict):
     # Register file
     elif injection_mode == 1:
         raise NotImplementedError
-
-    print("VALIDREGISTER ", valid_register)
 
     # Make sure that the same bit is not going to be selected
     r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register)
