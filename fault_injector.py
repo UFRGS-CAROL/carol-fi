@@ -336,7 +336,7 @@ step
 
 def get_valid_address(addresses):
     m = registers = instruction = address = byte_location = None
-
+    c = 0
     # search for a valid instruction
     while not m:
         element = random.randrange(2, len(addresses) - 1)
@@ -350,6 +350,9 @@ def get_valid_address(addresses):
             else:
                 print("it choose something:", instruction_line)
 
+        if c > 10:
+            break
+        c += 1
     return registers, instruction, address, byte_location
 
 
@@ -364,6 +367,7 @@ def parse_line(instruction_line):
     # INSTRUCTION R1, R2...
     # 0x0000000000b418e8 <+40>: MOV R4, R2
     expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+),[ ]*(\S+)" + ",[ ]*(\S+)" * comma_line_count
+    print("EXPRESSION", expression)
 
     m = re.match(expression + ".*", instruction_line)
     if m:
