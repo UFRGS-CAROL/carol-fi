@@ -346,12 +346,11 @@ def get_valid_address(addresses):
         element = random.randrange(2, len(addresses) - 1)
         instruction_line = addresses[element]
 
-        expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+)"
+        expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+),[ ]*(\S+)"
 
         for i in [2, 3, 4, 5]:
             # INSTRUCTION R1, R2...
             # 0x0000000000b418e8 <+40>: MOV R4, R2...
-            expression += ",[ ]*(\S+)"
             m = re.match(expression + ".*", instruction_line)
 
             if m:
@@ -361,6 +360,8 @@ def get_valid_address(addresses):
                 registers.extend([m.group(3 + t) for t in range(0, i)])
                 print(registers, m.groups())
                 break
+
+            expression += ",[ ]*(\S+)"
 
         if DEBUG:
             if not m:
