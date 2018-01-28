@@ -424,6 +424,7 @@ def gen_injection_site(kernel_info_dict):
     # Selects it it is in the instruction output
     # or register file
     valid_register = None
+    print("Inside injector", registers)
     if injection_mode == 0:
         valid_register = registers[-1]
 
