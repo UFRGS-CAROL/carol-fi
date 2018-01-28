@@ -498,8 +498,8 @@ def main():
                                                                 + kernel_info_dict["kernel_line"]))
 
     # Clear /tmp files generated
-    os.system("rm -f /tmp/*" + unique_id + "*")
-    os.system("rm -f /tmp/carol-fi-kernel-info.txt")
+    #os.system("rm -f /tmp/*" + unique_id + "*")
+    #os.system("rm -f /tmp/carol-fi-kernel-info.txt")
 
 
 ########################################################################
