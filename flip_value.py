@@ -23,7 +23,7 @@ to avoid memory error
 def delete_temporary_breakpoint(event):
     global breakpoint_kernel_line, breakpoint_kernel_address, injection_site
     # Place the injection breakpoint
-    breakpoint_kernel_address = gdb.Breakpoint(spec=injection_site, type=gdb.BP_BREAKPOINT)
+    breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
     breakpoint_kernel_line.delete()
 
 
