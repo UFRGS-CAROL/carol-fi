@@ -34,7 +34,6 @@ def fault_injection(event):
 
     print ("\n\nFI ", fi)
 
-
     if fi:
 
         logging.debug("Trying Fault Injection")
@@ -128,64 +127,59 @@ def abnormal_stop(event):
     logging.debug("Abnormal stop, signal:" + str(event.stop_signal))
 
 
-########################################################################
-# Initialize GDB to run the app
-gdb.execute("set confirm off")
-gdb.execute("set pagination off")
+def main():
+    global valid_block, valid_thread, valid_register, bits_to_flip, fault_model, logging, fi
 
-# Connecting to a exit handler event
-gdb.events.exited.connect(exit_handler)
+    # Initialize GDB to run the app
+    gdb.execute("set confirm off")
+    gdb.execute("set pagination off")
+    # Connecting to a exit handler event
+    gdb.events.exited.connect(exit_handler)
 
-# Setting conf and loading global vars
-conf = cf.load_config_file(conf_location)
-valid_block = conf.get("DEFAULT", "validBlock").split(";")
-valid_thread = conf.get("DEFAULT", "validThread").split(";")
-valid_register = conf.get("DEFAULT", "validRegister")
-bits_to_flip = [int(i) for i in conf.get("DEFAULT", "bitsToFlip").split(";")]
-fault_model = conf.get("DEFAULT", "faultModel")
-injection_site = conf.get("DEFAULT", "injectionSite")
-breakpoint_location = conf.get("DEFAULT", "breakpointLocation")
+    # Setting conf and loading global vars
+    conf = cf.load_config_file(conf_location)
 
-# Logging
-logging = cf.Logging(log_file=conf.get("DEFAULT", "flipLogFile"), debug=conf.get("DEFAULT", "debug"))
-logging.info("Starting flip_value script\n")
+    # Get variables values from config file
+    valid_block = conf.get("DEFAULT", "validBlock").split(";")
+    valid_thread = conf.get("DEFAULT", "validThread").split(";")
+    valid_register = conf.get("DEFAULT", "validRegister")
+    bits_to_flip = [int(i) for i in conf.get("DEFAULT", "bitsToFlip").split(";")]
+    fault_model = conf.get("DEFAULT", "faultModel")
+    injection_site = conf.get("DEFAULT", "injectionSite")
+    breakpoint_location = conf.get("DEFAULT", "breakpointLocation")
 
-try:
-    gdbInitStrings = conf.get("DEFAULT", "gdbInitStrings")
+    # Logging
+    logging = cf.Logging(log_file=conf.get("DEFAULT", "flipLogFile"), debug=conf.get("DEFAULT", "debug"))
+    logging.info("Starting flip_value script\n")
+    try:
+        gdb_init_strings = conf.get("DEFAULT", "gdbInitStrings")
 
-    for init_str in gdbInitStrings.split(";"):
-        gdb.execute(init_str)
-        logging.info("initializing setup: " + str(init_str))
+        for init_str in gdb_init_strings.split(";"):
+            gdb.execute(init_str)
+            logging.info("initializing setup: " + str(init_str))
 
-except gdb.error as err:
-    print("initializing setup: " + str(err))
+    except gdb.error as err:
+        print("initializing setup: " + str(err))
 
+    # Place the first breakpoint, it is only to avoid
+    # address memory error
+    breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
 
-# Place the first breakpoint, it is only to avoid
-# address memory error
-breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
+    # This will be the second breakpoint
+    # breakpoint_kernel_address = None
+    gdb.events.stop.connect(fault_injection)
+    fi = False
 
-# This will be the second breakpoint
-# breakpoint_kernel_address = None
+    # Start app execution
+    gdb.execute("r")
+    breakpoint_kernel_line.delete()
+    fi = True
+    breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
-gdb.events.stop.connect(fault_injection)
-fi = False
-
-# Start app execution
-gdb.execute("r")
-
-breakpoint_kernel_line.delete()
-
-fi = True
-
-breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
-
-# Define which function to call when the execution stops, e.g. when a breakpoint is hit
-# or a interruption signal is received
-
-breakpoint_kernel_address.delete()
-
-gdb.execute("c")
+    # Define which function to call when the execution stops, e.g. when a breakpoint is hit
+    # or a interruption signal is received
+    breakpoint_kernel_address.delete()
+    gdb.execute("c")
 
 
-
+main()
