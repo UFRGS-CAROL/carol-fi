@@ -335,33 +335,14 @@ step
 
 
 def get_valid_address(addresses):
-    m = None
-    registers = []
-    instruction = ''
-    address = ''
-    byte_location = ''
+    m = registers = instruction = address = byte_location = None
 
     # search for a valid instruction
     while not m:
         element = random.randrange(2, len(addresses) - 1)
         instruction_line = addresses[element]
 
-        expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+),[ ]*(\S+)"
-
-        for i in [2, 3, 4, 5]:
-            # INSTRUCTION R1, R2...
-            # 0x0000000000b418e8 <+40>: MOV R4, R2...
-            m = re.match(expression + ".*", instruction_line)
-
-            if m:
-                address = m.group(1)
-                byte_location = m.group(2)
-                instruction = m.group(3)
-                registers.extend([m.group(3 + t) for t in range(0, i)])
-                print(registers, m.groups())
-                break
-
-            expression += ",[ ]*(\S+)"
+        registers, address, byte_location, instruction, m = parse_line(instruction_line)
 
         if DEBUG:
             if not m:
@@ -370,6 +351,29 @@ def get_valid_address(addresses):
                 print("it choose something:", instruction_line)
 
     return registers, instruction, address, byte_location
+
+
+def parse_line(instruction_line):
+    registers = []
+    instruction = ''
+    address = ''
+    byte_location = ''
+
+    comma_line_count = instruction_line.count(',')
+
+    # INSTRUCTION R1, R2...
+    # 0x0000000000b418e8 <+40>: MOV R4, R2
+    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\n\r\f\v]*(\S+)[ ]*(\S+),[ ]*(\S+)" + ",[ ]*(\S+)" * comma_line_count
+
+    m = re.match(expression + ".*", instruction_line)
+    if m:
+        address = m.group(1)
+        byte_location = m.group(2)
+        instruction = m.group(3)
+        registers.extend([m.group(4 + i) for i in range(1, comma_line_count)])
+
+    print("REGISTERS", registers)
+    return registers, address, byte_location, instruction, m
 
 
 """
