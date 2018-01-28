@@ -37,6 +37,9 @@ def fault_injection(event):
 
     logging.debug("Trying Fault Injection")
 
+    print("\n\n----Fault injecting----\n\n")
+
+
     thread_focus = gdb.execute(
         "cuda kernel 0 block " + str(valid_block[0]) + "," + str(valid_block[1]) + "," + str(valid_block[2]) +
         " thread " + str(valid_thread[0]) + "," + str(valid_thread[1]) + "," + str(valid_thread[2]), to_string=True)
