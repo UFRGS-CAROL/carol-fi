@@ -199,7 +199,7 @@ Generate config file for the gdb flip_value script
 
 def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block, valid_thread, valid_register, bits_to_flip,
                   fault_model,
-                  injection_site):
+                  injection_site, breakpoint_location):
     if sys.version_info >= (3, 0):
         fconf = configparser.SafeConfigParser()
     else:
@@ -222,6 +222,7 @@ def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block, valid_thread,
     fconf.set("DEFAULT", "validBlock", ";".join(valid_block))
     fconf.set("DEFAULT", "validRegister", ";".join(valid_register))
     fconf.set("DEFAULT", "bitsToFlip", ";".join(str(i) for i in bits_to_flip))
+    fconf.set("DEFAULT", "breakpointLocation", breakpoint_location)
 
     fp = open("/tmp/flip-" + unique_id + ".conf", "w")
     fconf.write(fp)
@@ -271,7 +272,7 @@ Function to run one execution of the fault injector
 
 def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread, valid_register, bits_to_flip,
                             injection_address,
-                            fault_model):
+                            fault_model, breakpoint_location):
     flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
     gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
 
@@ -290,7 +291,8 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
                   valid_register=valid_register,
                   bits_to_flip=bits_to_flip,
                   fault_model=fault_model,
-                  injection_site=injection_address)
+                  injection_site=injection_address,
+                  breakpoint_location=breakpoint_location)
 
     # Generate python script for GDB
     gen_flip_script(unique_id=unique_id)
@@ -491,7 +493,9 @@ def main():
                                         unique_id=unique_id, valid_block=valid_block,
                                         valid_thread=valid_thread, valid_register=valid_register,
                                         bits_to_flip=bits_to_flip, fault_model=fault_model,
-                                        injection_address=injection_address)
+                                        injection_address=injection_address,
+                                        breakpoint_location=str(kernel_info_dict["kernel_name"] + ":"
+                                                                + kernel_info_dict["kernel_line"]))
 
     # Clear /tmp files generated
     #os.system("rm -f /tmp/*" + unique_id + "*")
