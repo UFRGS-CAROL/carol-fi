@@ -14,13 +14,13 @@ import common_functions as cf  # All common functions will be at common_function
 conf_location = "<conf-location>"
 
 
-"""
-Function called at first breakpoint stop
-to avoid memory error
-"""
-
-
-def delete_temporary_breakpoint(event): pass
+# """
+# Function called at first breakpoint stop
+# to avoid memory error
+# """
+#
+#
+# def delete_temporary_breakpoint(event): pass
 
 
 """
@@ -30,22 +30,24 @@ function called when the execution is stopped
 
 def fault_injection(event):
     global valid_block, valid_thread, valid_register
-    global bits_to_flip, fault_model
+    global bits_to_flip, fault_model, fi
 
-    logging.debug("Trying Fault Injection")
+    if fi:
 
-    print('\n\n----Fault injecting----\n\n')
+        logging.debug("Trying Fault Injection")
+
+        print('\n\n----Fault injecting----\n\n')
 
 
-    thread_focus = gdb.execute(
-        "cuda kernel 0 block " + str(valid_block[0]) + "," + str(valid_block[1]) + "," + str(valid_block[2]) +
-        " thread " + str(valid_thread[0]) + "," + str(valid_thread[1]) + "," + str(valid_thread[2]), to_string=True)
+        thread_focus = gdb.execute(
+            "cuda kernel 0 block " + str(valid_block[0]) + "," + str(valid_block[1]) + "," + str(valid_block[2]) +
+            " thread " + str(valid_thread[0]) + "," + str(valid_thread[1]) + "," + str(valid_thread[2]), to_string=True)
 
-    # Thread focus return information
-    for i in thread_focus:
-        logging.info(i)
+        # Thread focus return information
+        for i in thread_focus:
+            logging.info(i)
 
-    generic_injector()
+        generic_injector()
 
 
 """
@@ -164,20 +166,20 @@ breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BR
 # This will be the second breakpoint
 # breakpoint_kernel_address = None
 
-gdb.events.stop.connect(delete_temporary_breakpoint)
+gdb.events.stop.connect(fault_injection)
+fi = False
 
 # Start app execution
 gdb.execute("r")
 
 breakpoint_kernel_line.delete()
 
-gdb.events.stop.disconnect(delete_temporary_breakpoint)
+fi = True
 
 breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
 # Define which function to call when the execution stops, e.g. when a breakpoint is hit
 # or a interruption signal is received
-gdb.events.stop.connect(fault_injection)
 
 breakpoint_kernel_address.delete()
 
