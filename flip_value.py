@@ -67,16 +67,16 @@ Flip a bit or multiple based on a fault model
 
 def generic_injector():
     global valid_register, bits_to_flip, fault_model
-    print("VALID REGISTER", valid_register, "p/t $" + str(valid_register))
+
     # get register content
     reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
-    print("CMD", reg_cmd)
 
     # Logging info result extracted from register
     logging.info("reg old value: " + str(reg_cmd[0]))
 
     m = re.match("\$(\d+)[ ]*=[ ]*(\S+).*", reg_cmd)
     if m:
+        print("M GROUPS", m.groups())
         reg_content = str(m.group(2))
 
         # Single bit flip
