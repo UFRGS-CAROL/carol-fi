@@ -84,6 +84,7 @@ def generic_injector():
         if fault_model == 0:
             # single bit flip
             reg_content = flip_a_bit(bits_to_flip[0], reg_content)
+            print("REG new VALUE", reg_content)
 
         # Double bit flip
         elif fault_model == 1:
