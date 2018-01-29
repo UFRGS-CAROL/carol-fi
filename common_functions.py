@@ -8,6 +8,9 @@ if sys.version_info >= (3, 0):
 else:
     import ConfigParser  # python 2
 
+# Max size of register
+MAX_SIZE_REGISTER = 32
+
 
 """
 Support function to execute a command

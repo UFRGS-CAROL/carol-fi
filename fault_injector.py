@@ -22,8 +22,6 @@ else:
 # Debug env var
 DEBUG = True
 
-# Max size of register
-max_size_register = 32
 
 # Injection mode
 # 0 -> Instruction output
@@ -417,7 +415,7 @@ to inject a fault.
 
 
 def gen_injection_site(kernel_info_dict):
-    global max_size_register, injection_mode
+    global injection_mode
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
@@ -428,7 +426,7 @@ def gen_injection_site(kernel_info_dict):
     # Randomly select (a) bit(s) to flip
     # Max double bit flip
     bits_to_flip = [0] * 2
-    bits_to_flip[0] = random.randint(0, max_size_register - 1)
+    bits_to_flip[0] = random.randint(0, cf.MAX_SIZE_REGISTER - 1)
 
     # Selects it it is in the instruction output
     # or register file
@@ -447,7 +445,7 @@ def gen_injection_site(kernel_info_dict):
         raise NotImplementedError
 
     # Make sure that the same bit is not going to be selected
-    r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register)
+    r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, cf.MAX_SIZE_REGISTER)
     bits_to_flip[1] = random.choice(r)
 
     return valid_thread, valid_block, valid_register, bits_to_flip, injection_site

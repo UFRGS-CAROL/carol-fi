@@ -13,7 +13,6 @@ import common_functions as cf  # All common functions will be at common_function
 # global vars loaded from config file
 conf_location = "<conf-location>"
 
-
 """
 function called when the execution is stopped
 """
@@ -55,13 +54,16 @@ Flip only a bit in a register content
 
 
 def flip_a_bit(bit_to_flip, reg_content):
+    # Make sure that binary value will have max size register
+    reg_content = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
+
     new_bit = '0' if reg_content[bit_to_flip] == 1 else '1'
     reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip - 1:]
     return reg_content
 
 
 """
-Flip a bit or multiple based on a fault model
+Flip a bit or multiple bits based on a fault model
 """
 
 
@@ -73,10 +75,10 @@ def generic_injector():
 
     # Logging info result extracted from register
     logging.info("reg old value: " + str(reg_cmd[0]))
-    print("REG OLD VALUE", reg_cmd[0])
     m = re.match("\$(\d+)[ ]*=[ ]*(\S+).*", reg_cmd[0])
     if m:
         reg_content = str(m.group(2))
+        print("REG OLD VALUE", reg_content)
 
         # Single bit flip
         if fault_model == 0:
@@ -105,14 +107,12 @@ def generic_injector():
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content)
 
+        print("REG new VALUE", reg_content)
     else:
         raise NotImplementedError
-    print("REG new VALUE", reg_content)
 
     logging.info("reg new value: " + str(reg_content))
     logging.info("flip command return: " + str(reg_cmd_flipped))
-
-
 
     return reg_cmd_flipped
 
