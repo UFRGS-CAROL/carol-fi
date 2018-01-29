@@ -73,10 +73,9 @@ def generic_injector():
 
     # Logging info result extracted from register
     logging.info("reg old value: " + str(reg_cmd[0]))
-
+    print("REG OLD VALUE", reg_cmd[0])
     m = re.match("\$(\d+)[ ]*=[ ]*(\S+).*", reg_cmd[0])
     if m:
-        print("M GROUPS", m.groups())
         reg_content = str(m.group(2))
 
         # Single bit flip
@@ -108,9 +107,12 @@ def generic_injector():
 
     else:
         raise NotImplementedError
+    print("REG new VALUE", reg_content)
 
-    logging.info("reg old value: " + str(reg_content))
-    logging.info("reg new value: " + str(reg_cmd_flipped))
+    logging.info("reg new value: " + str(reg_content))
+    logging.info("flip command return: " + str(reg_cmd_flipped))
+
+
 
     return reg_cmd_flipped
 
