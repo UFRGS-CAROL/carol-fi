@@ -9,7 +9,6 @@ home_dir = "<home-location>"
 sys.path.append(home_dir)
 import common_functions as cf  # All common functions will be at common_functions module
 
-
 # global vars loaded from config file
 conf_location = "<conf-location>"
 
@@ -48,6 +47,7 @@ def fault_injection(event):
     else:
         fi = True
 
+
 """
 Flip only a bit in a register content
 """
@@ -78,14 +78,12 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
 
     if m:
         reg_content = str(m.group(2))
-        print("FAULT MODEL", fault_model)
 
         # Single bit flip
         if fault_model == 0:
             # single bit flip
-            print("PASSOU aqui 1", reg_cmd)
             reg_content = flip_a_bit(bits_to_flip[0], reg_content)
-            print("REG new VALUE", reg_content)
+
 
         # Double bit flip
         elif fault_model == 1:
@@ -106,6 +104,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         elif fault_model == 4:
             raise NotImplementedError
 
+        reg_content = str(int(reg_content, 2))
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content)
 
@@ -184,10 +183,10 @@ def main():
 
 
 # Set global vars
-valid_block= None
+valid_block = None
 valid_thread = None
-valid_register= None
-bits_to_flip= None
+valid_register = None
+bits_to_flip = None
 fault_model = None
 logging = None
 fi = False
