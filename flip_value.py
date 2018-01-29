@@ -73,10 +73,11 @@ def generic_injector():
 
     # get register content
     reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
-
+    print("PASSOU aqui 1", reg_cmd)
     # Logging info result extracted from register
     logging.info("reg old value: " + str(reg_cmd[0]))
     m = re.match("\$(\d+)[ ]*=[ ]*(\S+).*", reg_cmd[0])
+    print("PASSOU aqui 2", m.groups())
     if m:
         reg_content = str(m.group(2))
         print("REG OLD VALUE", reg_content, fault_model)
