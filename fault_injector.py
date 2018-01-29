@@ -434,7 +434,14 @@ def gen_injection_site(kernel_info_dict):
     # or register file
     valid_register = None
     if injection_mode == 0:
-        valid_register = registers[-1]
+        for i in reversed(registers):
+            if 'R' in i:
+                valid_register = i
+
+        # Avoid cases like this: MOV R3, 0x2
+        if valid_register is None:
+            raise ValueError("LINE COULD NOT BE PARSED")
+
     # Register file
     elif injection_mode == 1:
         raise NotImplementedError
