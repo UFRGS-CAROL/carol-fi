@@ -54,6 +54,7 @@ Flip only a bit in a register content
 
 
 def flip_a_bit(bit_to_flip, reg_content):
+    print("AWQUI", reg_content, cf.MAX_SIZE_REGISTER)
     # Make sure that binary value will have max size register
     reg_content = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
     print("REG CONTENT", reg_content)
@@ -78,7 +79,7 @@ def generic_injector():
     m = re.match("\$(\d+)[ ]*=[ ]*(\S+).*", reg_cmd[0])
     if m:
         reg_content = str(m.group(2))
-        print("REG OLD VALUE", reg_content)
+        print("REG OLD VALUE", reg_content, fault_model)
 
         # Single bit flip
         if fault_model == 0:
