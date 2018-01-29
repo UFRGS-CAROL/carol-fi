@@ -43,7 +43,7 @@ def fault_injection(event):
             logging.info(i)
 
         # Do the fault injection magic
-        generic_injector()
+        generic_injector(valid_register, bits_to_flip, fault_model)
 
     else:
         fi = True
@@ -68,9 +68,7 @@ Flip a bit or multiple bits based on a fault model
 """
 
 
-def generic_injector():
-    global valid_register, bits_to_flip, fault_model
-
+def generic_injector(valid_register, bits_to_flip, fault_model):
     # get register content
     reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
 
@@ -81,6 +79,7 @@ def generic_injector():
     if m:
         reg_content = str(m.group(2))
         print("FAULT MODEL", fault_model)
+
         # Single bit flip
         if fault_model == 0:
             # single bit flip
@@ -149,7 +148,7 @@ def main():
     valid_thread = conf.get("DEFAULT", "validThread").split(";")
     valid_register = conf.get("DEFAULT", "validRegister")
     bits_to_flip = [int(i) for i in conf.get("DEFAULT", "bitsToFlip").split(";")]
-    fault_model = conf.get("DEFAULT", "faultModel")
+    fault_model = int(conf.get("DEFAULT", "faultModel"))
     injection_site = conf.get("DEFAULT", "injectionSite")
     breakpoint_location = conf.get("DEFAULT", "breakpointLocation")
 
