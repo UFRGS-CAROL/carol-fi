@@ -74,7 +74,7 @@ def generic_injector():
     # Logging info result extracted from register
     logging.info("reg old value: " + str(reg_cmd[0]))
 
-    m = re.match("\$(\d+)[ ]*=[ ]*(\S+).*", reg_cmd)
+    m = re.match("\$(\d+)[ ]*=[ ]*(\S+).*", reg_cmd[0])
     if m:
         print("M GROUPS", m.groups())
         reg_content = str(m.group(2))
