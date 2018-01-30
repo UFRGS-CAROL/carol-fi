@@ -102,7 +102,7 @@ Copy the logs and output(if fault not masked) to a selected folder
 """
 
 
-def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_file, gdb_fi_log_file):
+def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_file):  # , gdb_fi_log_file):
     output_file = conf.get(section, "outputFile")
 
     # FI successful
@@ -141,7 +141,7 @@ def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_fil
         os.makedirs(cp_dir)
 
     shutil.move(flip_log_file, cp_dir)
-    shutil.move(gdb_fi_log_file, cp_dir)
+    # shutil.move(gdb_fi_log_file, cp_dir)
     if os.path.isfile(output_file) and (not masked) and fi_succ:
         shutil.move(output_file, cp_dir)
 
@@ -272,7 +272,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
                             injection_address,
                             fault_model, breakpoint_location):
     flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
-    gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
+    # gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
 
     logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
 
@@ -321,7 +321,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     # Copy output files to a folder
     save_output(
         section=section, is_sdc=is_sdc, is_hang=is_hang, conf=conf, logging=logging, unique_id=unique_id,
-        flip_log_file=flip_log_file, gdb_fi_log_file=gdb_fi_log_file)
+        flip_log_file=flip_log_file)  # , gdb_fi_log_file=gdb_fi_log_file)
 
     # Make sure threads finish before trying to execute again
     th.join()
