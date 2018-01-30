@@ -19,7 +19,7 @@ function called when the execution is stopped
 
 def fault_injection(event):
     global valid_block, valid_thread, valid_register
-    global bits_to_flip, fault_model, fi
+    global bits_to_flip, fault_model, fi, logging
 
     # This if avoid the creation of another event connection
     # for some reason gdb cannot breakpoint addresses before
@@ -28,22 +28,24 @@ def fault_injection(event):
 
         logging.debug("Trying Fault Injection")
 
-        print('\n\n----Fault injecting----\n\n')
-        change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(valid_block[0]),
-                                                                                       str(valid_block[1]),
-                                                                                       str(valid_block[2]),
-                                                                                       str(valid_thread[0]),
-                                                                                       str(valid_thread[1]),
-                                                                                       str(valid_thread[2]))
-        thread_focus = gdb.execute(change_focus_cmd, to_string=True)
+        try:
+            change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(valid_block[0]),
+                                                                                           str(valid_block[1]),
+                                                                                           str(valid_block[2]),
+                                                                                           str(valid_thread[0]),
+                                                                                           str(valid_thread[1]),
+                                                                                           str(valid_thread[2]))
+            thread_focus = gdb.execute(change_focus_cmd, to_string=True)
 
-        # Thread focus return information
-        for i in thread_focus:
-            logging.info(i)
+            # Thread focus return information
+            for i in thread_focus:
+                logging.info(i)
 
-        # Do the fault injection magic
-        generic_injector(valid_register, bits_to_flip, fault_model)
+            # Do the fault injection magic
+            generic_injector(valid_register, bits_to_flip, fault_model)
 
+        except Exception as err:
+            logging.exception("fault_injection_python_exception: " + str(err))
     else:
         fi = True
 
@@ -54,10 +56,8 @@ Flip only a bit in a register content
 
 
 def flip_a_bit(bit_to_flip, reg_content):
-    print("AWQUI", reg_content, cf.MAX_SIZE_REGISTER)
     # Make sure that binary value will have max size register
     reg_content = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
-    print("REG CONTENT", reg_content)
     new_bit = '0' if reg_content[bit_to_flip] == 1 else '1'
     reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip - 1:]
     return reg_content
@@ -78,13 +78,12 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
 
     if m:
         reg_content = str(m.group(2))
-
+        print("REG OLD VALUE", reg_content)
         # Single bit flip
         if fault_model == 0:
             print("REG CONTENT", reg_content)
             # single bit flip
             reg_content = flip_a_bit(bits_to_flip[0], reg_content)
-
 
         # Double bit flip
         elif fault_model == 1:
@@ -108,6 +107,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         reg_content = str(int(reg_content, 2))
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content)
+        print("REG NEW VALUE", reg_content)
 
     else:
         raise NotImplementedError

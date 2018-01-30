@@ -102,7 +102,7 @@ Copy the logs and output(if fault not masked) to a selected folder
 """
 
 
-def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_file):  # , gdb_fi_log_file):
+def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_file):
     output_file = conf.get(section, "outputFile")
 
     # FI successful
@@ -110,7 +110,7 @@ def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_fil
     if os.path.isfile(flip_log_file):
         fp = open(flip_log_file, "r")
         content = fp.read()
-        if re.search("Fault Injection Successful", content):
+        if re.search('Fault Injection Successful', content):
             fi_succ = True
         fp.close()
 
@@ -141,7 +141,6 @@ def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_fil
         os.makedirs(cp_dir)
 
     shutil.move(flip_log_file, cp_dir)
-    # shutil.move(gdb_fi_log_file, cp_dir)
     if os.path.isfile(output_file) and (not masked) and fi_succ:
         shutil.move(output_file, cp_dir)
 
@@ -195,35 +194,27 @@ Generate config file for the gdb flip_value script
 """
 
 
-def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block, valid_thread, valid_register, bits_to_flip,
-                  fault_model,
-                  injection_site, breakpoint_location):
+def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block,
+                  valid_thread, valid_register, bits_to_flip, fault_model,
+                  injection_site, breakpoint_location, flip_log_file):
     if sys.version_info >= (3, 0):
-        fconf = configparser.SafeConfigParser()
+        f_conf = configparser.SafeConfigParser()
     else:
-        fconf = ConfigParser.SafeConfigParser()
+        f_conf = ConfigParser.SafeConfigParser()
 
-    # valid_block = conf.get("DEFAULT", "validBlock").split(";")
-    # valid_thread = conf.get("DEFAULT", "validThread").split(";")
-    # valid_register = conf.get("DEFAULT", "validRegister")
-    # bits_to_flip = [int(i) for i in conf.get("DEFAULT", "bitsToFlip").split(";")]
-    # fault_model = conf.get("DEFAULT", "faultModel")
-    # injection_site = conf.get("DEFAULT", "injectionSite")
-    # breakpoint_location = conf.get("DEFAULT", "breakpointLocation")
-
-    fconf.set("DEFAULT", "flipLogFile", "/tmp/carolfi-flipvalue-" + unique_id + ".log")
-    fconf.set("DEFAULT", "debug", debug)
-    fconf.set("DEFAULT", "gdbInitStrings", gdb_init_strings)
-    fconf.set("DEFAULT", "faultModel", str(fault_model))
-    fconf.set("DEFAULT", "injectionSite", injection_site)
-    fconf.set("DEFAULT", "validThread", ";".join(valid_thread))
-    fconf.set("DEFAULT", "validBlock", ";".join(valid_block))
-    fconf.set("DEFAULT", "validRegister", valid_register)
-    fconf.set("DEFAULT", "bitsToFlip", ";".join(str(i) for i in bits_to_flip))
-    fconf.set("DEFAULT", "breakpointLocation", breakpoint_location)
+    f_conf.set("DEFAULT", "flipLogFile", flip_log_file)
+    f_conf.set("DEFAULT", "debug", debug)
+    f_conf.set("DEFAULT", "gdbInitStrings", gdb_init_strings)
+    f_conf.set("DEFAULT", "faultModel", str(fault_model))
+    f_conf.set("DEFAULT", "injectionSite", injection_site)
+    f_conf.set("DEFAULT", "validThread", ";".join(valid_thread))
+    f_conf.set("DEFAULT", "validBlock", ";".join(valid_block))
+    f_conf.set("DEFAULT", "validRegister", valid_register)
+    f_conf.set("DEFAULT", "bitsToFlip", ";".join(str(i) for i in bits_to_flip))
+    f_conf.set("DEFAULT", "breakpointLocation", breakpoint_location)
 
     fp = open("/tmp/flip-" + unique_id + ".conf", "w")
-    fconf.write(fp)
+    f_conf.write(fp)
     fp.close()
 
 
@@ -234,13 +225,13 @@ Generate the gdb flip_value script
 
 def gen_flip_script(unique_id):
     fp = open("flip_value.py", "r")
-    pscript = fp.read()
+    p_script = fp.read()
     fp.close()
     fp = open("/tmp/flip-" + unique_id + ".py", "w")
 
-    pscript = pscript.replace("<conf-location>", "/tmp/flip-" + unique_id + ".conf")
-    pscript = pscript.replace("<home-location>", "/home/carol/carol-fi")
-    fp.write(pscript)
+    p_script = p_script.replace("<conf-location>", "/tmp/flip-" + unique_id + ".conf")
+    p_script = p_script.replace("<home-location>", "/home/carol/carol-fi")
+    fp.write(p_script)
     fp.close()
     os.chmod("/tmp/flip-" + unique_id + ".py", 0o775)
 
@@ -252,12 +243,12 @@ Generate the gdb profiler script
 
 def gen_profiler_script(unique_id, conf_filename):
     fp = open("profiler.py", "r")
-    pscript = fp.read()
+    p_script = fp.read()
     fp.close()
     profiler_filename = "/tmp/profiler-" + unique_id + ".py"
     fp = open(profiler_filename, "w")
 
-    fp.write(pscript.replace("<conf-location>", conf_filename))
+    fp.write(p_script.replace("<conf-location>", conf_filename))
     fp.close()
     os.chmod(profiler_filename, 0o775)
     return profiler_filename
@@ -272,13 +263,10 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
                             injection_address,
                             fault_model, breakpoint_location):
     flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
-    # gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
 
     logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
 
     logging.info("Starting GDB script")
-
-    # Information about this fault
 
     # Generate configuration file for specific test
     gen_conf_file(gdb_init_strings=conf.get(section, "gdbInitStrings"),
@@ -290,7 +278,8 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
                   bits_to_flip=bits_to_flip,
                   fault_model=fault_model,
                   injection_site=injection_address,
-                  breakpoint_location=breakpoint_location)
+                  breakpoint_location=breakpoint_location,
+                  flip_log_file=flip_log_file)
 
     # Generate python script for GDB
     gen_flip_script(unique_id=unique_id)
@@ -301,7 +290,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     # Create one thread to start gdb script
     th = RunGDB(section, conf, unique_id)
 
-    # Start couting time
+    # Start counting time
     timestamp_start = int(time.time())
 
     # Start fault injection tread
@@ -439,6 +428,7 @@ def gen_injection_site(kernel_info_dict):
         for i in reversed(registers):
             if 'R' in i:
                 valid_register = i
+                break
 
         # Avoid cases like this: MOV R3, 0x2
         if valid_register is None:
