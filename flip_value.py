@@ -81,7 +81,6 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         print("REG OLD VALUE", reg_content)
         # Single bit flip
         if fault_model == 0:
-            print("REG CONTENT", reg_content)
             # single bit flip
             reg_content = flip_a_bit(bits_to_flip[0], reg_content)
 
@@ -104,10 +103,10 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         elif fault_model == 4:
             raise NotImplementedError
 
+        print("REG NEW VALUE", reg_content)
         reg_content = str(int(reg_content, 2))
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content)
-        print("REG NEW VALUE", reg_content)
 
     else:
         raise NotImplementedError
