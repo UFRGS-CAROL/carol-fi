@@ -22,7 +22,6 @@ else:
 # Debug env var
 DEBUG = True
 
-
 # Injection mode
 # 0 -> Instruction output
 injection_mode = 0
@@ -106,6 +105,7 @@ Copy the logs and output(if fault not masked) to a selected folder
 def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_file, gdb_fi_log_file):
     output_file = conf.get(section, "outputFile")
 
+    # FI successful
     fi_succ = False
     if os.path.isfile(flip_log_file):
         fp = open(flip_log_file, "r")
@@ -308,7 +308,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     th.start()
 
     # Check if app stops execution (otherwise kill it after a time)
-    isHang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start)
+    is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start)
 
     # Run pos execution function
     pos_execution(conf=conf, section=section)
@@ -316,10 +316,12 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     # Check output files for SDCs
     gold_file = conf.get(section, "goldFile")
     output_file = conf.get(section, "outputFile")
-    # isSDC = check_sdcs(gold_file=gold_file, output_file=output_file, logging=logging)
+    is_sdc = check_sdcs(gold_file=gold_file, output_file=output_file, logging=logging)
 
     # Copy output files to a folder
-    # save_output(section, isSDC, isHang)
+    save_output(
+        section=section, is_sdc=is_sdc, is_hang=is_hang, conf=conf, logging=logging, unique_id=unique_id,
+        flip_log_file=flip_log_file, gdb_fi_log_file=gdb_fi_log_file)
 
     # Make sure threads finish before trying to execute again
     th.join()
@@ -350,6 +352,7 @@ def get_valid_address(addresses):
 
     return registers, instruction, address, byte_location
 
+
 """
 Support function to parse a line of disassembled code
 """
@@ -365,7 +368,8 @@ def parse_line(instruction_line):
 
     # INSTRUCTION R1, R2...
     # 0x0000000000b418e8 <+40>: MOV R4, R2
-    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\r\f\v]*(\S+)[ ]*(\S+)" + str(",[ ]*(\S+)" * comma_line_count)
+    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\r\f\v]*(\S+)[ ]*(\S+)" + str(
+        ",[ ]*(\S+)" * comma_line_count)
 
     m = re.match(expression + ".*", instruction_line)
     if m:
