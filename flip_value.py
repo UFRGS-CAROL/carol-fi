@@ -59,7 +59,7 @@ def flip_a_bit(bit_to_flip, reg_content):
     # Make sure that binary value will have max size register
     reg_content = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
     new_bit = '0' if reg_content[bit_to_flip] == 1 else '1'
-    reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip - 1:]
+    reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
     return reg_content
 
 
