@@ -18,36 +18,36 @@ function called when the execution is stopped
 
 
 def fault_injection(event):
-    global valid_block, valid_thread, valid_register
-    global bits_to_flip, fault_model, fi, logging
+    global global_valid_block, global_valid_thread, global_valid_register
+    global global_bits_to_flip, global_fault_model, global_fi, global_logging
 
     # This if avoid the creation of another event connection
     # for some reason gdb cannot breakpoint addresses before
     # a normal breakpoint is hit
-    if fi:
+    if global_fi:
 
-        logging.debug("Trying Fault Injection")
+        global_logging.debug("Trying Fault Injection")
 
         try:
-            change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(valid_block[0]),
-                                                                                           str(valid_block[1]),
-                                                                                           str(valid_block[2]),
-                                                                                           str(valid_thread[0]),
-                                                                                           str(valid_thread[1]),
-                                                                                           str(valid_thread[2]))
+            change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
+                                                                                           str(global_valid_block[1]),
+                                                                                           str(global_valid_block[2]),
+                                                                                           str(global_valid_thread[0]),
+                                                                                           str(global_valid_thread[1]),
+                                                                                           str(global_valid_thread[2]))
             thread_focus = gdb.execute(change_focus_cmd, to_string=True)
 
             # Thread focus return information
             for i in thread_focus:
-                logging.info(i)
+                global_logging.info(i)
 
             # Do the fault injection magic
-            generic_injector(valid_register, bits_to_flip, fault_model)
+            generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)
 
         except Exception as err:
-            logging.exception("fault_injection_python_exception: " + str(err))
+            global_logging.exception("fault_injection_python_exception: " + str(err))
     else:
-        fi = True
+        global_fi = True
 
 
 """
@@ -73,7 +73,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
     reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
 
     # Logging info result extracted from register
-    logging.info("reg old value: " + str(reg_cmd[0]))
+    global_logging.info("reg old value: " + str(reg_cmd[0]))
     m = re.match("\$(\d+)[ ]*=[ ]*(\S+).*", reg_cmd[0])
 
     if m:
@@ -111,26 +111,27 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
     else:
         raise NotImplementedError
 
-    logging.info("reg new value: " + str(reg_content))
-    logging.info("flip command return: " + str(reg_cmd_flipped))
+    global_logging.info("reg new value: " + str(reg_content))
+    global_logging.info("flip command return: " + str(reg_cmd_flipped))
 
     return reg_cmd_flipped
 
 
 def exit_handler(event):
-    logging.info(str("event type: exit"))
+    global_logging.info(str("event type: exit"))
     try:
-        logging.info(str("exit code: %d" % event.exit_code))
+        global_logging.info(str("exit code: %d" % event.exit_code))
     except:
-        logging.exception(str("exit code: no exit code available"))
+        global_logging.exception(str("exit code: no exit code available"))
 
 
 def abnormal_stop(event):
-    logging.debug("Abnormal stop, signal:" + str(event.stop_signal))
+    global_logging.debug("Abnormal stop, signal:" + str(event.stop_signal))
 
 
 def main():
-    global valid_block, valid_thread, valid_register, bits_to_flip, fault_model, logging
+    global global_valid_block, global_valid_thread, global_valid_register
+    global global_bits_to_flip, global_fault_model, global_logging
 
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
@@ -143,23 +144,23 @@ def main():
     conf = cf.load_config_file(conf_location)
 
     # Get variables values from config file
-    valid_block = conf.get("DEFAULT", "validBlock").split(";")
-    valid_thread = conf.get("DEFAULT", "validThread").split(";")
-    valid_register = conf.get("DEFAULT", "validRegister")
-    bits_to_flip = [int(i) for i in conf.get("DEFAULT", "bitsToFlip").split(";")]
-    fault_model = int(conf.get("DEFAULT", "faultModel"))
+    global_valid_block = conf.get("DEFAULT", "validBlock").split(";")
+    global_valid_thread = conf.get("DEFAULT", "validThread").split(";")
+    global_valid_register = conf.get("DEFAULT", "validRegister")
+    global_bits_to_flip = [int(i) for i in conf.get("DEFAULT", "bitsToFlip").split(";")]
+    global_fault_model = int(conf.get("DEFAULT", "faultModel"))
     injection_site = conf.get("DEFAULT", "injectionSite")
     breakpoint_location = conf.get("DEFAULT", "breakpointLocation")
 
     # Logging
-    logging = cf.Logging(log_file=conf.get("DEFAULT", "flipLogFile"), debug=conf.get("DEFAULT", "debug"))
-    logging.info("Starting flip_value script\n")
+    global_logging = cf.Logging(log_file=conf.get("DEFAULT", "flipLogFile"), debug=conf.get("DEFAULT", "debug"))
+    global_logging.info("Starting flip_value script\n")
     try:
         gdb_init_strings = conf.get("DEFAULT", "gdbInitStrings")
 
         for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)
-            logging.info("initializing setup: " + str(init_str))
+            global_logging.info("initializing setup: " + str(init_str))
 
     except gdb.error as err:
         print("initializing setup: " + str(err))
@@ -183,13 +184,13 @@ def main():
 
 
 # Set global vars
-valid_block = None
-valid_thread = None
-valid_register = None
-bits_to_flip = None
-fault_model = None
-logging = None
-fi = False
+global_valid_block = None
+global_valid_thread = None
+global_valid_register = None
+global_bits_to_flip = None
+global_fault_model = None
+global_logging = None
+global_fi = False
 
 # Call main execution
 main()
