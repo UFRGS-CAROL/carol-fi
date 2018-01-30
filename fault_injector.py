@@ -274,7 +274,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
     gdb_fi_log_file = "/tmp/carolfi-" + unique_id + ".log"
 
-    logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"))
+    logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
 
     logging.info("Starting GDB script")
 
@@ -491,8 +491,7 @@ def main():
     # Fault injection
 
     # Load information file generated in profiler step
-    kernel_info_dir = "/tmp/carol-fi-kernel-info.txt"
-    kernel_info_list = cf.load_file(kernel_info_dir)
+    kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
 
     # Get fault models
     fault_models = range(0, int(conf.get('DEFAULT', 'faultModel')) + 1)
