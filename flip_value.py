@@ -21,6 +21,9 @@ def fault_injection(event):
     global global_valid_block, global_valid_thread, global_valid_register
     global global_bits_to_flip, global_fault_model, global_fi, global_logging
 
+    # Assure fault was injected
+    fi_succ = False
+
     # This if avoid the creation of another event connection
     # for some reason gdb cannot breakpoint addresses before
     # a normal breakpoint is hit
@@ -42,12 +45,17 @@ def fault_injection(event):
                 global_logging.info(i)
 
             # Do the fault injection magic
-            generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)
+            fi_succ = generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)
 
         except Exception as err:
             global_logging.exception("fault_injection_python_exception: " + str(err))
     else:
         global_fi = True
+
+    if fi_succ:
+        global_logging.exception("Fault Injection Successful")
+    else:
+        global_logging.exception("Fault Injection Went Wrong")
 
 
 """
@@ -69,6 +77,8 @@ Flip a bit or multiple bits based on a fault model
 
 
 def generic_injector(valid_register, bits_to_flip, fault_model):
+    # Fault was successfully injected
+    fi_succ = False
     # get register content
     reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
 
@@ -78,7 +88,6 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
 
     if m:
         reg_content = str(m.group(2))
-        print("REG OLD VALUE", reg_content)
         # Single bit flip
         if fault_model == 0:
             # single bit flip
@@ -103,18 +112,18 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         elif fault_model == 4:
             raise NotImplementedError
 
-        print("REG NEW VALUE", reg_content)
-        reg_content = str(int(reg_content, 2))
+        reg_content_fliped = str(int(reg_content, 2))
         # send the new value to gdb
-        reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content)
+        reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content_fliped)
 
+        fi_succ = True
     else:
         raise NotImplementedError
 
     global_logging.info("reg new value: " + str(reg_content))
     global_logging.info("flip command return: " + str(reg_cmd_flipped))
 
-    return reg_cmd_flipped
+    return fi_succ
 
 
 def exit_handler(event):
