@@ -335,7 +335,7 @@ def get_valid_address(addresses):
 
         if DEBUG:
             if not m:
-                print("it is stoped here:", instruction_line)
+                print("it is stopped here:", instruction_line)
             else:
                 print("it choose something:", instruction_line)
 
@@ -357,8 +357,8 @@ def parse_line(instruction_line):
 
     # INSTRUCTION R1, R2...
     # 0x0000000000b418e8 <+40>: MOV R4, R2
-    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\r\f\v]*(\S+)[ ]*(\S+)" + str(
-        ",[ ]*(\S+)" * comma_line_count)
+    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\r\f\v]*(\S+)[ ]*(R[0-9]+)" + str(
+        ",[ ]*(R[0-9]+)" * comma_line_count)
 
     m = re.match(expression + ".*", instruction_line)
     if m:
