@@ -187,7 +187,7 @@ def main():
     breakpoint_kernel_line.delete()
     breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
-    # Continue execution untill the next breakpoint
+    # Continue execution until the next breakpoint
     gdb.execute("c")
     breakpoint_kernel_address.delete()
 
