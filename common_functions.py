@@ -11,6 +11,8 @@ else:
 # Max size of register
 MAX_SIZE_REGISTER = 32
 
+# TMP file that will store kernel information
+KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
 
 """
 Support function to execute a command
@@ -69,33 +71,40 @@ def load_config_file(flip_config_file):
 class Logging:
     log_file = None
     debug_var = None
+    unique_id = None
 
-    def __init__(self, log_file, debug):
+    def __init__(self, log_file, debug, unique_id=''):
         self.log_file = log_file
         self.debug_var = debug
+        self.unique_id = unique_id
 
     def info(self, msg):
         fp = open(self.log_file, "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        fp.write("[INFO -- "+d+"]\n"+msg+"\n")
+        fp.write("[INFO -- " + d + "]\n" + msg + "\n")
         fp.close()
 
     def exception(self, msg):
         fp = open(self.log_file, "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        fp.write("[EXCEPTION -- "+d+"]\n"+msg+"\n")
+        fp.write("[EXCEPTION -- " + d + "]\n" + msg + "\n")
         fp.close()
 
     def error(self, msg):
         fp = open(self.log_file, "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        fp.write("[ERROR -- "+d+"]\n"+msg+"\n")
+        fp.write("[ERROR -- " + d + "]\n" + msg + "\n")
         fp.close()
-
 
     def debug(self, msg):
         if self.debug_var:
             fp = open(self.log_file, "a")
             d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-            fp.write("[DEBUG -- "+d+"]\n"+msg+"\n")
+            fp.write("[DEBUG -- " + d + "]\n" + msg + "\n")
             fp.close()
+
+    def summary(self, msg):
+        fp = open(self.log_file, "a")
+        d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+        fp.write("[SUMMARY -- " + d + "]\nFI-uniqueID=" + str(self.unique_id) + "\n" + msg + "\n")
+        fp.close()
