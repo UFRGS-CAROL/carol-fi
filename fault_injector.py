@@ -317,6 +317,43 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
 
 
 """
+Support function to parse a line of disassembled code
+"""
+
+
+def parse_line(instruction_line):
+    registers = []
+    instruction = ''
+    address = ''
+    byte_location = ''
+
+    comma_line_count = instruction_line.count(',')
+
+    # INSTRUCTION R1, R2...
+    # 0x0000000000b418e8 <+40>: MOV R4, R2
+    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\r\f\v]*(\S+)[ ]*(\S+)" + str(
+        ",[ ]*(\S+)" * comma_line_count)
+
+    m = re.match(expression + ".*", instruction_line)
+    if m:
+        address = m.group(1)
+        byte_location = m.group(2)
+        instruction = m.group(3)
+
+        # Check register also
+        registers = [m.group(4 + i) for i in range(0, comma_line_count + 1)]
+        is_valid_line = False
+        for r in registers:
+            if 'R' in r:
+                is_valid_line = True
+                break
+
+        if not is_valid_line:
+            return None, None, None, None, None
+    return registers, address, byte_location, instruction, m
+
+
+"""
 Select a valid stop address
 from the file created in the profiler
 step
@@ -340,35 +377,6 @@ def get_valid_address(addresses):
                 print("it choose something:", instruction_line)
 
     return registers, instruction, address, byte_location
-
-
-"""
-Support function to parse a line of disassembled code
-"""
-
-
-def parse_line(instruction_line):
-    registers = []
-    instruction = ''
-    address = ''
-    byte_location = ''
-
-    comma_line_count = instruction_line.count(',')
-
-    # INSTRUCTION R1, R2...
-    # 0x0000000000b418e8 <+40>: MOV R4, R2
-    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\r\f\v]*(\S+)[ ]*(R[0-9]+)" + str(
-        ",[ ]*(R[0-9]+)" * comma_line_count)
-
-    m = re.match(expression + ".*", instruction_line)
-    if m:
-        address = m.group(1)
-        byte_location = m.group(2)
-        instruction = m.group(3)
-        registers.extend([m.group(4 + i) for i in range(0, comma_line_count + 1)])
-
-    return registers, address, byte_location, instruction, m
-
 
 """
 Selects a valid thread for a specific
