@@ -14,6 +14,22 @@ MAX_SIZE_REGISTER = 32
 # TMP file that will store kernel information
 KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
 
+# termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
+SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
+           'SIGFPE', 'SIGILL', 'SIGSEGV', 'SIGBUS', 'SIGABRT', 'SIGIOT', 'SIGTRAP', 'SIGEMT', 'SIGSYS',  # program codes
+           'SIGALRM', 'SIGVTALRM', 'SIGPROF',  # alarm codes
+           'SIGIO', 'SIGURG', 'SIGPOLL',  # asynchronous codes
+           'SIGCHLD', 'SIGCLD', 'SIGCONT', 'SIGSTOP', 'SIGTSTP', 'SIGTTIN', 'SIGTTOU',  # job control
+           'SIGPIPE', 'SIGLOST', 'SIGXCPU', 'SIGXFSZ',  # operation codes
+           'SIGUSR1', 'SIGUSR2', 'SIGWINCH', 'SIGINFO',  # miscellaneous codes
+           'strsignal', 'psignal',  # signal messages
+           # cuda signals
+           'CUDA_EXCEPTION_0', 'CUDA_EXCEPTION_1', 'CUDA_EXCEPTION_2', 'CUDA_EXCEPTION_3', 'CUDA_EXCEPTION_4',
+           'CUDA_EXCEPTION_5',
+           'CUDA_EXCEPTION_6', 'CUDA_EXCEPTION_7', 'CUDA_EXCEPTION_8', 'CUDA_EXCEPTION_9', 'CUDA_EXCEPTION_10',
+           'CUDA_EXCEPTION_11',
+           'CUDA_EXCEPTION_12', 'CUDA_EXCEPTION_13', 'CUDA_EXCEPTION_14', 'CUDA_EXCEPTION_15']
+
 """
 Support function to execute a command
 and return the output.
