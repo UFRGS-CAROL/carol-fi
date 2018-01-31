@@ -503,6 +503,7 @@ def main():
             for kernel_info_dict in kernel_info_list:
                 valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
                     kernel_info_dict=kernel_info_dict)
+                print("Injection:", num_rounds, "fault model:", fault_model, "kernel:", kernel_info_dict["kernel_name"])
                 run_gdb_fault_injection(section="DEFAULT", conf=conf,
                                         unique_id=unique_id, valid_block=valid_block,
                                         valid_thread=valid_thread, valid_register=valid_register,
