@@ -85,162 +85,6 @@ read_solution(int nx, char *gold_filename, int *gold_meshConn,double *gold_coord
     fclose(fout);
 }
 
-//static void
-//check_solution(Domain& domain, int *gold_meshConn,double *gold_coord,double *gold_e,double *gold_p,double *gold_v,double *gold_q,double *gold_speed)
-//{
-//
-//   int i = 0, errors=0;
-//   /* Check the mesh connectivity in fully unstructured format */
-//   for (int ei=0; ei < domain.numElem(); ++ei) {
-//      Index_t *elemToNode = domain.nodelist(ei);
-//      for (int ni=0; ni < 8; ++ni) {
-//	 if(elemToNode[ni] != gold_meshConn[i]){
-//	     errors++;
-//             char error_detail[200];
-//             sprintf(error_detail,"(MeshConn) p: [%d], r: %u, e: %u", i, elemToNode[ni], gold_meshConn[i]);
-//#ifdef LOGS
-//             log_error_detail(error_detail);
-//#endif
-//	 }
-//	 i++;
-//      }
-//   }
-//   //printf("error conn:%d\n",errors);
-//
-//   /* Check the mesh coordinates associated with the mesh */
-//   int i_d=0;
-//   for (int ni=0; ni < domain.numNode() ; ++ni) {
-//      if ((fabs((domain.x(ni) - gold_coord[i_d]) / domain.x(ni)) > 0.0000000001) || (fabs((domain.x(ni) - gold_coord[i_d]) / gold_coord[i_d]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(MeshCoordinates x) p: [%d], r: %u, e: %u", ni, domain.x(ni), gold_coord[i_d]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//      i_d++;
-//      if ((fabs((domain.y(ni) - gold_coord[i_d]) / domain.y(ni)) > 0.0000000001) || (fabs((domain.y(ni) - gold_coord[i_d]) / gold_coord[i_d]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(MeshCoordinates y) p: [%d], r: %u, e: %u", ni, domain.y(ni), gold_coord[i_d]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//      i_d++;
-//      if ((fabs((domain.z(ni) - gold_coord[i_d]) / domain.z(ni)) > 0.0000000001) || (fabs((domain.z(ni) - gold_coord[i_d]) / gold_coord[i_d]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(MeshCoordinates z) p: [%d], r: %u, e: %u", ni, domain.z(ni), gold_coord[i_d]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//      i_d++;
-//   }
-//
-//   //printf("error coord:%d\n",errors);
-//   /* Write out pressure, energy, relvol, q */
-//
-//   for (int ei=0; ei < domain.numElem(); ++ei) {
-//      int i = domain.numNode()*3 + ei;
-//      if ((fabs((domain.e(ei) - gold_e[ei]) / domain.e(ei)) > 0.0000000001) || (fabs((domain.e(ei) - gold_e[ei]) / gold_e[ei]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(MeshEnergy) p: [%d], r: %u, e: %u", ei, domain.e(ei), gold_e[ei]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//   }
-//
-//   //printf("error energy:%d\n",errors);
-//
-//   for (int ei=0; ei < domain.numElem(); ++ei) {
-//      int i = domain.numNode()*3 + domain.numElem() + ei;
-//      if ((fabs((domain.p(ei) - gold_p[ei]) / domain.p(ei)) > 0.0000000001) || (fabs((domain.p(ei) - gold_p[ei]) / gold_p[ei]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(MeshPressure) p: [%d], r: %u, e: %u", ei, domain.p(ei), gold_p[ei]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//   }
-//
-//   //printf("error press:%d\n",errors);
-//   for (int ei=0; ei < domain.numElem(); ++ei) {
-//      int i = domain.numNode()*3 + domain.numElem()*2 + ei;
-//      if ((fabs((domain.v(ei) - gold_v[ei]) / domain.v(ei)) > 0.0000000001) || (fabs((domain.v(ei) - gold_v[ei]) / gold_v[ei]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(MeshRelVol) p: [%d], r: %u, e: %u", ei, domain.v(ei), gold_v[ei]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//   }
-//   //printf("error v:%d\n",errors);
-//
-//   for (int ei=0; ei < domain.numElem(); ++ei) {
-//      int i = domain.numNode()*3 + domain.numElem()*3 + ei;
-//      if ((fabs((domain.q(ei) - gold_q[ei]) / domain.q(ei)) > 0.0000000001) || (fabs((domain.q(ei) - gold_q[ei]) / gold_q[ei]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(Mesh q) p: [%d], r: %u, e: %u", ei, domain.q(ei), gold_q[ei]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//   }
-//   //printf("error q:%d\n",errors);
-//
-//   /* Write out nodal speed, velocities */
-//   i_d=0;
-//   for(int ni=0 ; ni < domain.numNode() ; ++ni) {
-//      int i = domain.numNode()*3 + domain.numElem()*4 + ni;
-//      if ((fabs((domain.xd(ni) - gold_speed[i_d]) / domain.xd(ni)) > 0.0000000001) || (fabs((domain.xd(ni) - gold_speed[i_d]) / gold_speed[i_d]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(MeshSpeed xd) p: [%d], r: %u, e: %u", ni, domain.xd(ni), gold_speed[i_d]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//      i_d++;
-//      if ((fabs((domain.yd(ni) - gold_speed[i_d]) / domain.yd(ni)) > 0.0000000001) || (fabs((domain.yd(ni) - gold_speed[i_d]) / gold_speed[i_d]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(MeshSpeed yd) p: [%d], r: %u, e: %u", ni, domain.yd(ni), gold_speed[i_d]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//      i_d++;
-//      if ((fabs((domain.zd(ni) - gold_speed[i_d]) / domain.zd(ni)) > 0.0000000001) || (fabs((domain.zd(ni) - gold_speed[i_d]) / gold_speed[i_d]) > 0.0000000001)) {
-//          errors++;
-//          char error_detail[200];
-//          sprintf(error_detail,"(MeshSpeed zd) p: [%d], r: %u, e: %u", ni, domain.zd(ni), gold_speed[i_d]);
-//#ifdef LOGS
-//          log_error_detail(error_detail);
-//#endif
-//      }
-//      i_d++;
-//   }
-//   //printf("error speed:%d\n",errors);
-//
-////        #pragma omp parallel for reduction(+:errors) private(i)
-//#ifdef LOGS
-//        log_error_count(errors);
-//#endif
-//        if(errors > 0) {
-//            printf("Errors: %d\n",errors);
-//        } else {
-//            //printf("Errors: %d\n",errors);
-//            printf(".");
-//        }
-//}
-///******************************************/
 
 int main(int argc, char *argv[])
 {
@@ -314,21 +158,21 @@ int main(int argc, char *argv[])
         if ((fabs((out_coord[i_d] - gold_coord[i_d]) / out_coord[i_d]) > 0.0000000001) || (fabs((out_coord[i_d] - gold_coord[i_d]) / gold_coord[i_d]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(MeshCoordinates x) p: [%d], r: %u, e: %u", ni, out_coord[i_d], gold_coord[i_d]);
+            sprintf(error_detail,"(MeshCoordinates x) p: [%d], r: %1.16e, e: %1.16e", ni, out_coord[i_d], gold_coord[i_d]);
             printf("%s\n",error_detail);
         }
         i_d++;
         if ((fabs((out_coord[i_d] - gold_coord[i_d]) / out_coord[i_d]) > 0.0000000001) || (fabs((out_coord[i_d] - gold_coord[i_d]) / gold_coord[i_d]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(MeshCoordinates y) p: [%d], r: %u, e: %u", ni, out_coord[i_d], gold_coord[i_d]);
+            sprintf(error_detail,"(MeshCoordinates y) p: [%d], r: %1.16e, e: %1.16e", ni, out_coord[i_d], gold_coord[i_d]);
             printf("%s\n",error_detail);
         }
         i_d++;
         if ((fabs((out_coord[i_d] - gold_coord[i_d]) / out_coord[i_d]) > 0.0000000001) || (fabs((out_coord[i_d] - gold_coord[i_d]) / gold_coord[i_d]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(MeshCoordinates z) p: [%d], r: %u, e: %u", ni, out_coord[i_d], gold_coord[i_d]);
+            sprintf(error_detail,"(MeshCoordinates z) p: [%d], r: %1.16e, e: %1.16e", ni, out_coord[i_d], gold_coord[i_d]);
             printf("%s\n",error_detail);
         }
         i_d++;
@@ -342,7 +186,7 @@ int main(int argc, char *argv[])
         if ((fabs((out_e[ei] - gold_e[ei]) / out_e[ei]) > 0.0000000001) || (fabs((out_e[ei] - gold_e[ei]) / gold_e[ei]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(MeshEnergy) p: [%d], r: %u, e: %u", ei, out_e[ei], gold_e[ei]);
+            sprintf(error_detail,"(MeshEnergy) p: [%d], r: %1.16e, e: %1.16e", ei, out_e[ei], gold_e[ei]);
             printf("%s\n",error_detail);
         }
     }
@@ -354,7 +198,7 @@ int main(int argc, char *argv[])
         if ((fabs((out_p[ei] - gold_p[ei]) / out_p[ei]) > 0.0000000001) || (fabs((out_p[ei] - gold_p[ei]) / gold_p[ei]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(MeshPressure) p: [%d], r: %u, e: %u", ei, out_p[ei], gold_p[ei]);
+            sprintf(error_detail,"(MeshPressure) p: [%d], r: %1.16e, e: %1.16e", ei, out_p[ei], gold_p[ei]);
             printf("%s\n",error_detail);
         }
     }
@@ -365,7 +209,7 @@ int main(int argc, char *argv[])
         if ((fabs((out_v[ei] - gold_v[ei]) / out_v[ei]) > 0.0000000001) || (fabs((out_v[ei] - gold_v[ei]) / gold_v[ei]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(MeshRelVol) p: [%d], r: %u, e: %u", ei, out_v[ei], gold_v[ei]);
+            sprintf(error_detail,"(MeshRelVol) p: [%d], r: %1.16e, e: %1.16e", ei, out_v[ei], gold_v[ei]);
             printf("%s\n",error_detail);
         }
     }
@@ -376,7 +220,7 @@ int main(int argc, char *argv[])
         if ((fabs((out_q[ei] - gold_q[ei]) / out_q[ei]) > 0.0000000001) || (fabs((out_q[ei] - gold_q[ei]) / gold_q[ei]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(Mesh q) p: [%d], r: %u, e: %u", ei, out_q[ei], gold_q[ei]);
+            sprintf(error_detail,"(Mesh q) p: [%d], r: %1.16e, e: %1.16e", ei, out_q[ei], gold_q[ei]);
             printf("%s\n",error_detail);
         }
     }
@@ -389,21 +233,21 @@ int main(int argc, char *argv[])
         if ((fabs((out_speed[i_d] - gold_speed[i_d]) / out_speed[i_d]) > 0.0000000001) || (fabs((out_speed[i_d] - gold_speed[i_d]) / gold_speed[i_d]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(MeshSpeed xd) p: [%d], r: %u, e: %u", ni, out_speed[i_d], gold_speed[i_d]);
+            sprintf(error_detail,"(MeshSpeed xd) p: [%d], r: %1.16e, e: %1.16e", ni, out_speed[i_d], gold_speed[i_d]);
             printf("%s\n",error_detail);
         }
         i_d++;
         if ((fabs((out_speed[i_d] - gold_speed[i_d]) / out_speed[i_d]) > 0.0000000001) || (fabs((out_speed[i_d] - gold_speed[i_d]) / gold_speed[i_d]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(MeshSpeed yd) p: [%d], r: %u, e: %u", ni, out_speed[i_d], gold_speed[i_d]);
+            sprintf(error_detail,"(MeshSpeed yd) p: [%d], r: %1.16e, e: %1.16e", ni, out_speed[i_d], gold_speed[i_d]);
             printf("%s\n",error_detail);
         }
         i_d++;
         if ((fabs((out_speed[i_d] - gold_speed[i_d]) / out_speed[i_d]) > 0.0000000001) || (fabs((out_speed[i_d] - gold_speed[i_d]) / gold_speed[i_d]) > 0.0000000001)) {
             errors++;
             char error_detail[200];
-            sprintf(error_detail,"(MeshSpeed zd) p: [%d], r: %u, e: %u", ni, out_speed[i_d], gold_speed[i_d]);
+            sprintf(error_detail,"(MeshSpeed zd) p: [%d], r: %1.16e, e: %1.16e", ni, out_speed[i_d], gold_speed[i_d]);
             printf("%s\n",error_detail);
         }
         i_d++;
