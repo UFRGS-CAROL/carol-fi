@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding=utf-8
 from __future__ import print_function
 import os
 import sys
@@ -41,8 +42,9 @@ class RunGDB(threading.Thread):
     def run(self):
         if DEBUG:
             print("GDB Thread run, section and id: ", self.section, self.unique_id)
-        start_cmd = self.conf.get(self.section,
-                                  "gdbExecName") + " -n -q -batch -x " + "/tmp/flip-" + self.unique_id + ".py"
+        start_cmd = "env CUDA_​DEVICE_​WAITS_​ON_​EXCEPTION=1 " + self.conf.get(self.section,
+                                                                                "gdbExecName")
+        start_cmd += " -n -q -batch -x " + "/tmp/flip-" + self.unique_id + ".py"
         os.system(start_cmd)
 
 
@@ -378,6 +380,7 @@ def get_valid_address(addresses):
 
     return registers, instruction, address, byte_location
 
+
 """
 Selects a valid thread for a specific
 kernel
@@ -511,6 +514,7 @@ def main():
                                         injection_address=injection_address,
                                         breakpoint_location=str(kernel_info_dict["kernel_name"] + ":"
                                                                 + kernel_info_dict["kernel_line"]))
+                time.sleep(2)
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/*" + unique_id + "*")
