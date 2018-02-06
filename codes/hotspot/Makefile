@@ -28,3 +28,13 @@ hotspot: hotspot.cu
 
 clean:
 	rm -f hotspot gold_*
+
+generate:
+	./hotspot -generate -size=1024 -sim_time=1024 \
+                -temp_file=/home/carol/carol-fi/codes/hotspot/temp_1024 -power_file=/home/carol/carol-fi/codes/hotspot/power_1024 \
+                -gold_file=/home/carol/carol-fi/codes/hotspot/gold_1024 -iterations=2 -streams=4
+
+test:
+	./hotspot -size=1024 -sim_time=1024 \
+                -temp_file=/home/carol/carol-fi/codes/hotspot/temp_1024 -power_file=/home/carol/carol-fi/codes/hotspot/power_1024 \
+                -gold_file=/home/carol/carol-fi/codes/hotspot/gold_1024 -iterations=2 -streams=4
