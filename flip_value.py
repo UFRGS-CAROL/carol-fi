@@ -115,11 +115,14 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content_fliped)
 
-        fi_succ = (reg_content_old != reg_content_new)
         global_logging.info("reg new value: " + str(reg_content_new))
-        global_logging.info("flip command return: " + str(reg_cmd_flipped))
-        return fi_succ
 
+        # Log command return only something was printed
+        if len(reg_cmd_flipped) > 0:
+            global_logging.info("flip command return: " + str(reg_cmd_flipped))
+
+        # Return the fault confirmation
+        return reg_content_old != reg_content_new
     else:
         raise NotImplementedError
 
