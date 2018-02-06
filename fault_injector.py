@@ -72,7 +72,7 @@ class SummaryFile:
     __dict_buff = None
     # Csv Mode
     __mode = None
-    # Fieldanames
+    # Fieldnames
     __fieldnames = None
 
     def __init__(self, **kwargs):
@@ -83,6 +83,8 @@ class SummaryFile:
         if self.__mode in ['w', 'a']:
             self.__fieldnames = kwargs.get("fieldnames")
             self.__dict_buff = csv.DictWriter(self.__csv_file, self.__fieldnames)
+            if self.__mode == 'w':
+                self.__dict_buff.writeheader()
         elif self.__mode == 'r':
             self.__dict_buff = csv.DictReader(self.__csv_file)
 

@@ -63,8 +63,6 @@ Flip only a bit in a register content
 
 
 def flip_a_bit(bit_to_flip, reg_content):
-    # Make sure that binary value will have max size register
-    reg_content = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
     new_bit = '0' if reg_content[bit_to_flip] == 1 else '1'
     reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
     return reg_content
@@ -76,17 +74,18 @@ Flip a bit or multiple bits based on a fault model
 
 
 def generic_injector(valid_register, bits_to_flip, fault_model):
-    # Fault was successfully injected
-    fi_succ = False
     # get register content
     reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
 
-    # Logging info result extracted from register
-    global_logging.info("reg old value: " + str(reg_cmd[0]))
-    m = re.match("\$(\d+)[ ]*=[ ]*(\S+).*", reg_cmd[0])
+    m = re.match('\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
 
     if m:
         reg_content = str(m.group(2))
+        # Make sure that binary value will have max size register
+        reg_content = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
+        # Logging info result extracted from register
+        global_logging.info("reg old value: " + reg_content)
+
         # Single bit flip
         if fault_model == 0:
             # single bit flip
@@ -116,13 +115,16 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content_fliped)
 
         fi_succ = True
+        global_logging.info("reg new value: " + str(reg_content))
+        global_logging.info("flip command return: " + str(reg_cmd_flipped))
+        return fi_succ
+
     else:
         raise NotImplementedError
 
-    global_logging.info("reg new value: " + str(reg_content))
-    global_logging.info("flip command return: " + str(reg_cmd_flipped))
-
-    return fi_succ
+"""
+Handler attached to exit event
+"""
 
 
 def exit_handler(event):
@@ -132,10 +134,17 @@ def exit_handler(event):
     except:
         global_logging.exception(str("exit code: no exit code available"))
 
+"""
+Handler attached to crash event
+"""
 
 def abnormal_stop(event):
     global_logging.debug("Abnormal stop, signal:" + str(event.stop_signal))
 
+
+"""
+Main function
+"""
 
 def main():
     global global_valid_block, global_valid_thread, global_valid_register
@@ -162,7 +171,7 @@ def main():
 
     # Logging
     global_logging = cf.Logging(log_file=conf.get("DEFAULT", "flipLogFile"), debug=conf.get("DEFAULT", "debug"))
-    global_logging.info("Starting flip_value script\n")
+    global_logging.info("Starting flip_value script")
     try:
         gdb_init_strings = conf.get("DEFAULT", "gdbInitStrings")
 

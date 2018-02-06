@@ -124,3 +124,12 @@ class Logging:
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         fp.write("[SUMMARY -- " + d + "]\nFI-uniqueID=" + str(self.unique_id) + "\n" + msg + "\n")
         fp.close()
+
+    def search(self, find):
+        fp = open(self.log_file, "r")
+        lines = fp.readlines()
+        fp.close()
+        for l in lines:
+            if find in l:
+                return l
+        return None
