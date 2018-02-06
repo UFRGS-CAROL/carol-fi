@@ -405,18 +405,15 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
 
     # Search for set values for register
     # Must be done before save output
-    fault_successful = logging.search("fault_injection_python_exception")
+
     # Was fault injected
-    if fault_successful is None:
+    try:
         reg_old_value = logging.search("reg_old_value")
         reg_new_value = logging.search("reg_new_value")
-
-        try:
-            reg_old_value = re.findall("reg_old_value\: (\S+)", reg_old_value)[0]
-            reg_new_value = re.findall("reg_new_value\: (\S+)", reg_new_value)[0]
-        except:
-            print("\n\n", reg_old_value, reg_new_value, logging.log_file, "\n\n")
-    else:
+        reg_old_value = re.findall("reg_old_value\: (\S+)", reg_old_value)[0]
+        reg_new_value = re.findall("reg_new_value\: (\S+)", reg_new_value)[0]
+        fault_successful = True
+    except:
         reg_new_value = reg_old_value = ''
         fault_successful = False
 
