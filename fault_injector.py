@@ -400,19 +400,20 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     output_file = conf.get(section, "outputFile")
     is_sdc = check_sdcs(gold_file=gold_file, output_file=output_file, logging=logging)
 
-    # Copy output files to a folder
-    save_output(
-        section=section, is_sdc=is_sdc, is_hang=is_hang, conf=conf, logging=logging, unique_id=unique_id,
-        flip_log_file=flip_log_file)  # , gdb_fi_log_file=gdb_fi_log_file)
-
     # Make sure threads finish before trying to execute again
     th.join()
 
     # Search for set values for register
+    # Must be done before save output
     reg_old_value = logging.search("reg_old_value")
     reg_new_value = logging.search("reg_new_value")
     reg_old_value = re.findall("reg_old_value\: (\S+)", reg_old_value)[0]
     reg_new_value = re.findall("reg_new_value\: (\S+)", reg_new_value)[0]
+
+    # Copy output files to a folder
+    save_output(
+        section=section, is_sdc=is_sdc, is_hang=is_hang, conf=conf, logging=logging, unique_id=unique_id,
+        flip_log_file=flip_log_file)  # , gdb_fi_log_file=gdb_fi_log_file)
 
     return int(reg_old_value, 2), int(reg_new_value, 2)
 
