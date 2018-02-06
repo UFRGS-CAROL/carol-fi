@@ -591,7 +591,7 @@ def main():
     fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'injection_address', 'register',
                   'breakpoint_location']
-    summary_file = SummaryFile(filename=parser.csv_file, fieldnames=fieldnames, mode='w')
+    summary_file = SummaryFile(filename=args.csv_file, fieldnames=fieldnames, mode='w')
 
     # noinspection PyCompatibility
     for num_rounds in range(args.iterations):
