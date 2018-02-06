@@ -21,7 +21,7 @@ def fault_injection(event):
     global global_valid_block, global_valid_thread, global_valid_register
     global global_bits_to_flip, global_fault_model, global_fi, global_logging
 
-    # Assure fault was injected
+    # Ensure fault was injected
     fi_succ = False
 
     # This if avoid the creation of another event connection
@@ -111,11 +111,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         elif fault_model == 4:
             raise NotImplementedError
 
-        try:
-            reg_content_fliped = str(int(reg_content_new, 2))
-        except:
-            print("\n\n\n", reg_content_new, "\n\n\n")
-
+        reg_content_fliped = str(int(reg_content_new, 2))
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content_fliped)
 
@@ -130,6 +126,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
     else:
         raise NotImplementedError
 
+
 """
 Handler attached to exit event
 """
@@ -142,9 +139,11 @@ def exit_handler(event):
     except:
         global_logging.exception(str("exit code: no exit code available"))
 
+
 """
 Handler attached to crash event
 """
+
 
 def abnormal_stop(event):
     global_logging.debug("Abnormal stop, signal:" + str(event.stop_signal))
@@ -153,6 +152,7 @@ def abnormal_stop(event):
 """
 Main function
 """
+
 
 def main():
     global global_valid_block, global_valid_thread, global_valid_register
