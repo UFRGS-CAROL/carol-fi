@@ -82,29 +82,30 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
     if m:
         reg_content = str(m.group(2))
         # Make sure that binary value will have max size register
-        reg_content = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
+        reg_content_old = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
         # Logging info result extracted from register
-        global_logging.info("reg old value: " + reg_content)
+        global_logging.info("reg old value: " + reg_content_old)
+        reg_content_new = ''
 
         # Single bit flip
         if fault_model == 0:
             # single bit flip
-            reg_content = flip_a_bit(bits_to_flip[0], reg_content)
+            reg_content_new = flip_a_bit(bits_to_flip[0], reg_content_old)
 
         # Double bit flip
         elif fault_model == 1:
             # multiple bit flip
             for bit_to_flip in bits_to_flip:
-                reg_content = flip_a_bit(bit_to_flip, reg_content)
+                reg_content_new = flip_a_bit(bit_to_flip, reg_content_old)
 
         # Random value
         elif fault_model == 2:
             # random value is stored at bits_to_flip[0]
-            reg_content = str(bits_to_flip[0])
+            reg_content_new = str(bits_to_flip[0])
 
         # Zero values
         elif fault_model == 3:
-            reg_content = '0'
+            reg_content_new = '0'
 
         # Least significant bits, not implemented
         elif fault_model == 4:
@@ -114,8 +115,8 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content_fliped)
 
-        fi_succ = True
-        global_logging.info("reg new value: " + str(reg_content))
+        fi_succ = (reg_content_old != reg_content_new)
+        global_logging.info("reg new value: " + str(reg_content_new))
         global_logging.info("flip command return: " + str(reg_cmd_flipped))
         return fi_succ
 
