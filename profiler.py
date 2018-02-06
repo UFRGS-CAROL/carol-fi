@@ -22,7 +22,7 @@ def get_kernel_address_event(event):
     # Search all kernels info, and all breakpoints
     for kernel_info in kernel_info_list:
         for breakpoint in event.breakpoints:
-
+            print("Breakpoint", breakpoint)
             # Get the addresses and thread for this kernel
             if breakpoint == kernel_info["breakpoint"]:
                 # Thread info
