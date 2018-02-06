@@ -348,6 +348,7 @@ def gen_profiler_script(unique_id, conf_filename):
 
 """
 Function to run one execution of the fault injector
+return old register value, new register value
 """
 
 
@@ -407,6 +408,13 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     # Make sure threads finish before trying to execute again
     th.join()
 
+    # Search for set values for register
+    reg_old_value = logging.search("reg_old_value")
+    reg_new_value = logging.search("reg_new_value")
+    reg_old_value = re.findall("reg_old_value\: (\S+)", reg_old_value)[0]
+    reg_new_value = re.findall("reg_new_value\: (\S+)", reg_new_value)[0]
+
+    return int(reg_old_value, 2), int(reg_new_value, 2)
 
 """
 Support function to parse a line of disassembled code
@@ -606,7 +614,7 @@ def main():
                 print("Injection:", num_rounds, "fault model:", fault_model, "kernel:", kernel_info_dict["kernel_name"])
                 breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
                                           + kernel_info_dict["kernel_line"])
-                run_gdb_fault_injection(section="DEFAULT", conf=conf,
+                r_old_val, r_new_val = run_gdb_fault_injection(section="DEFAULT", conf=conf,
                                         unique_id=unique_id, valid_block=valid_block,
                                         valid_thread=valid_thread, valid_register=valid_register,
                                         bits_to_flip=bits_to_flip, fault_model=fault_model,
@@ -616,7 +624,7 @@ def main():
                 row = [unique_id, num_rounds, fault_model]
                 row.extend(valid_thread)
                 row.extend(valid_block)
-                row.extend([0, 0, injection_address, valid_register, breakpoint_location])
+                row.extend([r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location])
                 summary_file.write_row(row=row)
                 time.sleep(2)
 

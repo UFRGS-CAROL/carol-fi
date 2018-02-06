@@ -84,7 +84,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         # Make sure that binary value will have max size register
         reg_content_old = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
         # Logging info result extracted from register
-        global_logging.info("reg old value: " + reg_content_old)
+        global_logging.info("reg_old_value: " + reg_content_old)
         reg_content_new = ''
 
         # Single bit flip
@@ -115,7 +115,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content_fliped)
 
-        global_logging.info("reg new value: " + str(reg_content_new))
+        global_logging.info("reg_new_value: " + str(reg_content_new))
 
         # Log command return only something was printed
         if len(reg_cmd_flipped) > 0:
