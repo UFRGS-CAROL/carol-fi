@@ -13,6 +13,7 @@ import filecmp
 import shutil
 import argparse
 import uuid
+import csv
 import common_functions as cf
 
 if sys.version_info >= (3, 0):
@@ -26,6 +27,13 @@ DEBUG = True
 # Injection mode
 # 0 -> Instruction output
 injection_mode = 0
+
+"""
+Class RunGdb: necessary to run gdb while
+the main thread register the time
+If RunGdb execution time > max timeout allowed
+this thread will be killed
+"""
 
 
 class RunGDB(threading.Thread):
@@ -46,6 +54,86 @@ class RunGDB(threading.Thread):
                                                                                 "gdbExecName")
         start_cmd += " -n -q -batch -x " + "/tmp/flip-" + self.unique_id + ".py"
         os.system(start_cmd)
+
+
+"""
+Class SummaryFile: this class will write the information
+of each injection in a csv file to make easier data
+parsing after fault injection
+"""
+
+
+class SummaryFile:
+    # Filename
+    __filename = ""
+    # csv file
+    __csv_file = None
+    # Dict reader
+    __dict_buff = None
+    # Csv Mode
+    __mode = None
+    # Fieldanames
+    __fieldnames = None
+
+    def __init__(self, **kwargs):
+        self.__filename = kwargs.get("filename")
+        self.__mode = kwargs.get("mode")
+        self.__open_file(mode=self.__mode)
+
+        if self.__mode in ['w', 'a']:
+            self.__fieldnames = kwargs.get("fieldnames")
+            self.__dict_buff = csv.DictWriter(self.__csv_file, self.__fieldnames)
+        elif self.__mode == 'r':
+            self.__dict_buff = csv.DictReader(self.__csv_file)
+
+    """
+    Open a file if it exists
+    mode can be r or w
+    default is r
+    """
+
+    def __open_file(self, mode='r'):
+        if os.path.isfile(self.__filename) and mode in ['r', 'a']:
+            self.__csv_file = open(self.__filename, mode)
+        elif mode == 'w':
+            self.__csv_file = open(self.__filename, mode)
+        else:
+            raise IOError(str(self.__filename) + " FILE NOT FOUND")
+
+    """
+    To not use __del__ method, close csv file
+    """
+
+    def close_csv(self):
+        if not self.__csv_file.closed:
+            self.__csv_file.close()
+
+    """
+    Write a csv row, if __mode == w or a
+    row must be a dict
+    """
+
+    def write_row(self, row):
+        if self.__mode in ['w', 'a']:
+            row_ready = {}
+            if isinstance(row, list):
+                for fields, data in zip(self.__fieldnames, row):
+                    row_ready[fields] = data
+            else:
+                row_ready = row
+
+            self.__dict_buff.writerow(row_ready)
+
+    """
+    Read rows, if __mode == r
+    return read rows from file in a list
+    """
+
+    def read_rows(self):
+        if self.__mode == 'r':
+            rows = [row for row in self.__dict_buff]
+            return rows
+        return None
 
 
 """
@@ -112,7 +200,7 @@ def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_fil
     if os.path.isfile(flip_log_file):
         fp = open(flip_log_file, "r")
         content = fp.read()
-        if re.search('Fault Injection Successful', content):
+        if re.search("Fault Injection Successful", content):
             fi_succ = True
         fp.close()
 
@@ -143,6 +231,7 @@ def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_fil
         os.makedirs(cp_dir)
 
     shutil.move(flip_log_file, cp_dir)
+    print("\n\n", flip_log_file, output_file, cp_dir, "\n\n")
     if os.path.isfile(output_file) and (not masked) and fi_succ:
         shutil.move(output_file, cp_dir)
 
@@ -461,6 +550,7 @@ def main():
     parser.add_argument('-c', '--conf', dest="configFile", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
                         help='How many times to repeat the programs in the configuration file', required=True, type=int)
+    parser.add_argument('-l', '--log_csv', dest="csv_file", help="CSV log file", type=str, required=False)
 
     args = parser.parse_args()
     if args.iterations < 1:
@@ -497,6 +587,12 @@ def main():
     # Get fault models
     fault_models = range(0, int(conf.get('DEFAULT', 'faultModel')) + 1)
 
+    # Csv log
+    fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
+                  'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'injection_address', 'register',
+                  'breakpoint_location']
+    summary_file = SummaryFile(filename=parser.csv_file, fieldnames=fieldnames, mode='w')
+
     # noinspection PyCompatibility
     for num_rounds in range(args.iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
@@ -507,18 +603,26 @@ def main():
                 valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
                     kernel_info_dict=kernel_info_dict)
                 print("Injection:", num_rounds, "fault model:", fault_model, "kernel:", kernel_info_dict["kernel_name"])
+                breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
+                                          + kernel_info_dict["kernel_line"])
                 run_gdb_fault_injection(section="DEFAULT", conf=conf,
                                         unique_id=unique_id, valid_block=valid_block,
                                         valid_thread=valid_thread, valid_register=valid_register,
                                         bits_to_flip=bits_to_flip, fault_model=fault_model,
                                         injection_address=injection_address,
-                                        breakpoint_location=str(kernel_info_dict["kernel_name"] + ":"
-                                                                + kernel_info_dict["kernel_line"]))
+                                        breakpoint_location=breakpoint_location)
+                # Write a row to summary file
+                row = [unique_id, num_rounds, fault_model]
+                row.extend(valid_thread)
+                row.extend(valid_block)
+                row.extend([0, 0, injection_address, valid_register, breakpoint_location])
+                summary_file.write_row(row=row)
                 time.sleep(2)
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/*" + unique_id + "*")
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
+    summary_file.close_csv()
 
 
 ########################################################################
