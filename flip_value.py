@@ -41,8 +41,7 @@ def fault_injection(event):
             thread_focus = gdb.execute(change_focus_cmd, to_string=True)
 
             # Thread focus return information
-            for i in thread_focus:
-                global_logging.info(i)
+            global_logging.info(thread_focus)
 
             # Do the fault injection magic
             fi_succ = generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)

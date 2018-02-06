@@ -231,7 +231,6 @@ def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_fil
         os.makedirs(cp_dir)
 
     shutil.move(flip_log_file, cp_dir)
-    print("\n\n", flip_log_file, output_file, cp_dir, "\n\n")
     if os.path.isfile(output_file) and (not masked) and fi_succ:
         shutil.move(output_file, cp_dir)
 
