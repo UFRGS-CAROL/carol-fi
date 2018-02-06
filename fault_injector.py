@@ -405,17 +405,23 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
 
     # Search for set values for register
     # Must be done before save output
-    reg_old_value = logging.search("reg_old_value")
-    reg_new_value = logging.search("reg_new_value")
-    reg_old_value = re.findall("reg_old_value\: (\S+)", reg_old_value)[0]
-    reg_new_value = re.findall("reg_new_value\: (\S+)", reg_new_value)[0]
+    fault_successful = logging.search("fault_injection_python_exception")
+    # Was fault injected
+    if fault_successful is None:
+        reg_old_value = logging.search("reg_old_value")
+        reg_new_value = logging.search("reg_new_value")
+        reg_old_value = re.findall("reg_old_value\: (\S+)", reg_old_value)[0]
+        reg_new_value = re.findall("reg_new_value\: (\S+)", reg_new_value)[0]
+    else:
+        reg_new_value = reg_old_value = ''
+        fault_successful = False
 
     # Copy output files to a folder
     save_output(
         section=section, is_sdc=is_sdc, is_hang=is_hang, conf=conf, logging=logging, unique_id=unique_id,
         flip_log_file=flip_log_file)  # , gdb_fi_log_file=gdb_fi_log_file)
 
-    return int(reg_old_value, 2), int(reg_new_value, 2)
+    return reg_old_value, reg_new_value, fault_successful
 
 """
 Support function to parse a line of disassembled code
@@ -600,7 +606,7 @@ def main():
     # Csv log
     fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'injection_address', 'register',
-                  'breakpoint_location']
+                  'breakpoint_location', 'fault_successful']
     summary_file = SummaryFile(filename=args.csv_file, fieldnames=fieldnames, mode='w')
 
     # noinspection PyCompatibility
@@ -615,7 +621,7 @@ def main():
                 print("Injection:", num_rounds, "fault model:", fault_model, "kernel:", kernel_info_dict["kernel_name"])
                 breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
                                           + kernel_info_dict["kernel_line"])
-                r_old_val, r_new_val = run_gdb_fault_injection(section="DEFAULT", conf=conf,
+                r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(section="DEFAULT", conf=conf,
                                         unique_id=unique_id, valid_block=valid_block,
                                         valid_thread=valid_thread, valid_register=valid_register,
                                         bits_to_flip=bits_to_flip, fault_model=fault_model,
@@ -625,7 +631,7 @@ def main():
                 row = [unique_id, num_rounds, fault_model]
                 row.extend(valid_thread)
                 row.extend(valid_block)
-                row.extend([r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location])
+                row.extend([r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
                 summary_file.write_row(row=row)
                 time.sleep(2)
 
