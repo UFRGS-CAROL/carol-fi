@@ -63,7 +63,7 @@ Flip only a bit in a register content
 
 
 def flip_a_bit(bit_to_flip, reg_content):
-    new_bit = '0' if reg_content[bit_to_flip] == 1 else '1'
+    new_bit = '0' if reg_content[bit_to_flip] == '1' else '1'
     reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
     return reg_content
 
