@@ -424,6 +424,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
 
     return reg_old_value, reg_new_value, fault_successful
 
+
 """
 Support function to parse a line of disassembled code
 """
@@ -606,8 +607,8 @@ def main():
 
     # Csv log
     fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
-                  'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'injection_address', 'register',
-                  'breakpoint_location', 'fault_successful']
+                  'block_x', 'block_y', 'block_z', 'old_value', 'new_value',
+                  'injection_address', 'register', 'fault_successful']
     summary_file = SummaryFile(filename=args.csv_file, fieldnames=fieldnames, mode='w')
 
     # noinspection PyCompatibility
@@ -623,16 +624,19 @@ def main():
                 breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
                                           + kernel_info_dict["kernel_line"])
                 r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(section="DEFAULT", conf=conf,
-                                        unique_id=unique_id, valid_block=valid_block,
-                                        valid_thread=valid_thread, valid_register=valid_register,
-                                        bits_to_flip=bits_to_flip, fault_model=fault_model,
-                                        injection_address=injection_address,
-                                        breakpoint_location=breakpoint_location)
+                                                                           unique_id=unique_id, valid_block=valid_block,
+                                                                           valid_thread=valid_thread,
+                                                                           valid_register=valid_register,
+                                                                           bits_to_flip=bits_to_flip,
+                                                                           fault_model=fault_model,
+                                                                           injection_address=injection_address,
+                                                                           breakpoint_location=breakpoint_location)
                 # Write a row to summary file
                 row = [unique_id, num_rounds, fault_model]
                 row.extend(valid_thread)
                 row.extend(valid_block)
-                row.extend([r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
+                row.extend(
+                    [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
                 summary_file.write_row(row=row)
                 time.sleep(2)
 
