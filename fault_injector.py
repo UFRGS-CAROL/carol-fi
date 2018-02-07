@@ -533,6 +533,8 @@ def gen_injection_site(kernel_info_dict):
         valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
     except:
         print("Pau",  kernel_info_dict)
+        # dump file
+        cf.save_file("dump.txt", kernel_info_dict)
         raise ValueError
 
     # A injection site is a list of [registers, instruction, address, byte_location]
