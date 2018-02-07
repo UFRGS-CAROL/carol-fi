@@ -529,7 +529,11 @@ def gen_injection_site(kernel_info_dict):
     global injection_mode
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
-    valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
+    try:
+        valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
+    except:
+        print("Pau",  kernel_info_dict)
+        raise ValueError
 
     # A injection site is a list of [registers, instruction, address, byte_location]
     registers, _, injection_site, _ = get_valid_address(kernel_info_dict["addresses"])
