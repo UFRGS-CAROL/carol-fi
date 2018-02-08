@@ -529,10 +529,7 @@ def gen_injection_site(kernel_info_dict):
     global injection_mode
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
-    try:
-        valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
-    except:
-        print("ERROR FOR NO REASON",  len(kernel_info_dict), "threads" in kernel_info_dict)
+    valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
 
     # A injection site is a list of [registers, instruction, address, byte_location]
@@ -622,26 +619,30 @@ def main():
             # Execute one fault injection for a specific app
             # For each kernel
             for kernel_info_dict in kernel_info_list:
-                valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
-                    kernel_info_dict=kernel_info_dict)
-                print("Injection:", num_rounds, "fault model:", fault_model, "kernel:", kernel_info_dict["kernel_name"])
-                breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
-                                          + kernel_info_dict["kernel_line"])
-                r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(section="DEFAULT", conf=conf,
-                                                                           unique_id=unique_id, valid_block=valid_block,
-                                                                           valid_thread=valid_thread,
-                                                                           valid_register=valid_register,
-                                                                           bits_to_flip=bits_to_flip,
-                                                                           fault_model=fault_model,
-                                                                           injection_address=injection_address,
-                                                                           breakpoint_location=breakpoint_location)
-                # Write a row to summary file
-                row = [unique_id, num_rounds, fault_model]
-                row.extend(valid_thread)
-                row.extend(valid_block)
-                row.extend(
-                    [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
-                summary_file.write_row(row=row)
+                try:
+                    valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
+                        kernel_info_dict=kernel_info_dict)
+                    print("Injection:", num_rounds, "fault model:", fault_model, "kernel:", kernel_info_dict["kernel_name"])
+                    breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
+                                              + kernel_info_dict["kernel_line"])
+                    r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(section="DEFAULT", conf=conf,
+                                                                               unique_id=unique_id, valid_block=valid_block,
+                                                                               valid_thread=valid_thread,
+                                                                               valid_register=valid_register,
+                                                                               bits_to_flip=bits_to_flip,
+                                                                               fault_model=fault_model,
+                                                                               injection_address=injection_address,
+                                                                               breakpoint_location=breakpoint_location)
+                    # Write a row to summary file
+                    row = [unique_id, num_rounds, fault_model]
+                    row.extend(valid_thread)
+                    row.extend(valid_block)
+                    row.extend(
+                        [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
+                    summary_file.write_row(row=row)
+                except Exception as err:
+                    print("\nFault was not injected\n", str(err))
+                    num_rounds -= 1
                 time.sleep(2)
 
     # Clear /tmp files generated
