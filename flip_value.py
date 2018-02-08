@@ -1,16 +1,7 @@
 import gdb
-import sys
 import re
-
-########################################################################
-# Global vars
-# Unfortunately gdb cannot see common_functions.py
-home_dir = "<home-location>"
-sys.path.append(home_dir)
+import os
 import common_functions as cf  # All common functions will be at common_functions module
-
-# global vars loaded from config file
-conf_location = "<conf-location>"
 
 """
 function called when the execution is stopped
@@ -19,41 +10,31 @@ function called when the execution is stopped
 
 def fault_injection(event):
     global global_valid_block, global_valid_thread, global_valid_register
-    global global_bits_to_flip, global_fault_model, global_fi, global_logging
-
-    # Ensure fault was injected
-    fi_succ = False
+    global global_bits_to_flip, global_fault_model, global_logging
 
     # This if avoid the creation of another event connection
     # for some reason gdb cannot breakpoint addresses before
     # a normal breakpoint is hit
-    if global_fi:
+    global_logging.debug("Trying Fault Injection")
 
-        global_logging.debug("Trying Fault Injection")
+    try:
+        change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
+                                                                                       str(global_valid_block[1]),
+                                                                                       str(global_valid_block[2]),
+                                                                                       str(global_valid_thread[0]),
+                                                                                       str(global_valid_thread[1]),
+                                                                                       str(global_valid_thread[2]))
+        thread_focus = gdb.execute(change_focus_cmd, to_string=True)
 
-        try:
-            change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
-                                                                                           str(global_valid_block[1]),
-                                                                                           str(global_valid_block[2]),
-                                                                                           str(global_valid_thread[0]),
-                                                                                           str(global_valid_thread[1]),
-                                                                                           str(global_valid_thread[2]))
-            thread_focus = gdb.execute(change_focus_cmd, to_string=True)
+        # Thread focus return information
+        global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
 
-            # Thread focus return information
-            global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
-
-            # Do the fault injection magic
-            fi_succ = generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)
-
-        except Exception as err:
-            global_logging.exception("fault_injection_python_exception: " + str(err))
-    else:
-        global_fi = True
-
-    if fi_succ:
+        # Do the fault injection magic
+        generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)
         global_logging.exception("Fault Injection Successful")
-    else:
+
+    except Exception as err:
+        global_logging.exception("fault_injection_python_exception: " + str(err))
         global_logging.exception("Fault Injection Went Wrong")
 
 
@@ -155,9 +136,8 @@ Main function
 
 
 def main():
-    global global_valid_block, global_valid_thread, global_valid_register
-    global global_bits_to_flip, global_fault_model, global_logging
-
+    global global_valid_block, global_valid_thread, global_bits_to_flip
+    global global_fault_model, global_valid_register, global_logging
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
@@ -165,25 +145,24 @@ def main():
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
 
-    # Setting conf and loading global vars
-    conf = cf.load_config_file(conf_location)
+    # Get variables values from environment
+    # First parse line
+    # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
+    # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
 
-    # Get variables values from config file
-    global_valid_block = conf.get("DEFAULT", "validBlock").split(";")
-    global_valid_thread = conf.get("DEFAULT", "validThread").split(";")
-    global_valid_register = conf.get("DEFAULT", "validRegister")
-    global_bits_to_flip = [int(i) for i in conf.get("DEFAULT", "bitsToFlip").split(";")]
-    global_fault_model = int(conf.get("DEFAULT", "faultModel"))
-    injection_site = conf.get("DEFAULT", "injectionSite")
-    breakpoint_location = conf.get("DEFAULT", "breakpointLocation")
+    [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
+     flip_log_file, debug, gdb_init_strings] = str(os.environ['CAROL_FI_INFO']).split(';')
+    global_valid_block = valid_block.split(",")
+    global_valid_thread = valid_thread.split(",")
+    global_bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
+    global_fault_model = int(fault_model)
+    debug = bool(debug)
 
     # Logging
-    global_logging = cf.Logging(log_file=conf.get("DEFAULT", "flipLogFile"), debug=conf.get("DEFAULT", "debug"))
+    global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
     global_logging.info("Starting flip_value script")
     try:
-        gdb_init_strings = conf.get("DEFAULT", "gdbInitStrings")
-
-        for init_str in gdb_init_strings.split(";"):
+        for init_str in gdb_init_strings.split(","):
             gdb.execute(init_str)
             global_logging.info("initializing setup: " + str(init_str))
 
@@ -208,14 +187,8 @@ def main():
     breakpoint_kernel_address.delete()
 
 
-# Set global vars
-global_valid_block = None
-global_valid_thread = None
-global_valid_register = None
-global_bits_to_flip = None
-global_fault_model = None
-global_logging = None
-global_fi = False
+global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
+global_fault_model, global_valid_register, global_logging = [None] * 3
 
 # Call main execution
 main()

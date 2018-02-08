@@ -1,7 +1,5 @@
 import gdb
-import sys
-
-sys.path.append("/home/carol/carol-fi")  # I have to fix it
+import os
 import common_functions as cf  # All common functions will be at common_functions module
 
 # This list will contains all kernel info
@@ -79,10 +77,8 @@ def main():
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
-    conf = cf.load_config_file(conf_location)
+    gdb_init_strings, kernel_conf_string = str(os.environ["CAROL_FI_INFO"]).split("|")
     try:
-        gdb_init_strings = conf.get("DEFAULT", "gdbInitStrings")
-
         for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)
 
@@ -92,7 +88,6 @@ def main():
     # Profiler has two steps
     # First: getting kernel information
     # Run app for the first time
-    kernel_conf_string = conf.get("DEFAULT", "kernelBreaks")
     set_breakpoints(kernel_conf_string)
     gdb.events.stop.connect(get_kernel_address_event)
     gdb.execute("r")

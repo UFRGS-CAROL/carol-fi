@@ -282,32 +282,22 @@ def check_sdcs(gold_file, output_file, logging):
 
 
 """
-Generate config file for the gdb flip_value script
+Generate enviroment string for cuda-gdb
+return CAROL_FI_INFO = blockX,blockY,blockZ|threadX,threadY,threadZ|validRegister|bits_0,bits_1|fault_model|
+injection_site|breakpoint|flip_log_file|debug|gdb_init_strings
 """
 
 
-def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block,
-                  valid_thread, valid_register, bits_to_flip, fault_model,
-                  injection_site, breakpoint_location, flip_log_file):
-    if sys.version_info >= (3, 0):
-        f_conf = configparser.SafeConfigParser()
-    else:
-        f_conf = ConfigParser.SafeConfigParser()
+def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
+                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings):
+    # Block and thread
+    env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(
+        str(i) for i in valid_thread)
+    env_string += "|" + valid_register + ",".join(str(i) for i in bits_to_flip) + "|" + str(
+        fault_model) + injection_site
+    env_string += "|" + breakpoint_location + "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings
 
-    f_conf.set("DEFAULT", "flipLogFile", flip_log_file)
-    f_conf.set("DEFAULT", "debug", debug)
-    f_conf.set("DEFAULT", "gdbInitStrings", gdb_init_strings)
-    f_conf.set("DEFAULT", "faultModel", str(fault_model))
-    f_conf.set("DEFAULT", "injectionSite", injection_site)
-    f_conf.set("DEFAULT", "validThread", ";".join(valid_thread))
-    f_conf.set("DEFAULT", "validBlock", ";".join(valid_block))
-    f_conf.set("DEFAULT", "validRegister", valid_register)
-    f_conf.set("DEFAULT", "bitsToFlip", ";".join(str(i) for i in bits_to_flip))
-    f_conf.set("DEFAULT", "breakpointLocation", breakpoint_location)
-
-    fp = open("/tmp/flip-" + unique_id + ".conf", "w")
-    f_conf.write(fp)
-    fp.close()
+    os.environ['CAROL_FI_INFO'] = env_string
 
 
 """
@@ -329,24 +319,6 @@ def gen_flip_script(unique_id):
 
 
 """
-Generate the gdb profiler script
-"""
-
-
-def gen_profiler_script(unique_id, conf_filename):
-    fp = open("profiler.py", "r")
-    p_script = fp.read()
-    fp.close()
-    profiler_filename = "/tmp/profiler-" + unique_id + ".py"
-    fp = open(profiler_filename, "w")
-
-    fp.write(p_script.replace("<conf-location>", conf_filename))
-    fp.close()
-    os.chmod(profiler_filename, 0o775)
-    return profiler_filename
-
-
-"""
 Function to run one execution of the fault injector
 return old register value, new register value
 """
@@ -362,17 +334,16 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
-    gen_conf_file(gdb_init_strings=conf.get(section, "gdbInitStrings"),
-                  debug=conf.get(section, "debug"),
-                  unique_id=unique_id,
-                  valid_block=valid_block,
-                  valid_thread=valid_thread,
-                  valid_register=valid_register,
-                  bits_to_flip=bits_to_flip,
-                  fault_model=fault_model,
-                  injection_site=injection_address,
-                  breakpoint_location=breakpoint_location,
-                  flip_log_file=flip_log_file)
+    gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
+                   debug=conf.get(section, "debug"),
+                   valid_block=valid_block,
+                   valid_thread=valid_thread,
+                   valid_register=valid_register,
+                   bits_to_flip=bits_to_flip,
+                   fault_model=fault_model,
+                   injection_site=injection_address,
+                   breakpoint_location=breakpoint_location,
+                   flip_log_file=flip_log_file)
 
     # Generate python script for GDB
     gen_flip_script(unique_id=unique_id)
@@ -531,7 +502,6 @@ def gen_injection_site(kernel_info_dict):
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
-
     # A injection site is a list of [registers, instruction, address, byte_location]
     registers, _, injection_site, _ = get_valid_address(kernel_info_dict["addresses"])
 
@@ -585,17 +555,14 @@ def main():
     # Generate an unique id for this fault injection
     unique_id = str(uuid.uuid4())
 
+    # First set env vars
+    os.environ['PYTHONPATH'] = "$PYTHONPATH:" + os.path.dirname(os.path.realpath(__file__))
+    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
+                                                                                        "breakpointLocation")
     ########################################################################
     # Profiler step
-
-    profiler_file = gen_profiler_script(unique_id=unique_id, conf_filename=args.configFile)
-    profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x " + profiler_file
+    profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     print(profiler_cmd)
-    if os.path.isfile(profiler_file):
-        os.system(profiler_cmd)
-    else:
-        print(profiler_file, "not found, please set the correct profiler file before trying again.")
-        raise IOError
 
     ########################################################################
     # Fault injection
@@ -622,11 +589,13 @@ def main():
                 try:
                     valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
                         kernel_info_dict=kernel_info_dict)
-                    print("Injection:", num_rounds, "fault model:", fault_model, "kernel:", kernel_info_dict["kernel_name"])
+                    print("Injection:", num_rounds, "fault model:", fault_model, "kernel:",
+                          kernel_info_dict["kernel_name"])
                     breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
                                               + kernel_info_dict["kernel_line"])
                     r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(section="DEFAULT", conf=conf,
-                                                                               unique_id=unique_id, valid_block=valid_block,
+                                                                               unique_id=unique_id,
+                                                                               valid_block=valid_block,
                                                                                valid_thread=valid_thread,
                                                                                valid_register=valid_register,
                                                                                bits_to_flip=bits_to_flip,
@@ -657,3 +626,53 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+LEGACY
+"""
+
+# """
+# Generate config file for the gdb flip_value script
+# """
+#
+#
+# def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block,
+#                   valid_thread, valid_register, bits_to_flip, fault_model,
+#                   injection_site, breakpoint_location, flip_log_file):
+#     if sys.version_info >= (3, 0):
+#         f_conf = configparser.SafeConfigParser()
+#     else:
+#         f_conf = ConfigParser.SafeConfigParser()
+#
+#     f_conf.set("DEFAULT", "flipLogFile", flip_log_file)
+#     f_conf.set("DEFAULT", "debug", debug)
+#     f_conf.set("DEFAULT", "gdbInitStrings", gdb_init_strings)
+#     f_conf.set("DEFAULT", "faultModel", str(fault_model))
+#     f_conf.set("DEFAULT", "injectionSite", injection_site)
+#     f_conf.set("DEFAULT", "validThread", ";".join(valid_thread))
+#     f_conf.set("DEFAULT", "validBlock", ";".join(valid_block))
+#     f_conf.set("DEFAULT", "validRegister", valid_register)
+#     f_conf.set("DEFAULT", "bitsToFlip", ";".join(str(i) for i in bits_to_flip))
+#     f_conf.set("DEFAULT", "breakpointLocation", breakpoint_location)
+#
+#     fp = open("/tmp/flip-" + unique_id + ".conf", "w")
+#     f_conf.write(fp)
+#     fp.close()
+
+
+# """
+# Generate the gdb profiler script
+# """
+#
+#
+# def gen_profiler_script(unique_id, conf_filename):
+#     fp = open("profiler.py", "r")
+#     p_script = fp.read()
+#     fp.close()
+#     profiler_filename = "/tmp/profiler-" + unique_id + ".py"
+#     fp = open(profiler_filename, "w")
+#
+#     fp.write(p_script.replace("<conf-location>", conf_filename))
+#     fp.close()
+#     os.chmod(profiler_filename, 0o775)
+#     return profiler_filename
