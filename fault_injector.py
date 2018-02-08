@@ -560,8 +560,7 @@ def main():
     ########################################################################
     # Profiler step
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    print(profiler_cmd)
-
+    os.system(profiler_cmd)
     ########################################################################
     # Fault injection
 
