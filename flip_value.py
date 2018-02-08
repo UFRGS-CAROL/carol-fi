@@ -150,10 +150,12 @@ def main():
     # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
 
-    [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
+    [valid_block, valid_thread, valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
      flip_log_file, debug, gdb_init_strings] = str(os.environ['CAROL_FI_INFO']).split('|')
+
     global_valid_block = valid_block.split(",")
     global_valid_thread = valid_thread.split(",")
+    global_valid_register = valid_register.split(",")
     global_bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
     global_fault_model = int(fault_model)
     debug = bool(debug)

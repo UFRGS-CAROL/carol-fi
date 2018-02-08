@@ -282,20 +282,19 @@ def check_sdcs(gold_file, output_file, logging):
 
 
 """
-Generate enviroment string for cuda-gdb
-return CAROL_FI_INFO = blockX,blockY,blockZ|threadX,threadY,threadZ|validRegister|bits_0,bits_1|fault_model|
-injection_site|breakpoint|flip_log_file|debug|gdb_init_strings
+Generate environment string for cuda-gdb
+valid_block, valid_thread, valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
+    flip_log_file, debug, gdb_init_strings
 """
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
                    injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings):
     # Block and thread
-    env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(
-        str(i) for i in valid_thread)
-    env_string += "|" + valid_register + ",".join(str(i) for i in bits_to_flip) + "|" + str(
-        fault_model) + injection_site
-    env_string += "|" + breakpoint_location + "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings
+    env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
+    env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
+    env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
+    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings
 
     os.environ['CAROL_FI_INFO'] = env_string
     print("\n\n", env_string, "\n\n")
@@ -559,7 +558,7 @@ def main():
     # First set env vars
     os.environ['PYTHONPATH'] = "$PYTHONPATH:" + os.path.dirname(os.path.realpath(__file__))
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                                                        "kernelBreaks")
+                                                                                         "kernelBreaks")
     ########################################################################
     # Profiler step
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
