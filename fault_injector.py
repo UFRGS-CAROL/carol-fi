@@ -37,23 +37,51 @@ this thread will be killed
 
 
 class RunGDB(threading.Thread):
-    section = None
-    conf = None
-    unique_id = None
-
-    def __init__(self, section, conf, unique_id):
+    def __init__(self, unique_id, gdb_exec_name, flip_script):
         threading.Thread.__init__(self)
-        self.section = section
-        self.unique_id = unique_id
-        self.conf = conf
+        self.__gdb_exe_name = gdb_exec_name
+        self.__flip_script = flip_script
+        self.__unique_id = unique_id
 
     def run(self):
         if DEBUG:
-            print("GDB Thread run, section and id: ", self.section, self.unique_id)
-        start_cmd = "env CUDA_​DEVICE_​WAITS_​ON_​EXCEPTION=1 " + self.conf.get(self.section,
-                                                                                "gdbExecName")
-        start_cmd += " -n -q -batch -x " + "/tmp/flip-" + self.unique_id + ".py"
+            print("GDB Thread run, section and id: ", self.__unique_id)
+        start_cmd = "env CUDA_​DEVICE_​WAITS_​ON_​EXCEPTION=1 " + self.__gdb_exe_name
+        start_cmd += " -n -q -batch -x " + self.__flip_script
         os.system(start_cmd)
+
+
+"""
+Signal the app to stop so GDB can execute the script to flip a value
+"""
+
+
+class SignalApp(threading.Thread):
+    def __init__(self, signal_cmd, max_wait_time, init, end, seq_signals, logging):
+        threading.Thread.__init__(self)
+        self.__signal_cmd = signal_cmd
+        self.__max_wait_time = max_wait_time
+        self.__init = init
+        self.__end = end
+        self.__seq_signals = seq_signals
+        self.__logging = logging
+
+    def run(self):
+        # Sleep for a random time
+        wait_time = random.uniform(self.__init, self.__end)
+        time.sleep(wait_time)
+        # Send a series of signal to make sure gdb will flip a value in one of the interrupt signals
+        self.__logging.info(
+            "sending " + str(self.__seq_signals) + " signals using command: '" + self.__signal_cmd + "' after " + str(
+                wait_time) + "s")
+        for i in range(0, self.__seq_signals):
+            proc = subprocess.Popen(self.__signal_cmd, stdout=subprocess.PIPE, shell=True)
+            (out, err) = proc.communicate()
+            if out is not None:
+                self.__logging.info("shell stdout: " + str(out))
+            if err is not None:
+                self.__logging.error("shell stderr: " + str(err))
+            time.sleep(0.01)
 
 
 """
@@ -300,32 +328,13 @@ def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, faul
 
 
 """
-Generate the gdb flip_value script
-"""
-
-
-def gen_flip_script(unique_id):
-    fp = open("flip_value.py", "r")
-    p_script = fp.read()
-    fp.close()
-    fp = open("/tmp/flip-" + unique_id + ".py", "w")
-
-    p_script = p_script.replace("<conf-location>", "/tmp/flip-" + unique_id + ".conf")
-    p_script = p_script.replace("<home-location>", "/home/carol/carol-fi")
-    fp.write(p_script)
-    fp.close()
-    os.chmod("/tmp/flip-" + unique_id + ".py", 0o775)
-
-
-"""
 Function to run one execution of the fault injector
 return old register value, new register value
 """
 
 
 def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread, valid_register, bits_to_flip,
-                            injection_address,
-                            fault_model, breakpoint_location):
+                            injection_address, fault_model, breakpoint_location, inj_mode="break"):
     flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
 
     logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
@@ -344,9 +353,6 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
                    breakpoint_location=breakpoint_location,
                    flip_log_file=flip_log_file)
 
-    # Generate python script for GDB
-    gen_flip_script(unique_id=unique_id)
-
     # Run pre execution function
     pre_execution(conf=conf, section=section)
 
@@ -358,6 +364,24 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
 
     # Start fault injection tread
     th.start()
+    #        self.__signal_cmd = signal_cmd
+    #     self.__max_wait_time = max_wait_time
+    #     self.__init = init
+    #     self.__end = end
+    #     self.__seq_signals = seq_signals
+    #     self.__logging = logging
+
+
+    if inj_mode == 'signal':
+        init_signal = float(conf.get("DEFAULT", "initSignal"))
+        end_signal = float(conf.get("DEFAULT", "endSignal"))
+        signal_cmd = conf.get("DEFAULT", "signalCmd")
+        max_wait_time = int(conf.get("DEFAULT", "maxWaitTime"))
+        seq_signals = int(conf.get("DEFAULT", "seqSignals"))
+        max_num_fi = int(conf.get("DEFAULT", "maxThreadsFI"))
+        thread_signal_array = [SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
+                                         init=init_signal, end=end_signal, seq_signals=seq_signals,
+                                         logging=logging)] * max_num_fi
 
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start)
@@ -540,7 +564,12 @@ by sending a OS signal to the application
 """
 
 
-def fault_injection_by_signal():
+def fault_injection_by_signal(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file):
+    for num_rounds in range(iterations):
+        # Execute the fault injector for each one of the sections(apps) of the configuration file
+        for fault_model in fault_models:
+            unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
+
     pass
 
 
@@ -559,7 +588,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
             # For each kernel
             for kernel_info_dict in kernel_info_list:
                 # Generate an unique id for this fault injection
-                unique_id = str(num_rounds) + "_" + str(inj_type)
+                unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
                 try:
                     valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
                         kernel_info_dict=kernel_info_dict)
@@ -642,7 +671,8 @@ def main():
 
     # break mode is default option
     if inj_type == 'break':
-        fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file)
+        fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
+                                         kernel_info_list=kernel_info_list, summary_file=summary_file)
     elif inj_type == 'signal':
         # The hard mode
         fault_injection_by_signal()
@@ -651,6 +681,7 @@ def main():
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
     summary_file.close_csv()
     ########################################################################
+
 
 ########################################################################
 #                                   Main                               #
@@ -708,3 +739,20 @@ LEGACY
 #     fp.close()
 #     os.chmod(profiler_filename, 0o775)
 #     return profiler_filename
+#
+# """
+# Generate the gdb flip_value script
+# """
+#
+#
+# def gen_flip_script(unique_id):
+#     fp = open("flip_value.py", "r")
+#     p_script = fp.read()
+#     fp.close()
+#     fp = open("/tmp/flip-" + unique_id + ".py", "w")
+#
+#     p_script = p_script.replace("<conf-location>", "/tmp/flip-" + unique_id + ".conf")
+#     p_script = p_script.replace("<home-location>", "/home/carol/carol-fi")
+#     fp.write(p_script)
+#     fp.close()
+#     os.chmod("/tmp/flip-" + unique_id + ".py", 0o775)
