@@ -558,7 +558,7 @@ def main():
     # First set env vars
     os.environ['PYTHONPATH'] = "$PYTHONPATH:" + os.path.dirname(os.path.realpath(__file__))
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                                                        "breakpointLocation")
+                                                                                        "kernelBreaks")
     ########################################################################
     # Profiler step
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
