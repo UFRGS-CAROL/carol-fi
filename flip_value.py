@@ -166,7 +166,7 @@ def main():
     global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
     global_logging.info("Starting flip_value script")
     try:
-        for init_str in gdb_init_strings.split(","):
+        for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)
             global_logging.info("initializing setup: " + str(init_str))
 
