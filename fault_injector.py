@@ -298,6 +298,7 @@ def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, faul
 
     os.environ['CAROL_FI_INFO'] = env_string
 
+
 """
 Generate the gdb flip_value script
 """
@@ -532,57 +533,33 @@ def gen_injection_site(kernel_info_dict):
     return valid_thread, valid_block, valid_register, bits_to_flip, injection_site
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--conf', dest="configFile", help='Configuration file', required=True)
-    parser.add_argument('-i', '--iter', dest="iterations",
-                        help='How many times to repeat the programs in the configuration file', required=True, type=int)
-    parser.add_argument('-l', '--log_csv', dest="csv_file", help="CSV log file", type=str, required=False)
+"""
+This injector has two injection options
+this function performs fault injection
+by sending a OS signal to the application
+"""
 
-    args = parser.parse_args()
-    if args.iterations < 1:
-        parser.error('Iterations must be greater than zero')
 
-    # Start with a different seed every time to vary the random numbers generated
-    # the seed will be the current number of second since 01/01/70
-    random.seed()
+def fault_injection_by_signal():
+    pass
 
-    # Read the configuration file with data for all the apps that will be executed
-    conf = cf.load_config_file(args.configFile)
 
-    # Generate an unique id for this fault injection
-    unique_id = str(uuid.uuid4())
+"""
+This injector has two injection options
+this function performs fault injection
+by creating a breakpoint and steping into it
+"""
 
-    # First set env vars
-    os.environ['PYTHONPATH'] = "$PYTHONPATH:" + os.path.dirname(os.path.realpath(__file__))
-    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                                                         "kernelBreaks")
-    ########################################################################
-    # Profiler step
-    profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    os.system(profiler_cmd)
-    ########################################################################
-    # Fault injection
 
-    # Load information file generated in profiler step
-    kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
-
-    # Get fault models
-    fault_models = range(0, int(conf.get('DEFAULT', 'faultModel')) + 1)
-
-    # Csv log
-    fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
-                  'block_x', 'block_y', 'block_z', 'old_value', 'new_value',
-                  'injection_address', 'register', 'fault_successful']
-    summary_file = SummaryFile(filename=args.csv_file, fieldnames=fieldnames, mode='w')
-
-    # noinspection PyCompatibility
-    for num_rounds in range(args.iterations):
+def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file):
+    for num_rounds in range(iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
             # Execute one fault injection for a specific app
             # For each kernel
             for kernel_info_dict in kernel_info_list:
+                # Generate an unique id for this fault injection
+                unique_id = str(num_rounds) + "_" + str(inj_type)
                 try:
                     valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
                         kernel_info_dict=kernel_info_dict)
@@ -611,11 +588,69 @@ def main():
                     num_rounds -= 1
                 time.sleep(2)
 
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
+    parser.add_argument('-i', '--iter', dest="iterations",
+                        help='How many times to repeat the programs in the configuration file', required=True, type=int)
+    parser.add_argument('-l', '--log_csv', dest="csv_file", help="CSV log file", type=str, required=False)
+    parser.add_argument('-t', '--inj_type', dest="inj_type",
+                        help="The CAROL-FI cuda could inject faults in two ways, by using a breakpoint or a thread signal",
+                        required=False, default='break')
+
+    args = parser.parse_args()
+    if args.iterations < 1:
+        parser.error('Iterations must be greater than zero')
+
+    # Start with a different seed every time to vary the random numbers generated
+    # the seed will be the current number of second since 01/01/70
+    random.seed()
+
+    # Read the configuration file with data for all the apps that will be executed
+    conf = cf.load_config_file(args.config_file)
+
+    # First set env vars
+    os.environ['PYTHONPATH'] = "$PYTHONPATH:" + os.path.dirname(os.path.realpath(__file__))
+    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
+                                                                                         "kernelBreaks")
+    ########################################################################
+    # Profiler step
+    profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
+    os.system(profiler_cmd)
+    ########################################################################
+    # Injector setup
+
+    # Load information file generated in profiler step
+    kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
+
+    # Get fault models
+    fault_models = range(0, int(conf.get('DEFAULT', 'faultModel')) + 1)
+
+    # Csv log
+    fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
+                  'block_x', 'block_y', 'block_z', 'old_value', 'new_value',
+                  'injection_address', 'register', 'fault_successful']
+
+    ########################################################################
+    # Fault injection
+    inj_type = args.inj_type
+    iterations = args.iterations
+
+    # Creating a summary csv file
+    summary_file = SummaryFile(filename=args.csv_file, fieldnames=fieldnames, mode='w')
+
+    # break mode is default option
+    if inj_type == 'break':
+        fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file)
+    elif inj_type == 'signal':
+        # The hard mode
+        fault_injection_by_signal()
+
     # Clear /tmp files generated
-    os.system("rm -f /tmp/*" + unique_id + "*")
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
     summary_file.close_csv()
-
+    ########################################################################
 
 ########################################################################
 #                                   Main                               #
