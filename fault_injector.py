@@ -2,7 +2,6 @@
 # coding=utf-8
 from __future__ import print_function
 import os
-import sys
 import time
 import datetime
 import random
@@ -12,14 +11,8 @@ import re
 import filecmp
 import shutil
 import argparse
-import uuid
 import csv
 import common_functions as cf
-
-if sys.version_info >= (3, 0):
-    import configparser  # python 3
-else:
-    import ConfigParser  # python 2
 
 # Debug env var
 DEBUG = True
@@ -341,6 +334,18 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
 
     logging.info("Starting GDB script")
 
+    # Declare all FI threads
+    if inj_mode == 'signal':
+        init_signal = float(conf.get("DEFAULT", "initSignal"))
+        end_signal = float(conf.get("DEFAULT", "endSignal"))
+        signal_cmd = conf.get("DEFAULT", "signalCmd")
+        max_wait_time = int(conf.get("DEFAULT", "maxWaitTime"))
+        seq_signals = int(conf.get("DEFAULT", "seqSignals"))
+        max_num_fi = int(conf.get("DEFAULT", "maxThreadsFI"))
+        thread_signal_array = [SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
+                                         init=init_signal, end=end_signal, seq_signals=seq_signals,
+                                         logging=logging)] * max_num_fi
+
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
                    debug=conf.get(section, "debug"),
@@ -364,24 +369,9 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
 
     # Start fault injection tread
     th.start()
-    #        self.__signal_cmd = signal_cmd
-    #     self.__max_wait_time = max_wait_time
-    #     self.__init = init
-    #     self.__end = end
-    #     self.__seq_signals = seq_signals
-    #     self.__logging = logging
-
 
     if inj_mode == 'signal':
-        init_signal = float(conf.get("DEFAULT", "initSignal"))
-        end_signal = float(conf.get("DEFAULT", "endSignal"))
-        signal_cmd = conf.get("DEFAULT", "signalCmd")
-        max_wait_time = int(conf.get("DEFAULT", "maxWaitTime"))
-        seq_signals = int(conf.get("DEFAULT", "seqSignals"))
-        max_num_fi = int(conf.get("DEFAULT", "maxThreadsFI"))
-        thread_signal_array = [SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
-                                         init=init_signal, end=end_signal, seq_signals=seq_signals,
-                                         logging=logging)] * max_num_fi
+        for t in 
 
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start)
