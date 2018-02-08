@@ -159,9 +159,6 @@ def main():
     global_fault_model = int(fault_model)
     debug = bool(debug)
 
-    print([valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
-     flip_log_file, debug, gdb_init_strings])
-
     # Logging
     global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
     global_logging.info("Starting flip_value script")

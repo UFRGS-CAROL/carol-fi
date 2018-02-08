@@ -297,8 +297,6 @@ def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, faul
     env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings
 
     os.environ['CAROL_FI_INFO'] = env_string
-    print("\n\n", env_string, "\n\n")
-
 
 """
 Generate the gdb flip_value script
