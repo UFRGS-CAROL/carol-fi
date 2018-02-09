@@ -1,0 +1,140 @@
+[DEFAULT]
+
+debug = False
+
+# Name of the gdb executable, usualy is "gdb-mic" for Xeon Phi
+gdbExecName = gdb
+
+
+# Which fault model to use, 0 -> single; 1 -> double; 2 -> random; 3 -> zeros; 4 -> least significant bits (LSB)
+faultModel = 4
+
+
+################### NW ###################
+goldFile = /home/dagoliveira/carol-fi/codes/nn/nn-knl-files/gold20_5_5
+outputFile = /home/dagoliveira/carol-fi/codes/nn/nn-knl-files/out20_5_5
+
+posExecScript=/home/dagoliveira/carol-fi/codes/nn/nn-knl-files/nn-convert-out-log.py
+# How many interrupt signals to send sequentially
+seqSignals = 5
+# How many random threads will attempt to send interrupt signals
+numThreadsFI = 3
+
+# Max time to send signal. It should be the app exec time in seconds
+maxWaitTime = 25
+
+# Commands to set the session inside GDB environment
+gdbInitStrings = file /home/dagoliveira/carol-fi/codes/nn/nn-knl-files/nn;set args /home/dagoliveira/carol-fi/codes/nn/nn-knl-files/filelist 20 5 5 /home/dagoliveira/carol-fi/codes/nn/nn-knl-files/out20_5_5
+
+# Shell command to send SIGINT to the application being tested
+signalCmd = killall -2 nn
+
+# Kill commands to exit all applications (GDB and the application tested)
+# Need to ensure safe termination before another fault injection test
+killStrs = killall -9 gdb;killall -9 nn
+
+
+[nn-single-0-4]
+initSignal = 0
+endSignal = 4
+faultModel = 0
+[nn-single-4-8]
+initSignal = 4
+endSignal = 8
+faultModel = 0
+[nn-single-8-12]
+initSignal = 8
+endSignal = 12
+faultModel = 0
+[nn-single-12-16]
+initSignal = 12
+endSignal = 16
+faultModel = 0
+[nn-single-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 0
+
+[nn-double-0-4]
+initSignal = 0
+endSignal = 4
+faultModel = 1
+[nn-double-4-8]
+initSignal = 4
+endSignal = 8
+faultModel = 1
+[nn-double-8-12]
+initSignal = 8
+endSignal = 12
+faultModel = 1
+[nn-double-12-16]
+initSignal = 12
+endSignal = 16
+faultModel = 1
+[nn-double-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 1
+
+[nn-random-0-4]
+initSignal = 0
+endSignal = 4
+faultModel = 2
+[nn-random-4-8]
+initSignal = 4
+endSignal = 8
+faultModel = 2
+[nn-random-8-12]
+initSignal = 8
+endSignal = 12
+faultModel = 2
+[nn-random-12-16]
+initSignal = 12
+endSignal = 16
+faultModel = 2
+[nn-random-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 2
+
+[nn-zero-0-4]
+initSignal = 0
+endSignal = 3
+faultModel = 3
+[nn-zero-4-8]
+initSignal = 3
+endSignal = 6
+faultModel = 3
+[nn-zero-8-12]
+initSignal = 6
+endSignal = 9
+faultModel = 3
+[nn-zero-12-16]
+initSignal = 9
+endSignal = 12
+faultModel = 3
+[nn-zero-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 3
+
+[nn-lsb-0-4]
+initSignal = 0
+endSignal = 3
+faultModel = 4
+[nn-lsb-4-8]
+initSignal = 3
+endSignal = 6
+faultModel = 4
+[nn-lsb-8-12]
+initSignal = 6
+endSignal = 9
+faultModel = 4
+[nn-lsb-12-16]
+initSignal = 9
+endSignal = 12
+faultModel = 4
+[nn-lsb-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 4

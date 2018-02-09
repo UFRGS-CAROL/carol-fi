@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
         exit(0);
     }
 
-    printf("#HEADER filename:%s k:%d latitude:%f longitude:%f records:%d\n", argv[1], k,target_lat,target_long);
+    printf("#HEADER filename:%s k:%d latitude:%f longitude:%f\n", argv[1], k,target_lat,target_long);
 
 
     /******* read gold **********/

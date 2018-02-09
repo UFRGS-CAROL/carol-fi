@@ -26,7 +26,6 @@ struct neighbor {
 * REC_WINDOW has been arbitrarily assigned; A larger value would allow more work for the threads
 */
 int main(int argc, char* argv[]) {
-    long long time0 = clock();
     FILE   *flist,*fp;
     int    i=0,j=0, k=0, rec_count=0, done=0;
     char   sandbox[REC_LENGTH * REC_WINDOW], *rec_iter,*rec_iter2, dbname[64];
@@ -152,8 +151,6 @@ int main(int argc, char* argv[]) {
 
 
     printf("records used: %ld\n",rec_sum);
-    long long time1 = clock();
-    printf("total time : %15.12f s\n", (float) (time1 - time0) / 1000000);
     return 0;
 }
 
