@@ -306,11 +306,12 @@ def check_sdcs(gold_file, output_file, logging):
 Generate environment string for cuda-gdb
 valid_block, valid_thread, valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
     flip_log_file, debug, gdb_init_strings
+The default parameters are necessary for break and signal mode differentiations
 """
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type):
+                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type='break'):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
@@ -326,17 +327,34 @@ return old register value, new register value
 """
 
 
-def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread, valid_register, bits_to_flip,
-                            injection_address, fault_model, breakpoint_location, inj_mode="break"):
-    flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
-
-    logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
-
-    logging.info("Starting GDB script")
+def run_gdb_fault_injection(**kwargs):
+    valid_block, valid_thread, injection_address, breakpoint_location = list(), list(), '', ''
 
     # Declare all FI threads
     thread_signal_list = []
-    if inj_mode == 'signal':
+
+    # This are the mandatory parameters
+    inj_mode = kwargs.get('inj_mode')
+    bits_to_flip = kwargs.get('bits_to_flip')
+    fault_model = kwargs.get('fault_model')
+    section = kwargs.get('section')
+    unique_id = kwargs.get('unique_id')
+    valid_register = kwargs.get('valid_register')
+    conf = kwargs.get('conf')
+
+    # Logging file
+    flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
+    logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
+    logging.info("Starting GDB script")
+
+    # Parameters only for break mode
+    if inj_mode == 'break':
+        valid_block = kwargs.get('valid_block')
+        valid_thread = kwargs.get('valid_thread')
+        injection_address = kwargs.get('injection_address')
+        breakpoint_location = kwargs.get('breakpoint_location')
+
+    elif inj_mode == 'signal':
         init_signal = float(conf.get("DEFAULT", "initSignal"))
         end_signal = float(conf.get("DEFAULT", "endSignal"))
         signal_cmd = conf.get("DEFAULT", "signalCmd")
@@ -400,8 +418,8 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     try:
         reg_old_value = logging.search("reg_old_value")
         reg_new_value = logging.search("reg_new_value")
-        reg_old_value = re.findall("reg_old_value\: (\S+)", reg_old_value)[0]
-        reg_new_value = re.findall("reg_new_value\: (\S+)", reg_new_value)[0]
+        reg_old_value = re.findall("reg_old_value: (\S+)", reg_old_value)[0]
+        reg_new_value = re.findall('reg_new_value: (\S+)', reg_new_value)[0]
         fault_successful = True
     except:
         reg_new_value = reg_old_value = ''
@@ -566,8 +584,6 @@ def fault_injection_by_signal(conf, fault_models, inj_type, iterations, kernel_i
         for fault_model in fault_models:
             unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
 
-    pass
-
 
 """
 This injector has two injection options
@@ -598,8 +614,8 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                                                                                valid_thread=valid_thread,
                                                                                valid_register=valid_register,
                                                                                bits_to_flip=bits_to_flip,
-                                                                               fault_model=fault_model,
                                                                                injection_address=injection_address,
+                                                                               fault_model=fault_model,
                                                                                breakpoint_location=breakpoint_location)
                     # Write a row to summary file
                     row = [unique_id, num_rounds, fault_model]
@@ -671,7 +687,8 @@ def main():
                                          kernel_info_list=kernel_info_list, summary_file=summary_file)
     elif inj_type == 'signal':
         # The hard mode
-        fault_injection_by_signal()
+        fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
+                                  kernel_info_list=kernel_info_list, summary_file=summary_file)
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
