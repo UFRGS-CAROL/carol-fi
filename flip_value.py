@@ -10,6 +10,7 @@ function called when the execution is stopped by a signal
 
 
 def fault_injector_signal(event):
+    print("\n\n\nAQUI AQUI\n\n\n")
     pass
 
 
@@ -184,7 +185,7 @@ def main():
         print("initializing setup: " + str(err))
 
     # Will only if breakpoint mode is activated
-    breakpoint_kernel_address = breakpoint_kernel_line = None
+    breakpoint_kernel_line = None
     if inj_type == 'break':
         # Place the first breakpoint, it is only to avoid
         # address memory error
