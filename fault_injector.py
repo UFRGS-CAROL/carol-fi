@@ -381,7 +381,8 @@ def run_gdb_fault_injection(**kwargs):
     pre_execution(conf=conf, section=section)
 
     # Create one thread to start gdb script
-    th = RunGDB(section, conf, unique_id)
+    flip_script = 'flip_value.py'
+    th = RunGDB(gdb_exec_name=conf.get("DEFAULT", "gdbExecName"), flip_script=flip_script, unique_id=unique_id)
 
     # Start counting time
     timestamp_start = int(time.time())
