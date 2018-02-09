@@ -361,9 +361,10 @@ def run_gdb_fault_injection(**kwargs):
         max_wait_time = int(conf.get("DEFAULT", "maxWaitTime"))
         seq_signals = int(conf.get("DEFAULT", "seqSignals"))
         max_num_fi = int(conf.get("DEFAULT", "numThreadsFI"))
-        thread_signal_list = [SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
+        for i in range(max_num_fi):
+            thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
                                         init=init_signal, end=end_signal, seq_signals=seq_signals,
-                                        logging=logging)] * max_num_fi
+                                        logging=logging))
 
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
