@@ -1,0 +1,21 @@
+# C compiler
+CC = gcc -g
+CC_FLAGS = -fopenmp
+
+folder="quicksort-knl-files"
+
+all: gen_bin gen_data
+
+gen_bin: quicksort.c generateInput.c
+	$(CC) $(CC_FLAGS) quicksort.c -o quicksort
+	$(CC) $(CC_FLAGS) generateInput.c -o genInput 
+
+gen_data: gen_bin
+	./genInput
+	./quicksort 5000000 272 inputsort_134217728 gold_5000000
+	mkdir -p $(folder)
+	mv quicksort genInput inputsort_134217728 gold_5000000 $(folder)
+	@echo "All Done"
+	@echo "Gold and executables copy are stored in $(folder)"
+
+
