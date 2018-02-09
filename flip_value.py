@@ -3,6 +3,13 @@ import re
 import os
 import common_functions as cf  # All common functions will be at common_functions module
 
+"""
+Getting information
+"""
+
+def getting_frame_information():
+    print("\n\n", gdb.selected_frame(), "\n\n")
+
 
 """
 function called when the execution is stopped by a signal
@@ -10,7 +17,7 @@ function called when the execution is stopped by a signal
 
 
 def fault_injector_signal(event):
-    print("\n\n\nAQUI AQUI\n\n\n")
+
     pass
 
 
