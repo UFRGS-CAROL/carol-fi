@@ -50,7 +50,7 @@ Signal the app to stop so GDB can execute the script to flip a value
 
 
 class SignalApp(threading.Thread):
-    def __init__(self, signal_cmd, max_wait_time, init, end, seq_signals, logging):
+    def __init__(self, signal_cmd, max_wait_time, init, end, seq_signals, logging, threads_num):
         threading.Thread.__init__(self)
         self.__signal_cmd = signal_cmd
         self.__max_wait_time = max_wait_time
@@ -58,6 +58,8 @@ class SignalApp(threading.Thread):
         self.__end = end
         self.__seq_signals = seq_signals
         self.__logging = logging
+        # It is for each thread wait similar time
+        self.__max_sleep_time = (max_wait_time / threads_num) / self.__seq_signals
 
     def run(self):
         # Sleep for a random time
@@ -74,7 +76,9 @@ class SignalApp(threading.Thread):
                 self.__logging.info("shell stdout: " + str(out))
             if err is not None:
                 self.__logging.error("shell stderr: " + str(err))
-            time.sleep(0.01)
+
+            # Sleep to avoid lots of signals
+            time.sleep(self.__max_sleep_time)
 
 
 """
@@ -360,10 +364,11 @@ def run_gdb_fault_injection(**kwargs):
         signal_cmd = conf.get("DEFAULT", "signalCmd")
         max_wait_time = int(conf.get("DEFAULT", "maxWaitTime"))
         seq_signals = int(conf.get("DEFAULT", "seqSignals"))
-        for i in range(seq_signals):
+        max_thread_fi = int(conf.get("DEFAULT", "numThreadsFI"))
+        for i in range(0, max_thread_fi):
             thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
                                         init=init_signal, end=end_signal, seq_signals=seq_signals,
-                                        logging=logging))
+                                        logging=logging, threads_num=max_thread_fi))
 
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
