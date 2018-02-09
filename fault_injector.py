@@ -78,7 +78,7 @@ class SignalApp(threading.Thread):
                 self.__logging.error("shell stderr: " + str(err))
 
             # Sleep to avoid lots of signals
-            time.sleep(0.1)
+            time.sleep(0.01)
 
 
 """
