@@ -1,7 +1,131 @@
+import random
+
 import gdb
 import re
 import os
 import common_functions as cf  # All common functions will be at common_functions module
+
+#
+# def chooseFrameFlip(frameSymbols):
+#     tag = "chooseFrameFlip"
+#     bufLog = ""
+#     try:
+#         framesNum = len(frameSymbols)
+#         if framesNum <= 0:
+#             # logging.debug(str("No frames to get symbols, returning False"))
+#             return False
+#         random.seed()
+#         framePos = random.randint(0, framesNum - 1)
+#         frame = frameSymbols[framePos][0]
+#         symbols = frameSymbols[framePos][1]
+#         symbolsNum = len(symbols)
+#         while symbolsNum <= 0:
+#             frameSymbols.pop(framePos)
+#             framesNum -= 1
+#             if (framesNum <= 0):
+#                 # logging.debug(str("Could not get symbols to flip values, returning False"))
+#                 return False
+#
+#             framePos = random.randint(0, framesNum - 1)
+#             frame = frameSymbols[framePos][0]
+#             symbols = frameSymbols[framePos][1]
+#             symbolsNum = len(symbols)
+#
+#         symbolPos = random.randint(0, symbolsNum - 1)
+#         symbol = symbols[symbolPos]
+#         varGDB = symbol.value(frame)
+#
+#         try:
+#             bufLog += bitFlipValue(varGDB)
+#             bufLog += "frame name: " + str(frame.name())
+#             bufLog += "\n"
+#             bufLog += "symbol name: " + str(symbol.name)
+#             bufLog += "\n"
+#             bufLog += "symbol filename: " + str(symbol.symtab.filename)
+#             bufLog += "\n"
+#             bufLog += "symbol line: " + str(symbol.line)
+#             bufLog += "\n"
+#             bufLog += "value: " + str(varGDB)
+#             bufLog += "\n"
+#             bufLog += "value address: " + str(varGDB.address)
+#             bufLog += "\n"
+#             bufLog += "Type: " + str(gdbTypesDict[varGDB.type.strip_typedefs().code])
+#             bufLog += "\n"
+#             bufLog += "Type sizeof: " + str(varGDB.type.strip_typedefs().sizeof)
+#             bufLog += "\n"
+#             if varGDB.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
+#                 bufLog += "Type range: " + str(varGDB.type.strip_typedefs().range())
+#                 bufLog += "\n"
+#             try:
+#                 for field in symbol.type.fields():
+#                     bufLog += "Field name: " + str(field.name)
+#                     bufLog += "\n"
+#                     bufLog += "Field Type: " + str(gdbTypesDict[field.type.strip_typedefs().code])
+#                     bufLog += "\n"
+#                     bufLog += "Field Type sizeof: " + str(field.type.strip_typedefs().sizeof)
+#                     bufLog += "\n"
+#                     if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
+#                         bufLog += "Field Type range: " + str(field.type.strip_typedefs().range())
+#                         bufLog += "\n"
+#             except:
+#                 pass
+#             return (True, bufLog)
+#         except gdb.error as err:
+#             logging.exception("gdbException: " + str(err))
+#         except Exception as err:
+#             logging.exception("pythonException: " + str(err))
+#
+#         return (False, bufLog)
+#     except Exception as err:
+#         logging.exception("pythonException: " + str(err))
+#         return (False, bufLog)
+
+
+def showMemoryContent(address, byteSizeof):
+    xMem = "x/" + str(byteSizeof) + "xb " + address
+    hexData = gdb.execute(xMem, to_string=True)
+    hexData = re.sub(".*:|\s", "", hexData)
+    return hexData
+
+
+# Get all the symbols of the stacked frames, returns a list of tuples [frame, symbolsList]
+# where frame is a GDB Frame object and symbolsList is a list of all symbols of this frame
+def getAllValidSymbols():
+    allSymbols = list()
+    frame = gdb.selected_frame()
+    while frame:
+        symbols = getFrameSymbols(frame)
+        if symbols is not None:
+            allSymbols.append([frame, symbols])
+        frame = frame.older()
+    return allSymbols
+
+
+# Returns a list of all symbols of the frame, frame is a GDB Frame object
+def getFrameSymbols(frame):
+    try:
+        symbols = list()
+        block = frame.block()
+        while block:
+            for symbol in block:
+                if isBitFlipPossible(symbol, frame):
+                    symbols.append(symbol)
+            block = block.superblock
+        return symbols
+    except:
+        return None
+
+
+# Returns True if we can bitflip some bit of this symbol, i.e. if this is a variable or
+# constant and not functions and another symbols
+def isBitFlipPossible(symbol, frame):
+    if symbol.is_variable or symbol.is_constant or symbol.is_argument:
+        varGDB = symbol.value(frame)
+        address = re.sub("<.*>|\".*\"", "", str(varGDB.address))
+        if varGDB.address is not None and not varGDB.is_optimized_out and hex(int(address, 16)) > hex(int("0x0", 16)):
+            return True
+    return False
+########################################################################################################################
 
 """
 Getting information
