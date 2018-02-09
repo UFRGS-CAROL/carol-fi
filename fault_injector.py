@@ -578,11 +578,21 @@ by sending a OS signal to the application
 """
 
 
-def fault_injection_by_signal(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file):
+def fault_injection_by_signal(conf, fault_models, inj_type, iterations, summary_file):
     for num_rounds in range(iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
             unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
+            r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(unique_id=unique_id, inj_mode='signal',
+                                                                       fault_model=fault_model, section="DEFAULT",
+                                                                       valid_register="R30", conf=conf)
+            # Write a row to summary file
+            row = [unique_id, num_rounds, fault_model]
+            row.extend([None, None, None])
+            row.extend([None, None, None])
+            row.extend(
+                [r_old_val, r_new_val, 0, "", "", "", fault_succ])
+            summary_file.write_row(row=row)
 
 
 """
@@ -688,7 +698,7 @@ def main():
     elif inj_type == 'signal':
         # The hard mode
         fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
-                                  kernel_info_list=kernel_info_list, summary_file=summary_file)
+                                  summary_file=summary_file)
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
