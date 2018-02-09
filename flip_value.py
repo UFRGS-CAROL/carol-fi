@@ -9,7 +9,7 @@ Getting information
 
 
 def getting_frame_information():
-    print("\n\n", gdb.selected_frame(), "\n\n")
+    print("\n\n", dir(gdb.selected_frame()), "\n\n")
 
 
 """
