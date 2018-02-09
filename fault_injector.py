@@ -585,7 +585,7 @@ def fault_injection_by_signal(conf, fault_models, inj_type, iterations, summary_
             unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
             r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(unique_id=unique_id, inj_mode='signal',
                                                                        fault_model=fault_model, section="DEFAULT",
-                                                                       valid_register="R30", conf=conf)
+                                                                       valid_register="R30", conf=conf, bits_to_flip=[31,2])
             # Write a row to summary file
             row = [unique_id, num_rounds, fault_model]
             row.extend([None, None, None])
