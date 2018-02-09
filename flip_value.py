@@ -7,6 +7,7 @@ import common_functions as cf  # All common functions will be at common_function
 Getting information
 """
 
+
 def getting_frame_information():
     print("\n\n", gdb.selected_frame(), "\n\n")
 
@@ -17,8 +18,7 @@ function called when the execution is stopped by a signal
 
 
 def fault_injector_signal(event):
-
-    pass
+    getting_frame_information()
 
 
 """
