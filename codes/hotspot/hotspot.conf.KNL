@@ -21,7 +21,7 @@ goldFile = /home/dagoliveira/carol-fi/codes/hotspot/hotspot-knl-files-2017-12-22
 outputFile = /tmp/output_1024
 
 # Max time to send signal. It should be the app exec time in seconds
-maxWaitTime = 8
+maxWaitTime = 15
 
 # Commands to set the session inside GDB environment
 gdbInitStrings = file /home/dagoliveira/carol-fi/codes/hotspot/hotspot-knl-files-2017-12-22/hotspot;set args 1024 1024 1000 272 /home/dagoliveira/carol-fi/codes/hotspot/hotspot-knl-files-2017-12-22/temp_1024 /home/dagoliveira/carol-fi/codes/hotspot/hotspot-knl-files-2017-12-22/power_1024 /tmp/output_1024

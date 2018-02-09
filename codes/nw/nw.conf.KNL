@@ -14,6 +14,7 @@ faultModel = 4
 goldFile = /home/dagoliveira/carol-fi/codes/nw/nw-knl-files-2017-12-27/gold_16384_th_272_pen_10
 outputFile = /home/dagoliveira/carol-fi/codes/nw/nw-knl-files-2017-12-27/out_16384_th_272_pen_10
 
+posExecScript=/home/dagoliveira/carol-fi/codes/nw/nw-knl-files-2017-12-27/nw-convert-out-log.py
 # How many interrupt signals to send sequentially
 seqSignals = 5
 # How many random threads will attempt to send interrupt signals

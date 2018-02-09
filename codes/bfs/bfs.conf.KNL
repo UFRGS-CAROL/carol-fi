@@ -1,0 +1,160 @@
+[DEFAULT]
+
+debug = False
+
+# Name of the gdb executable, usualy is "gdb-mic" for Xeon Phi
+gdbExecName = gdb
+
+
+# Which fault model to use, 0 -> single; 1 -> double; 2 -> random; 3 -> zeros; 4 -> least significant bits (LSB)
+faultModel = 4
+
+
+################### NW ###################
+goldFile = /home/dagoliveira/carol-fi/codes/bfs/bfs-knl-files/gold4194304
+outputFile = /home/dagoliveira/carol-fi/codes/bfs/bfs-knl-files/out4194304
+
+posExecScript=/home/dagoliveira/carol-fi/codes/bfs/bfs-knl-files/bfs-convert-out-log.py
+# How many interrupt signals to send sequentially
+seqSignals = 5
+# How many random threads will attempt to send interrupt signals
+numThreadsFI = 3
+
+# Max time to send signal. It should be the app exec time in seconds
+maxWaitTime = 30
+
+# Commands to set the session inside GDB environment
+gdbInitStrings = file /home/dagoliveira/carol-fi/codes/bfs/bfs-knl-files/bfs;set args 272 /home/dagoliveira/carol-fi/codes/bfs/bfs-knl-files/graph4194304.txt /home/dagoliveira/carol-fi/codes/bfs/bfs-knl-files/out4194304
+
+# Shell command to send SIGINT to the application being tested
+signalCmd = killall -2 bfs
+
+# Kill commands to exit all applications (GDB and the application tested)
+# Need to ensure safe termination before another fault injection test
+killStrs = killall -9 gdb;killall -9 bfs
+
+
+[bfs-single-0-4]
+initSignal = 0
+endSignal = 4
+faultModel = 0
+[bfs-single-4-8]
+initSignal = 4
+endSignal = 8
+faultModel = 0
+[bfs-single-8-12]
+initSignal = 8
+endSignal = 12
+faultModel = 0
+[bfs-single-12-16]
+initSignal = 12
+endSignal = 16
+faultModel = 0
+[bfs-single-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 0
+[bfs-single-20-25]
+initSignal = 20
+endSignal = 25
+faultModel = 0
+
+[bfs-double-0-4]
+initSignal = 0
+endSignal = 4
+faultModel = 1
+[bfs-double-4-8]
+initSignal = 4
+endSignal = 8
+faultModel = 1
+[bfs-double-8-12]
+initSignal = 8
+endSignal = 12
+faultModel = 1
+[bfs-double-12-16]
+initSignal = 12
+endSignal = 16
+faultModel = 1
+[bfs-double-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 1
+[bfs-double-20-25]
+initSignal = 20
+endSignal = 25
+faultModel = 1
+
+[bfs-random-0-4]
+initSignal = 0
+endSignal = 4
+faultModel = 2
+[bfs-random-4-8]
+initSignal = 4
+endSignal = 8
+faultModel = 2
+[bfs-random-8-12]
+initSignal = 8
+endSignal = 12
+faultModel = 2
+[bfs-random-12-16]
+initSignal = 12
+endSignal = 16
+faultModel = 2
+[bfs-random-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 2
+[bfs-random-20-25]
+initSignal = 20
+endSignal = 25
+faultModel = 2
+
+[bfs-zero-0-4]
+initSignal = 0
+endSignal = 3
+faultModel = 3
+[bfs-zero-4-8]
+initSignal = 3
+endSignal = 6
+faultModel = 3
+[bfs-zero-8-12]
+initSignal = 6
+endSignal = 9
+faultModel = 3
+[bfs-zero-12-16]
+initSignal = 9
+endSignal = 12
+faultModel = 3
+[bfs-zero-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 3
+[bfs-zero-20-25]
+initSignal = 20
+endSignal = 25
+faultModel = 3
+
+[bfs-lsb-0-4]
+initSignal = 0
+endSignal = 3
+faultModel = 4
+[bfs-lsb-4-8]
+initSignal = 3
+endSignal = 6
+faultModel = 4
+[bfs-lsb-8-12]
+initSignal = 6
+endSignal = 9
+faultModel = 4
+[bfs-lsb-12-16]
+initSignal = 9
+endSignal = 12
+faultModel = 4
+[bfs-lsb-16-20]
+initSignal = 16
+endSignal = 20
+faultModel = 4
+[bfs-lsb-20-25]
+initSignal = 20
+endSignal = 25
+faultModel = 4
