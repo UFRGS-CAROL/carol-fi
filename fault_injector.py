@@ -310,12 +310,12 @@ valid_block, valid_thread, valid_register, bits_to_flip, fault_model, injection_
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings):
+                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
-    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings
+    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type
 
     os.environ['CAROL_FI_INFO'] = env_string
 
@@ -335,6 +335,7 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     logging.info("Starting GDB script")
 
     # Declare all FI threads
+    thread_signal_list = []
     if inj_mode == 'signal':
         init_signal = float(conf.get("DEFAULT", "initSignal"))
         end_signal = float(conf.get("DEFAULT", "endSignal"))
@@ -342,9 +343,9 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
         max_wait_time = int(conf.get("DEFAULT", "maxWaitTime"))
         seq_signals = int(conf.get("DEFAULT", "seqSignals"))
         max_num_fi = int(conf.get("DEFAULT", "maxThreadsFI"))
-        thread_signal_array = [SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
-                                         init=init_signal, end=end_signal, seq_signals=seq_signals,
-                                         logging=logging)] * max_num_fi
+        thread_signal_list = [SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
+                                        init=init_signal, end=end_signal, seq_signals=seq_signals,
+                                        logging=logging)] * max_num_fi
 
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
@@ -370,8 +371,9 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
     # Start fault injection tread
     th.start()
 
-    if inj_mode == 'signal':
-        for t in 
+    # Start signal fault injection threads, if this mode was selected
+    for t in thread_signal_list:
+        t.start()
 
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start)
@@ -386,6 +388,10 @@ def run_gdb_fault_injection(section, conf, unique_id, valid_block, valid_thread,
 
     # Make sure threads finish before trying to execute again
     th.join()
+
+    # Also signal ones
+    for t in thread_signal_list:
+        t.join()
 
     # Search for set values for register
     # Must be done before save output

@@ -3,12 +3,22 @@ import re
 import os
 import common_functions as cf  # All common functions will be at common_functions module
 
+
 """
-function called when the execution is stopped
+function called when the execution is stopped by a signal
 """
 
 
-def fault_injection(event):
+def fault_injector_signal(event):
+    pass
+
+
+"""
+function called when the execution is stopped by a breakpoint
+"""
+
+
+def fault_injection_breakpoint(event):
     global global_valid_block, global_valid_thread, global_valid_register
     global global_bits_to_flip, global_fault_model, global_logging
 
@@ -136,8 +146,10 @@ Main function
 
 
 def main():
+    # Global vars that will be used by the FI events
     global global_valid_block, global_valid_thread, global_bits_to_flip
     global global_fault_model, global_valid_register, global_logging
+
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
@@ -151,8 +163,9 @@ def main():
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
 
     [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
-     flip_log_file, debug, gdb_init_strings] = str(os.environ['CAROL_FI_INFO']).split('|')
+     flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
 
+    # Set global vars to be used
     global_valid_block = valid_block.split(",")
     global_valid_thread = valid_thread.split(",")
     global_bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
@@ -170,22 +183,31 @@ def main():
     except gdb.error as err:
         print("initializing setup: " + str(err))
 
-    # Place the first breakpoint, it is only to avoid
-    # address memory error
-    breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
+    # Will only if breakpoint mode is activated
+    breakpoint_kernel_address = breakpoint_kernel_line = None
+    if inj_type == 'break':
+        # Place the first breakpoint, it is only to avoid
+        # address memory error
+        breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
 
-    # Define which function to call when the execution stops, e.g. when a breakpoint is hit
-    # or a interruption signal is received
-    gdb.events.stop.connect(fault_injection)
+        # Define which function to call when the execution stops, e.g. when a breakpoint is hit
+        # or a interruption signal is received
+        gdb.events.stop.connect(fault_injection_breakpoint)
+    elif inj_type == 'signal':
+        # Connect to signal handler event
+        gdb.events.stop.connect(fault_injector_signal)
 
     # Start app execution
     gdb.execute("r")
-    breakpoint_kernel_line.delete()
-    breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
-    # Continue execution until the next breakpoint
-    gdb.execute("c")
-    breakpoint_kernel_address.delete()
+    # Put breakpoint only it is breakpoint mode
+    if inj_type == 'break':
+        breakpoint_kernel_line.delete()
+        breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
+
+        # Continue execution until the next breakpoint
+        gdb.execute("c")
+        breakpoint_kernel_address.delete()
 
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
