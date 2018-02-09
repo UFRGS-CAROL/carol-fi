@@ -66,9 +66,9 @@ class SignalApp(threading.Thread):
         wait_time = random.uniform(self.__init, self.__end)
         time.sleep(wait_time)
         # Send a series of signal to make sure gdb will flip a value in one of the interrupt signals
-        self.__logging.info(
-            "sending " + str(self.__seq_signals) + " signals using command: '" + self.__signal_cmd + "' after " + str(
-                wait_time) + "s")
+        # self.__logging.info(
+        #     "sending " + str(self.__seq_signals) + " signals using command: '" + self.__signal_cmd + "' after " + str(
+        #         wait_time) + "s")
         for i in range(0, self.__seq_signals):
             proc = subprocess.Popen(self.__signal_cmd, stdout=subprocess.PIPE, shell=True)
             (out, err) = proc.communicate()
@@ -78,7 +78,7 @@ class SignalApp(threading.Thread):
                 self.__logging.error("shell stderr: " + str(err))
 
             # Sleep to avoid lots of signals
-            time.sleep(self.__max_sleep_time)
+            time.sleep(0.1)
 
 
 """
