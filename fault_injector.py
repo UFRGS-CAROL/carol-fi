@@ -360,8 +360,7 @@ def run_gdb_fault_injection(**kwargs):
         signal_cmd = conf.get("DEFAULT", "signalCmd")
         max_wait_time = int(conf.get("DEFAULT", "maxWaitTime"))
         seq_signals = int(conf.get("DEFAULT", "seqSignals"))
-        max_num_fi = int(conf.get("DEFAULT", "numThreadsFI"))
-        for i in range(max_num_fi):
+        for i in range(seq_signals):
             thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
                                         init=init_signal, end=end_signal, seq_signals=seq_signals,
                                         logging=logging))
@@ -412,6 +411,7 @@ def run_gdb_fault_injection(**kwargs):
     # Also signal ones
     for t in thread_signal_list:
         t.join()
+    del thread_signal_list
 
     # Search for set values for register
     # Must be done before save output
