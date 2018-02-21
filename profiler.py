@@ -60,15 +60,8 @@ def set_breakpoints(kernel_conf_string):
 
 
 """
-This function will stop at each kernel
-and extract the number of threads and theirs
-cordinates.
+Main function
 """
-
-
-def get_kernel_threads():
-    threads = cf.execute_command(gdb, "info cuda threads")
-    addresses = cf.execute_command(gdb, "disassemble")
 
 
 def main():
@@ -77,7 +70,7 @@ def main():
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
-    gdb_init_strings, kernel_conf_string = str(os.environ["CAROL_FI_INFO"]).split("|")
+    gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
     try:
         for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)
@@ -88,13 +81,19 @@ def main():
     # Profiler has two steps
     # First: getting kernel information
     # Run app for the first time
-    set_breakpoints(kernel_conf_string)
-    gdb.events.stop.connect(get_kernel_address_event)
+    time_profiler = bool(time_profiler)
+    if not time_profiler:
+        set_breakpoints(kernel_conf_string)
+        gdb.events.stop.connect(get_kernel_address_event)
+
     gdb.execute("r")
 
     # Second: save the retrieved information on a txt file
-    # Save the informaticon file to the output
-    cf.save_file(kernel_info_dir, kernel_info_list)
+    # Save the information on file to the output
+    if not time_profiler:
+        cf.save_file(kernel_info_dir, kernel_info_list)
+
+    # Finishing
     print ("If you are seeing it, profiler has been finished")
 
 

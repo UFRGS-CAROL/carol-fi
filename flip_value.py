@@ -126,7 +126,8 @@ Getting information
 
 
 def getting_frame_information():
-    print(get_all_valid_symbols())
+
+
     print("\n\n", dict(gdb.selected_frame()), "\n\n")
 
 

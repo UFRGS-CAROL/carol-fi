@@ -365,10 +365,11 @@ def run_gdb_fault_injection(**kwargs):
         max_wait_time = int(conf.get("DEFAULT", "maxWaitTime"))
         seq_signals = int(conf.get("DEFAULT", "seqSignals"))
         max_thread_fi = int(conf.get("DEFAULT", "numThreadsFI"))
+
         for i in range(0, max_thread_fi):
             thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
-                                        init=init_signal, end=end_signal, seq_signals=seq_signals,
-                                        logging=logging, threads_num=max_thread_fi))
+                                                init=init_signal, end=end_signal, seq_signals=seq_signals,
+                                                logging=logging, threads_num=max_thread_fi))
 
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
@@ -585,14 +586,15 @@ by sending a OS signal to the application
 """
 
 
-def fault_injection_by_signal(conf, fault_models, inj_type, iterations, summary_file):
+def fault_injection_by_signal(conf, fault_models, inj_type, iterations, summary_file, max_time):
     for num_rounds in range(iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
             unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
             r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(unique_id=unique_id, inj_mode='signal',
                                                                        fault_model=fault_model, section="DEFAULT",
-                                                                       valid_register="R30", conf=conf, bits_to_flip=[31,2])
+                                                                       valid_register="R30", conf=conf,
+                                                                       bits_to_flip=[31, 2], max_time=max_time)
             # Write a row to summary file
             row = [unique_id, num_rounds, fault_model]
             row.extend([None, None, None])
@@ -647,15 +649,40 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 time.sleep(2)
 
 
+"""
+Function that calls the profiler based on the injection mode
+"""
+
+
+def profiler_caller(conf, measure_time):
+    acc_time = 0
+    if measure_time:
+        os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
+                                                                                     "kernelBreaks") + "|" + "False"
+        for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
+            profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
+            start = time.time()
+            os.system(profiler_cmd)
+            end = time.time()
+            acc_time += end - start
+    else:
+        os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
+                                                                                            "kernelBreaks") + "|" + "False"
+        profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
+        os.system(profiler_cmd)
+
+    return acc_time / cf.MAX_TIMES_TO_PROFILE
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
                         help='How many times to repeat the programs in the configuration file', required=True, type=int)
-    parser.add_argument('-l', '--log_csv', dest="csv_file", help="CSV log file", type=str, required=False)
-    parser.add_argument('-t', '--inj_type', dest="inj_type",
-                        help="The CAROL-FI cuda could inject faults in two ways, by using a breakpoint or a thread signal",
-                        required=False, default='break')
+    # parser.add_argument('-l', '--log_csv', dest="csv_file", help="CSV log file", type=str, required=False)
+    # parser.add_argument('-t', '--inj_type', dest="inj_type",
+    #                     help="The CAROL-FI cuda could inject faults in two ways, by using "
+    #                          "a breakpoint or a thread signal, default is break. The other option is: signal",
+    #                     required=False, default='break')
 
     args = parser.parse_args()
     if args.iterations < 1:
@@ -670,12 +697,12 @@ def main():
 
     # First set env vars
     os.environ['PYTHONPATH'] = "$PYTHONPATH:" + os.path.dirname(os.path.realpath(__file__))
-    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                                                         "kernelBreaks")
+
     ########################################################################
     # Profiler step
-    profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    os.system(profiler_cmd)
+    # Max time will be obtained by running
+    inj_type = conf.get("DEFAULT", "injType")
+    max_time_app = profiler_caller(True if inj_type == 'signal' else False)
     ########################################################################
     # Injector setup
 
@@ -692,11 +719,11 @@ def main():
 
     ########################################################################
     # Fault injection
-    inj_type = args.inj_type
     iterations = args.iterations
+    csv_file = conf.get("DEFAULT", "csvFile")
 
     # Creating a summary csv file
-    summary_file = SummaryFile(filename=args.csv_file, fieldnames=fieldnames, mode='w')
+    summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
 
     # break mode is default option
     if inj_type == 'break':
@@ -705,7 +732,7 @@ def main():
     elif inj_type == 'signal':
         # The hard mode
         fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
-                                  summary_file=summary_file)
+                                  summary_file=summary_file, max_time=max_time_app)
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
@@ -719,70 +746,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-"""
-LEGACY
-"""
-
-# """
-# Generate config file for the gdb flip_value script
-# """
-#
-#
-# def gen_conf_file(gdb_init_strings, debug, unique_id, valid_block,
-#                   valid_thread, valid_register, bits_to_flip, fault_model,
-#                   injection_site, breakpoint_location, flip_log_file):
-#     if sys.version_info >= (3, 0):
-#         f_conf = configparser.SafeConfigParser()
-#     else:
-#         f_conf = ConfigParser.SafeConfigParser()
-#
-#     f_conf.set("DEFAULT", "flipLogFile", flip_log_file)
-#     f_conf.set("DEFAULT", "debug", debug)
-#     f_conf.set("DEFAULT", "gdbInitStrings", gdb_init_strings)
-#     f_conf.set("DEFAULT", "faultModel", str(fault_model))
-#     f_conf.set("DEFAULT", "injectionSite", injection_site)
-#     f_conf.set("DEFAULT", "validThread", ";".join(valid_thread))
-#     f_conf.set("DEFAULT", "validBlock", ";".join(valid_block))
-#     f_conf.set("DEFAULT", "validRegister", valid_register)
-#     f_conf.set("DEFAULT", "bitsToFlip", ";".join(str(i) for i in bits_to_flip))
-#     f_conf.set("DEFAULT", "breakpointLocation", breakpoint_location)
-#
-#     fp = open("/tmp/flip-" + unique_id + ".conf", "w")
-#     f_conf.write(fp)
-#     fp.close()
-
-
-# """
-# Generate the gdb profiler script
-# """
-#
-#
-# def gen_profiler_script(unique_id, conf_filename):
-#     fp = open("profiler.py", "r")
-#     p_script = fp.read()
-#     fp.close()
-#     profiler_filename = "/tmp/profiler-" + unique_id + ".py"
-#     fp = open(profiler_filename, "w")
-#
-#     fp.write(p_script.replace("<conf-location>", conf_filename))
-#     fp.close()
-#     os.chmod(profiler_filename, 0o775)
-#     return profiler_filename
-#
-# """
-# Generate the gdb flip_value script
-# """
-#
-#
-# def gen_flip_script(unique_id):
-#     fp = open("flip_value.py", "r")
-#     p_script = fp.read()
-#     fp.close()
-#     fp = open("/tmp/flip-" + unique_id + ".py", "w")
-#
-#     p_script = p_script.replace("<conf-location>", "/tmp/flip-" + unique_id + ".conf")
-#     p_script = p_script.replace("<home-location>", "/home/carol/carol-fi")
-#     fp.write(p_script)
-#     fp.close()
-#     os.chmod("/tmp/flip-" + unique_id + ".py", 0o775)
