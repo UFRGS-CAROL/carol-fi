@@ -718,6 +718,7 @@ def main():
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
 
     # break mode is default option
+    print("\n\n", inj_type, "\n\n")
     if inj_type == 'break':
         # Load information file generated in profiler step
         kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
