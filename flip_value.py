@@ -45,6 +45,7 @@ def choose_frame_flip(frame_symbols):
         frame_pos = random.randint(0, frames_num - 1)
         frame = frame_symbols[frame_pos][0]
         symbols = frame_symbols[frame_pos][1]
+        print("\n\n", symbols, "\n\n")
         symbols_num = len(symbols)
         while symbols_num <= 0:
             frame_symbols.pop(frame_pos)
@@ -126,9 +127,9 @@ Getting information
 
 
 def getting_frame_information():
+    all_frames = get_all_valid_symbols()
 
 
-    print("\n\n", dict(gdb.selected_frame()), "\n\n")
 
 
 """
