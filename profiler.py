@@ -93,8 +93,8 @@ def main():
     if not time_profiler:
         cf.save_file(kernel_info_dir, kernel_info_list)
 
-    # Finishing
-    print ("If you are seeing it, profiler has been finished")
+        # Finishing
+        print ("If you are seeing it, profiler has been finished")
 
 
 main()

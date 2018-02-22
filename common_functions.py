@@ -14,7 +14,7 @@ MAX_SIZE_REGISTER = 32
 # Times to profile
 # this will be the max number of executions
 # to profiler application
-MAX_TIMES_TO_PROFILE = 10
+MAX_TIMES_TO_PROFILE = 2
 
 # TMP file that will store kernel information
 KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
