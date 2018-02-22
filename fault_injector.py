@@ -718,13 +718,14 @@ def main():
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
 
     # break mode is default option
-    print("\n\n", inj_type, "\n\n")
-    if inj_type == 'break':
+    if 'break' in inj_type:
         # Load information file generated in profiler step
         kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
         fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                          kernel_info_list=kernel_info_list, summary_file=summary_file)
-    elif inj_type == 'signal':
+    elif 'signal' in inj_type:
+
+        print("\n\n", inj_type, "\n\n")
         # The hard mode
         fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                   summary_file=summary_file, max_time=max_time_app)
