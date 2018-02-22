@@ -162,12 +162,12 @@ Check if app stops execution (otherwise kill it after a time)
 """
 
 
-def finish(section, conf, logging, timestamp_start):
+def finish(section, conf, logging, timestamp_start, end_time):
     is_hang = False
     now = int(time.time())
 
     # Wait 2 times the normal duration of the program before killing it
-    max_wait_time = int(conf.get(section, "maxWaitTimes")) * float(conf.get(section, "endSignal"))
+    max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     gdb_exec_name = conf.get(section, "gdbExecName")
     check_running = "ps -e | grep -i " + gdb_exec_name
     kill_strs = conf.get(section, "killStrs")
@@ -396,7 +396,7 @@ def run_gdb_fault_injection(**kwargs):
         t.start()
 
     # Check if app stops execution (otherwise kill it after a time)
-    is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start)
+    is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start, end_time=end_signal)
 
     # Run pos execution function
     pos_execution(conf=conf, section=section)
