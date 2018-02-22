@@ -345,6 +345,9 @@ def run_gdb_fault_injection(**kwargs):
     unique_id = kwargs.get('unique_id')
     valid_register = kwargs.get('valid_register')
     conf = kwargs.get('conf')
+    max_wait_times = int(conf.get("DEFAULT", "maxWaitTime"))
+    init_signal = 0.0
+    end_signal = float(kwargs.get('max_time'))
 
     # Logging file
     flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
@@ -359,15 +362,12 @@ def run_gdb_fault_injection(**kwargs):
         breakpoint_location = kwargs.get('breakpoint_location')
 
     elif inj_mode == 'signal':
-        init_signal = float(conf.get("DEFAULT", "initSignal"))
-        end_signal = float(conf.get("DEFAULT", "endSignal"))
         signal_cmd = conf.get("DEFAULT", "signalCmd")
-        max_wait_time = int(conf.get("DEFAULT", "maxWaitTime"))
         seq_signals = int(conf.get("DEFAULT", "seqSignals"))
         max_thread_fi = int(conf.get("DEFAULT", "numThreadsFI"))
 
         for i in range(0, max_thread_fi):
-            thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
+            thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_times,
                                                 init=init_signal, end=end_signal, seq_signals=seq_signals,
                                                 logging=logging, threads_num=max_thread_fi))
 
@@ -656,16 +656,17 @@ Function that calls the profiler based on the injection mode
 
 def profiler_caller(conf, measure_time):
     acc_time = 0
-    if measure_time:
-        os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                                                     "kernelBreaks") + "|" + "False"
-        for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
-            profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-            start = time.time()
-            os.system(profiler_cmd)
-            end = time.time()
-            acc_time += end - start
-    else:
+
+    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
+                                                                                 "kernelBreaks") + "|" + "False"
+    for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
+        profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
+        start = time.time()
+        os.system(profiler_cmd)
+        end = time.time()
+        acc_time += end - start
+
+    if not measure_time:
         os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
                                                                                             "kernelBreaks") + "|" + "False"
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
@@ -673,16 +674,16 @@ def profiler_caller(conf, measure_time):
 
     return acc_time / cf.MAX_TIMES_TO_PROFILE
 
+"""
+Main function
+"""
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
                         help='How many times to repeat the programs in the configuration file', required=True, type=int)
-    # parser.add_argument('-l', '--log_csv', dest="csv_file", help="CSV log file", type=str, required=False)
-    # parser.add_argument('-t', '--inj_type', dest="inj_type",
-    #                     help="The CAROL-FI cuda could inject faults in two ways, by using "
-    #                          "a breakpoint or a thread signal, default is break. The other option is: signal",
-    #                     required=False, default='break')
 
     args = parser.parse_args()
     if args.iterations < 1:
@@ -702,7 +703,7 @@ def main():
     # Profiler step
     # Max time will be obtained by running
     inj_type = conf.get("DEFAULT", "injType")
-    max_time_app = profiler_caller(True if inj_type == 'signal' else False)
+    max_time_app = profiler_caller(conf, True if inj_type == 'signal' else False)
     ########################################################################
     # Injector setup
 
@@ -710,7 +711,7 @@ def main():
     kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
 
     # Get fault models
-    fault_models = range(0, int(conf.get('DEFAULT', 'faultModel')) + 1)
+    fault_models = [int(i) for i in str(conf.get('DEFAULT', 'faultModel')).split(',')]
 
     # Csv log
     fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
