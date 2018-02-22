@@ -128,7 +128,7 @@ Getting information
 
 def getting_frame_information():
     all_frames = get_all_valid_symbols()
-
+    choose_frame_flip(all_frames)
 
 
 
