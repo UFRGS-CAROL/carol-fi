@@ -62,14 +62,8 @@ class SignalApp(threading.Thread):
         self.__max_sleep_time = (max_wait_time / threads_num) / self.__seq_signals
 
     def run(self):
-        # Sleep for a random time
-        wait_time = random.uniform(self.__init, self.__end)
-        time.sleep(wait_time)
-        # Send a series of signal to make sure gdb will flip a value in one of the interrupt signals
-        # self.__logging.info(
-        #     "sending " + str(self.__seq_signals) + " signals using command: '" + self.__signal_cmd + "' after " + str(
-        #         wait_time) + "s")
         for i in range(0, self.__seq_signals):
+            time.sleep(self.__max_sleep_time)
             proc = subprocess.Popen(self.__signal_cmd, stdout=subprocess.PIPE, shell=True)
             (out, err) = proc.communicate()
             if out is not None:
@@ -77,8 +71,8 @@ class SignalApp(threading.Thread):
             if err is not None:
                 self.__logging.error("shell stderr: " + str(err))
 
-            # Sleep to avoid lots of signals
-            time.sleep(0.01)
+            # # Sleep to avoid lots of signals
+            # time.sleep(0.01)
 
 
 """
@@ -365,9 +359,10 @@ def run_gdb_fault_injection(**kwargs):
         signal_cmd = conf.get("DEFAULT", "signalCmd")
         seq_signals = int(conf.get("DEFAULT", "seqSignals"))
         max_thread_fi = int(conf.get("DEFAULT", "numThreadsFI"))
+        max_wait_time = end_signal * max_wait_times
 
         for i in range(0, max_thread_fi):
-            thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_times,
+            thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
                                                 init=init_signal, end=end_signal, seq_signals=seq_signals,
                                                 logging=logging, threads_num=max_thread_fi))
 
