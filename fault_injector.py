@@ -339,7 +339,7 @@ def run_gdb_fault_injection(**kwargs):
     unique_id = kwargs.get('unique_id')
     valid_register = kwargs.get('valid_register')
     conf = kwargs.get('conf')
-    max_wait_times = int(conf.get("DEFAULT", "maxWaitTime"))
+    max_wait_times = int(conf.get("DEFAULT", "maxWaitTimes"))
     init_signal = 0.0
     end_signal = float(kwargs.get('max_time'))
 
@@ -724,8 +724,6 @@ def main():
         fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                          kernel_info_list=kernel_info_list, summary_file=summary_file)
     elif 'signal' in inj_type:
-
-        print("\n\n", inj_type, "\n\n")
         # The hard mode
         fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                   summary_file=summary_file, max_time=max_time_app)
