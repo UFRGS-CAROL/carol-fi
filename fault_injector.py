@@ -706,10 +706,6 @@ def main():
     max_time_app = profiler_caller(conf, True if inj_type == 'signal' else False)
     ########################################################################
     # Injector setup
-
-    # Load information file generated in profiler step
-    kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
-
     # Get fault models
     fault_models = [int(i) for i in str(conf.get('DEFAULT', 'faultModel')).split(',')]
 
@@ -728,6 +724,8 @@ def main():
 
     # break mode is default option
     if inj_type == 'break':
+        # Load information file generated in profiler step
+        kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
         fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                          kernel_info_list=kernel_info_list, summary_file=summary_file)
     elif inj_type == 'signal':
