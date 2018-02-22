@@ -167,7 +167,7 @@ def finish(section, conf, logging, timestamp_start):
     now = int(time.time())
 
     # Wait 2 times the normal duration of the program before killing it
-    max_wait_time = conf.getfloat(section, "maxWaitTime")
+    max_wait_time = int(conf.get(section, "maxWaitTimes")) * float(conf.get(section, "endSignal"))
     gdb_exec_name = conf.get(section, "gdbExecName")
     check_running = "ps -e | grep -i " + gdb_exec_name
     kill_strs = conf.get(section, "killStrs")
