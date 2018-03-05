@@ -81,11 +81,7 @@ def main():
     # Profiler has two steps
     # First: getting kernel information
     # Run app for the first time
-    print "\n\n", time_profiler, "\n\n"
-
-    time_profiler = bool(time_profiler)
-
-    if not time_profiler:
+    if time_profiler == 'False':
         set_breakpoints(kernel_conf_string)
         gdb.events.stop.connect(get_kernel_address_event)
 
@@ -93,7 +89,7 @@ def main():
 
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
-    if not time_profiler:
+    if time_profiler == 'False':
         cf.save_file(kernel_info_dir, kernel_info_list)
 
         # Finishing
