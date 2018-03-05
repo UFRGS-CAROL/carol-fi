@@ -82,6 +82,7 @@ def main():
     # First: getting kernel information
     # Run app for the first time
     time_profiler = bool(time_profiler)
+    print "\n\n", time_profiler, "\n\n"
     if not time_profiler:
         set_breakpoints(kernel_conf_string)
         gdb.events.stop.connect(get_kernel_address_event)

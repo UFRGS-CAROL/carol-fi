@@ -649,7 +649,7 @@ Function that calls the profiler based on the injection mode
 """
 
 
-def profiler_caller(conf, measure_time):
+def profiler_caller(conf):
     acc_time = 0
 
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
@@ -698,7 +698,7 @@ def main():
     # Profiler step
     # Max time will be obtained by running
     inj_type = conf.get("DEFAULT", "injType")
-    max_time_app = profiler_caller(conf, True if inj_type == 'signal' else False)
+    max_time_app = profiler_caller(conf)
     ########################################################################
     # Injector setup
     # Get fault models
