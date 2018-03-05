@@ -314,6 +314,7 @@ def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, faul
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
+    print(flip_log_file, debug, gdb_init_strings, inj_type)
     env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type
 
     os.environ['CAROL_FI_INFO'] = env_string
@@ -341,6 +342,7 @@ def run_gdb_fault_injection(**kwargs):
     conf = kwargs.get('conf')
     max_wait_times = int(conf.get("DEFAULT", "maxWaitTimes"))
     init_signal = 0.0
+    print (kwargs.get('max_time'))
     end_signal = float(kwargs.get('max_time'))
 
     # Logging file
@@ -606,7 +608,8 @@ by creating a breakpoint and steeping into it
 """
 
 
-def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file, max_time):
+def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file,
+                                     max_time):
     for num_rounds in range(iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
@@ -639,7 +642,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 row.extend(
                     [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
                 summary_file.write_row(row=row)
-            # except Exception as err:
+                # except Exception as err:
                 #     print("\nFault was not injected\n", str(err))
                 #     num_rounds -= 1
                 time.sleep(2)
@@ -663,7 +666,7 @@ def profiler_caller(conf):
         acc_time += end - start
 
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-                    "DEFAULT", "kernelBreaks") + "|" + "True"
+        "DEFAULT", "kernelBreaks") + "|" + "True"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     os.system(profiler_cmd)
 
@@ -723,7 +726,8 @@ def main():
         # Load information file generated in profiler step
         kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
         fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
-                                         kernel_info_list=kernel_info_list, summary_file=summary_file,  max_time=max_time_app)
+                                         kernel_info_list=kernel_info_list, summary_file=summary_file,
+                                         max_time=max_time_app)
     elif 'signal' in inj_type:
         # The hard mode
         fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
