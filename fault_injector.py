@@ -634,7 +634,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                                                                            fault_model=fault_model,
                                                                            breakpoint_location=breakpoint_location,
                                                                            max_time=max_time,
-                                                                           inj_type=inj_type)
+                                                                           inj_mode=inj_type)
                 # Write a row to summary file
                 row = [unique_id, num_rounds, fault_model]
                 row.extend(valid_thread)
