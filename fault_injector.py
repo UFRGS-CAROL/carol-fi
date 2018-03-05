@@ -71,8 +71,8 @@ class SignalApp(threading.Thread):
             if err is not None:
                 self.__logging.error("shell stderr: " + str(err))
 
-            # # Sleep to avoid lots of signals
-            # time.sleep(0.01)
+                # # Sleep to avoid lots of signals
+                # time.sleep(0.01)
 
 
 """
@@ -602,7 +602,7 @@ def fault_injection_by_signal(conf, fault_models, inj_type, iterations, summary_
 """
 This injector has two injection options
 this function performs fault injection
-by creating a breakpoint and steping into it
+by creating a breakpoint and steeping into it
 """
 
 
@@ -653,7 +653,7 @@ def profiler_caller(conf, measure_time):
     acc_time = 0
 
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                                                 "kernelBreaks") + "|" + "False"
+                                                                                         "kernelBreaks") + "|" + "False"
     for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
@@ -661,13 +661,13 @@ def profiler_caller(conf, measure_time):
         end = time.time()
         acc_time += end - start
 
-    if not measure_time:
-        os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                                                            "kernelBreaks") + "|" + "True"
-        profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-        os.system(profiler_cmd)
+    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
+                    "DEFAULT", "kernelBreaks") + "|" + "True"
+    profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
+    os.system(profiler_cmd)
 
     return acc_time / cf.MAX_TIMES_TO_PROFILE
+
 
 """
 Main function
