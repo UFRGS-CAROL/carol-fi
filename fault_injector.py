@@ -59,7 +59,7 @@ class SignalApp(threading.Thread):
         self.__seq_signals = seq_signals
         self.__logging = logging
         # It is for each thread wait similar time
-        self.__max_sleep_time = (max_wait_time / threads_num) / self.__seq_signals
+        self.__max_sleep_time = end / threads_num
 
     def run(self):
         for i in range(0, self.__seq_signals):
@@ -663,7 +663,7 @@ def profiler_caller(conf, measure_time):
 
     if not measure_time:
         os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                                                            "kernelBreaks") + "|" + "False"
+                                                                                            "kernelBreaks") + "|" + "True"
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         os.system(profiler_cmd)
 

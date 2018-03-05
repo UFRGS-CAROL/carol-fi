@@ -131,7 +131,6 @@ def getting_frame_information():
     choose_frame_flip(all_frames)
 
 
-
 """
 function called when the execution is stopped by a signal
 """
