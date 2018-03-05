@@ -314,7 +314,6 @@ def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, faul
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
-    print(flip_log_file, debug, gdb_init_strings, inj_type)
     env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type
 
     os.environ['CAROL_FI_INFO'] = env_string
@@ -634,7 +633,8 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                                                                            injection_address=injection_address,
                                                                            fault_model=fault_model,
                                                                            breakpoint_location=breakpoint_location,
-                                                                           max_time=max_time)
+                                                                           max_time=max_time,
+                                                                           inj_type=inj_type)
                 # Write a row to summary file
                 row = [unique_id, num_rounds, fault_model]
                 row.extend(valid_thread)
