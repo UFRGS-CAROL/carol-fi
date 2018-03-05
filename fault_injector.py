@@ -314,6 +314,7 @@ def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, faul
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
+    print(flip_log_file, debug, gdb_init_strings, inj_type)
     env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type
 
     os.environ['CAROL_FI_INFO'] = env_string
@@ -341,7 +342,6 @@ def run_gdb_fault_injection(**kwargs):
     conf = kwargs.get('conf')
     max_wait_times = int(conf.get("DEFAULT", "maxWaitTimes"))
     init_signal = 0.0
-    print (kwargs.get('max_time'))
     end_signal = float(kwargs.get('max_time'))
 
     # Logging file
