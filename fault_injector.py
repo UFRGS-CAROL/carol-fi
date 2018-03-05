@@ -606,7 +606,7 @@ by creating a breakpoint and steeping into it
 """
 
 
-def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file):
+def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file, max_time):
     for num_rounds in range(iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
@@ -630,7 +630,8 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                                                                            bits_to_flip=bits_to_flip,
                                                                            injection_address=injection_address,
                                                                            fault_model=fault_model,
-                                                                           breakpoint_location=breakpoint_location)
+                                                                           breakpoint_location=breakpoint_location,
+                                                                           max_time=max_time)
                 # Write a row to summary file
                 row = [unique_id, num_rounds, fault_model]
                 row.extend(valid_thread)
@@ -722,7 +723,7 @@ def main():
         # Load information file generated in profiler step
         kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
         fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
-                                         kernel_info_list=kernel_info_list, summary_file=summary_file)
+                                         kernel_info_list=kernel_info_list, summary_file=summary_file,  max_time=max_time_app)
     elif 'signal' in inj_type:
         # The hard mode
         fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
