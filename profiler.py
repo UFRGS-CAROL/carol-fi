@@ -16,7 +16,7 @@ necessary to fault injection
 
 def get_kernel_address_event(event):
     global kernel_info_list
-    print(event.breakpoints, kernel_info_list)
+    print("KKKKKKKKKKK", event.breakpoints, kernel_info_list)
     # Search all kernels info, and all breakpoints
     for kernel_info in kernel_info_list:
         for breakpoint in event.breakpoints:
@@ -86,7 +86,7 @@ def main():
         print("\n\n", time_profiler, "\n\n")
         set_breakpoints(kernel_conf_string)
 
-    gdb.events.breakpoints.connect(get_kernel_address_event)
+    gdb.events.stop.connect(get_kernel_address_event)
     gdb.execute("r")
 
     # Second: save the retrieved information on a txt file
