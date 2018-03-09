@@ -65,36 +65,36 @@ Main function
 """
 
 
-# def main():
-# global kernel_info_list
-kernel_info_dir = "/tmp/carol-fi-kernel-info.txt"
+def main():
+    global kernel_info_list
+    kernel_info_dir = "/tmp/carol-fi-kernel-info.txt"
 
-# Initialize GDB to run the app
-gdb.execute("set confirm off")
-gdb.execute("set pagination off")
-gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
-try:
-    for init_str in gdb_init_strings.split(";"):
-        gdb.execute(init_str)
+    # Initialize GDB to run the app
+    gdb.execute("set confirm off")
+    gdb.execute("set pagination off")
+    gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
+    try:
+        for init_str in gdb_init_strings.split(";"):
+            gdb.execute(init_str)
 
-except gdb.error as err:
-    print ("initializing setup: " + str(err))
+    except gdb.error as err:
+        print ("initializing setup: " + str(err))
 
-# Profiler has two steps
-# First: getting kernel information
-# Run app for the first time
-if time_profiler == 'True':
-    set_breakpoints(kernel_conf_string)
+    # Profiler has two steps
+    # First: getting kernel information
+    # Run app for the first time
+    if time_profiler == 'True':
+        set_breakpoints(kernel_conf_string)
 
-gdb.execute("r")
+    gdb.execute("r")
 
-# Second: save the retrieved information on a txt file
-# Save the information on file to the output
-if time_profiler == 'True':
-    cf.save_file(kernel_info_dir, kernel_info_list)
+    # Second: save the retrieved information on a txt file
+    # Save the information on file to the output
+    if time_profiler == 'True':
+        cf.save_file(kernel_info_dir, kernel_info_list)
 
-    # Finishing
-    print ("If you are seeing it, profiler has been finished")
+        # Finishing
+        print ("If you are seeing it, profiler has been finished")
 
 
-# main()
+main()
