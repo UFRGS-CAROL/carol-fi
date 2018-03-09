@@ -86,7 +86,7 @@ def main():
         print("\n\n", time_profiler, "\n\n")
         set_breakpoints(kernel_conf_string)
         gdb.events.stop.connect(get_kernel_address_event)
-    print(gdb.events)
+    print(gdb.events.stop)
 
     gdb.execute("r")
 
