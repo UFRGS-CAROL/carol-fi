@@ -22,6 +22,7 @@ def get_kernel_address_event(event):
         for breakpoint in event.breakpoints:
             # Get the addresses and thread for this kernel
             if breakpoint == kernel_info["breakpoint"]:
+                print("\n\n PASSOU AQUI\n\n")
                 # Thread info
                 kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
                 kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
