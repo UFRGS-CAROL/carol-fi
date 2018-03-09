@@ -85,8 +85,9 @@ def main():
     if time_profiler == 'True':
         print("\n\n", time_profiler, "\n\n")
         set_breakpoints(kernel_conf_string)
+        gdb.events.stop.connect(get_kernel_address_event)
+    print(gdb.events)
 
-    gdb.events.stop.connect(get_kernel_address_event)
     gdb.execute("r")
 
     # Second: save the retrieved information on a txt file
