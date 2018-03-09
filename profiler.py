@@ -51,7 +51,7 @@ def set_breakpoints(kernel_conf_string):
         # Just to make sure things like this: kernel.cu:52;<nothing here>
         if len(kernel_line) > 0:
             kernel_info = {
-                'breakpoint': gdb.Breakpoint(kernel_line, type=gdb.BP_BREAKPOINT),
+                'breakpoint': gdb.Breakpoint(kernel_line),
                 'kernel_name': kernel_line.split(":")[0],
                 'kernel_line': kernel_line.split(":")[1]
             }
