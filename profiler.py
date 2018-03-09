@@ -16,7 +16,7 @@ necessary to fault injection
 
 def get_kernel_address_event(event):
     global kernel_info_list
-
+    print(event.breakpoints, kernel_info_list)
     # Search all kernels info, and all breakpoints
     for kernel_info in kernel_info_list:
         for breakpoint in event.breakpoints:
