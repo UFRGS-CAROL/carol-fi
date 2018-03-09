@@ -58,6 +58,7 @@ def set_breakpoints(kernel_conf_string):
 
             kernel_info_list.append(kernel_info)
 
+    gdb.events.stop.connect(get_kernel_address_event)
 
 """
 Main function
@@ -72,7 +73,6 @@ def main():
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
     gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
-    print(str(os.environ["CAROL_FI_INFO"]).split("|"))
     try:
         for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)
@@ -84,9 +84,7 @@ def main():
     # First: getting kernel information
     # Run app for the first time
     if time_profiler == 'True':
-        print("\n\n", time_profiler, "\n\n")
         set_breakpoints(kernel_conf_string)
-        gdb.events.stop.connect(get_kernel_address_event)
 
     gdb.execute("r")
 
