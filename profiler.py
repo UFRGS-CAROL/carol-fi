@@ -58,7 +58,7 @@ def set_breakpoints(kernel_conf_string):
 
             kernel_info_list.append(kernel_info)
 
-    gdb.events.stop.connect(get_kernel_address_event)
+    print(gdb.events.stop.connect(get_kernel_address_event))
 
 """
 Main function
