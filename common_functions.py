@@ -55,7 +55,6 @@ file path using pickle.
 
 
 def save_file(file_path, data):
-    print('\n', file_path, '\n')
     f_out = open(file_path, "wb")
     pickle.dump(data, f_out)
     f_out.close()

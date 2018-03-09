@@ -90,6 +90,7 @@ def main():
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
     if time_profiler == 'True':
+        print(kernel_info_list)
         cf.save_file(kernel_info_dir, kernel_info_list)
 
         # Finishing
