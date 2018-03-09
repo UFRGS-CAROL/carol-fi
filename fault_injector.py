@@ -694,7 +694,7 @@ def main():
     conf = cf.load_config_file(args.config_file)
 
     # First set env vars
-    os.environ['PYTHONPATH'] = "$PYTHONPATH:" + os.path.dirname(os.path.realpath(__file__))
+    os.environ['PYTHONPATH'] += "$PYTHONPATH:" + os.path.dirname(os.path.realpath(__file__))
 
     ########################################################################
     # Profiler step
