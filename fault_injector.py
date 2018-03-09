@@ -651,17 +651,17 @@ Function that calls the profiler based on the injection mode
 
 
 def profiler_caller(conf):
-    acc_time = 10
+    acc_time = 0
 
-    # os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-    #                                                                                      "kernelBreaks") + "|" + "False"
-    #
-    # for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
-    #     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    #     start = time.time()
-    #     os.system(profiler_cmd)
-    #     end = time.time()
-    #     acc_time += end - start
+    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
+                                                                                         "kernelBreaks") + "|" + "False"
+
+    for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
+        profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
+        start = time.time()
+        os.system(profiler_cmd)
+        end = time.time()
+        acc_time += end - start
 
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "True"
