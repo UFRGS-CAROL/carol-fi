@@ -4,26 +4,36 @@ import os
 import time
 import sys
 
+confFile = "codes/quicksort/quicksort.conf"
+
 timestampFile = "summary-carolfi.log"
-timestampMaxDiff=60*2 # in seconds
+timestampMaxDiff=60*5 # in seconds
+
+def killall():
+    os.system("killall -9 fault_injector.py")
+    os.system("killall -9 gdb")
 
 def run():
-	os.system("killall -9 fault_injector.py")
-	os.system("killall -9 gdb")
-	os.system("./fault_injector.py -c codes/lavamd/lavamd.conf.KNL -i 9000 &")
+    killall()
+    os.system("./fault_injector.py -c "+confFile+" -i 9000 &")
 
-print "running ..."
-run()
-time.sleep(timestampMaxDiff)
-while True:
-	timestamp = int(os.path.getmtime(timestampFile))
-	now = int(time.time())
+try:
+    print "running ..."
+    run()
+    time.sleep(timestampMaxDiff)
+    while True:
+        timestamp = int(os.path.getmtime(timestampFile))
+        now = int(time.time())
         timestampDiff = now - timestamp
-	if timestampDiff > timestampMaxDiff:
-		print "timestamp > than expected"
-		run()
-	else:
-		print "timestamp OK"
+        if timestampDiff > timestampMaxDiff:
+            print "timestamp > than expected"
+            run()
+        else:
+            print "timestamp OK"
+        
+        time.sleep(timestampMaxDiff)
 
-	time.sleep(timestampMaxDiff)
-
+except KeyboardInterrupt:  # Ctrl+c
+    print "\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )"
+    killall()
+    sys.exit(1)
