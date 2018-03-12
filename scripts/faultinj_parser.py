@@ -30,11 +30,12 @@ def processDirectory(dirName, fileList):
     varLine = ""
     faultTime = ""
     faultModel = ""
+    signalTime = ""
     for fname in fileList:
 #        if re.search("knl.log",fname):
 #            (sdc, crash) = getSDCCrashInfo(dirName, fname)
         if re.search("carolfi-flipvalue",fname):
-            (flip, flipInfo, var, varFile, varLine, faultTime, faultModel) = getFlipInfo(dirName, fname)
+            (flip, flipInfo, var, varFile, varLine, faultTime, faultModel, signalTime) = getFlipInfo(dirName, fname)
             if re.search("sdcs",dirName):
                 sdc = 1
             else:
@@ -58,7 +59,7 @@ def processDirectory(dirName, fileList):
                 faultModelSDC.append(faultModel)
                 csvWFP = open(current_folder_name+"_"+sdcFilename, "a")
                 writer = csv.writer(csvWFP, delimiter=';')
-                writer.writerow([var,varFile,str(varLine),str(faultTime),str(faultModel)])
+                writer.writerow([var,varFile,str(varLine),str(faultTime),str(signalTime),str(faultModel)])
                 csvWFP.close()
             if crash == 1:
                 crashCount += 1
@@ -66,7 +67,7 @@ def processDirectory(dirName, fileList):
                 faultModelCrash.append(faultModel)
                 csvWFP = open(current_folder_name+"_"+crashFilename, "a")
                 writer = csv.writer(csvWFP, delimiter=';')
-                writer.writerow([var,varFile,str(varLine),str(faultTime),str(faultModel)])
+                writer.writerow([var,varFile,str(varLine),str(faultTime),str(signalTime),str(faultModel)])
                 csvWFP.close()
             if sdc == 1 and crash == 1:
                 sdcCrashCount += 1
@@ -98,6 +99,8 @@ def getFlipInfo(dirName, fname):
         symbolLine = 0
         faultTime = -1
         faultModel=""
+        initSignal=-1
+        endSignal=-1
         for line in fp:
             if re.search("Backtrace BEGIN:",line):
                 bt = "Backtrace BEGIN:\n"
@@ -128,6 +131,16 @@ def getFlipInfo(dirName, fname):
             if m:
                 bt += m.group(1)+m.group(2)
                 faultModel = m.group(2)
+            #initSignal:0
+            m = re.match(".*(initSignal:)(.*)",line)
+            if m:
+                bt += m.group(1)+m.group(2)
+                initSignal = m.group(2)
+            #endSignal:2
+            m = re.match(".*(endSignal:)(.*)",line)
+            if m:
+                bt += m.group(1)+m.group(2)
+                endSignal = m.group(2)
             m = re.match(".*(symbol line: )(.*)",line)
             if m:
                 bt += m.group(1)+m.group(2)
@@ -138,9 +151,9 @@ def getFlipInfo(dirName, fname):
                 bt += m.group(1)+m.group(2)+"s"
                 faultTime = m.group(2)
 
-        return (flip, bt, symbolName, symbolFilename, symbolLine, faultTime, faultModel)
+        return (flip, bt, symbolName, symbolFilename, symbolLine, faultTime, faultModel,initSignal+"-"+endSignal)
     else:
-        return (flip, "", "", "", "", "", "")
+        return (flip, "", "", "", "", "", "", "")
 
 cwd = os.getcwd()
 current_folder_path, current_folder_name = os.path.split(os.getcwd())
@@ -149,11 +162,11 @@ print ("Processing folder "+current_folder_name)
 
 csvWFP = open(current_folder_name+"_"+sdcFilename, "w")
 writer = csv.writer(csvWFP, delimiter=';')
-writer.writerow(["Variable Name","Variable File","Variable Line","Fault Injection Time(s)","Fault Model"])
+writer.writerow(["Variable Name","Variable File","Variable Line","Fault Injection Time(s)","Injection Time Interval","Fault Model"])
 csvWFP.close()
 csvWFP = open(current_folder_name+"_"+crashFilename, "w")
 writer = csv.writer(csvWFP, delimiter=';')
-writer.writerow(["Variable Name","Variable File","Variable Line","Fault Injection Time(s)","Fault Model"])
+writer.writerow(["Variable Name","Variable File","Variable Line","Fault Injection Time(s)","Injection Time Interval","Fault Model"])
 csvWFP.close()
 
 # Set the directory you want to start from
