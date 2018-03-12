@@ -15,6 +15,23 @@ $ ./fault_injector.py -c <conf file> -i <# tests>
 
 For each fault injected, CAROL-FI will compare the output produced with a _**gold**_ output. If the outputs differ, CAROL-FI will save the output with the log files in the **logs** folder. If the program crashes or the output and gold match, the output will not be saved.
 
+Sometimes the fault_injector.py will stop running due to a cause still unknown. To make sure the fault injector will run continuously use the **watchdog.py** script. The watchdog.py need to be supplied with the configuration file, open the script and change the variable '**confFile**'. For example, to configure the watchdog.py to run quicksort will result in a file like this:
+
+```python
+#!/usr/bin/python
+
+import os
+import time
+import sys
+
+confFile = "codes/quicksort/quicksort.conf"
+
+timestampFile = "summary-carolfi.log"
+timestampMaxDiff=60*5 # in seconds
+...
+```
+
+
 ## How to run a simple test
 
 To test quicksort, run the make into the quicksort folder '/codes/quicksort'. A folder into /tmp directory will be created with the binaries and files needed.
