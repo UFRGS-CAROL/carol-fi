@@ -31,6 +31,8 @@ timestampMaxDiff=60*5 # in seconds
 ...
 ```
 
+The fault_injector.py will then run until the user press CTRL+C or kill the watchdog.py process.
+
 
 ## How to run a simple test
 
