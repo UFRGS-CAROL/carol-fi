@@ -668,7 +668,7 @@ def profiler_caller(conf):
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     os.system(profiler_cmd)
 
-    return acc_time / cf.MAX_TIMES_TO_PROFILE
+    return acc_time / cf.MAX_TIMES_TO_PROFILE, None
 
 
 """
@@ -699,8 +699,10 @@ def main():
     ########################################################################
     # Profiler step
     # Max time will be obtained by running
+    # it will also get app output for golden copy
+    # that is,
     inj_type = conf.get("DEFAULT", "injType")
-    max_time_app = profiler_caller(conf)
+    max_time_app,gold_out_app = profiler_caller(conf)
     ########################################################################
     # Injector setup
     # Get fault models
