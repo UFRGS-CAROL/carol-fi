@@ -398,7 +398,8 @@ def run_gdb_fault_injection(**kwargs):
             t.start()
 
         # Check if app stops execution (otherwise kill it after a time)
-        is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start, end_time=end_signal)
+        is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
+                         end_time=end_signal)
 
         # Run pos execution function
         pos_execution(conf=conf, section=section)
@@ -416,7 +417,7 @@ def run_gdb_fault_injection(**kwargs):
             t.join()
         del thread_signal_list
     except Exception as e:
-        logging.info("Exception: " + str(e))
+        logging.info("Thread crash error: " + str(e))
     # Search for set values for register
     # Must be done before save output
 
@@ -670,7 +671,7 @@ def profiler_caller(conf):
 
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-        "DEFAULT", "kernelBreaks") + "|" + "False"+ "|" + conf.get(
+        "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + conf.get(
         "DEFAULT", "goldFile")
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     os.system(profiler_cmd)
