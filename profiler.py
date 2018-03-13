@@ -92,6 +92,7 @@ def main():
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
     if time_profiler == 'False':
+        gdb.execute("set inferior-tty")
         cf.save_file(cf.KERNEL_INFO_DIR, kernel_info_list)
 
         # Finishing
