@@ -71,8 +71,10 @@ def main():
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
     gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
+   # print " Conf",kernel_conf_string
     try:
         for init_str in gdb_init_strings.split(";"):
+            print "AQUI! init_str",init_str
             gdb.execute(init_str)
 
     except gdb.error as err:
@@ -93,7 +95,7 @@ def main():
         cf.save_file(cf.KERNEL_INFO_DIR, kernel_info_list)
 
         # Finishing
-        print ("If you are seeing it, profiler has been finished")
+        print ("If you are seeing it, profiler has been finished \n \n")
 
 
 main()
