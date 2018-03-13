@@ -665,7 +665,6 @@ def profiler_caller(conf):
         end = time.time()
         acc_time += end - start
 
-    open(conf.get("DEFAULT", "goldFile"), 'a').close()
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False"+ "|" + conf.get(
         "DEFAULT", "goldFile")
