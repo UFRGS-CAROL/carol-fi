@@ -70,11 +70,10 @@ def main():
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
-    gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
-   # print " Conf",kernel_conf_string
+    gdb_init_strings, kernel_conf_string, time_profiler, gdb_output = str(os.environ["CAROL_FI_INFO"]).split("|")
+
     try:
         for init_str in gdb_init_strings.split(";"):
-            print "AQUI! init_str",init_str
             gdb.execute(init_str)
 
     except gdb.error as err:
@@ -83,7 +82,8 @@ def main():
     # Profiler has two steps
     # First: getting kernel information
     # Run app for the first time
-    if time_profiler == 'True':
+    if time_profiler == 'False':
+        gdb.execute("tty " + str(gdb_output))
         set_breakpoints(kernel_conf_string)
         gdb.events.stop.connect(get_kernel_address_event)
 
@@ -91,7 +91,7 @@ def main():
 
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
-    if time_profiler == 'True':
+    if time_profiler == 'False':
         cf.save_file(cf.KERNEL_INFO_DIR, kernel_info_list)
 
         # Finishing

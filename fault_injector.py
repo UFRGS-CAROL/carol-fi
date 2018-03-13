@@ -309,13 +309,13 @@ The default parameters are necessary for break and signal mode differentiations
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type):
+                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type, gdb_output):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
     print(flip_log_file, debug, gdb_init_strings, inj_type)
-    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type
+    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type + "|" + gdb_output
 
     os.environ['CAROL_FI_INFO'] = env_string
 
@@ -377,7 +377,7 @@ def run_gdb_fault_injection(**kwargs):
                    fault_model=fault_model,
                    injection_site=injection_address,
                    breakpoint_location=breakpoint_location,
-                   flip_log_file=flip_log_file, inj_type=inj_mode)
+                   flip_log_file=flip_log_file, inj_type=inj_mode, gdb_output="/tmp/test.txt")
 
     # Run pre execution function
     pre_execution(conf=conf, section=section)
@@ -652,8 +652,12 @@ Function that calls the profiler based on the injection mode
 
 def profiler_caller(conf):
     acc_time = 0
-    
-    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT", "kernelBreaks") + "|" + "False"
+
+    os.environ['CAROL_FI_INFO'] = conf.get(
+        "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
+                                                      "kernelBreaks") + "|" + "True" + "|" + conf.get(
+        "DEFAULT", "goldFile")
+
     for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
@@ -662,7 +666,8 @@ def profiler_caller(conf):
         acc_time += end - start
 
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-        "DEFAULT", "kernelBreaks") + "|" + "True"
+        "DEFAULT", "kernelBreaks") + "|" + "False"+ "|" + conf.get(
+        "DEFAULT", "goldFile")
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     os.system(profiler_cmd)
 
@@ -700,7 +705,7 @@ def main():
     # it will also get app output for golden copy
     # that is,
     inj_type = conf.get("DEFAULT", "injType")
-    max_time_app,gold_out_app = profiler_caller(conf)
+    max_time_app, gold_out_app = profiler_caller(conf)
     ########################################################################
     # Injector setup
     # Get fault models
