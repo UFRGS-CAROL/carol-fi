@@ -89,23 +89,20 @@ class SummaryFile:
     __csv_file = None
     # Dict reader
     __dict_buff = None
-    # Csv Mode
-    __mode = None
+
     # Fieldnames
     __fieldnames = None
 
+    # It will only open in a W mode for the first time
     def __init__(self, **kwargs):
+        # Set arguments
         self.__filename = kwargs.get("filename")
-        self.__mode = kwargs.get("mode")
-        self.__open_file(mode=self.__mode)
+        self.__fieldnames = kwargs.get("fieldnames")
 
-        if self.__mode in ['w', 'a']:
-            self.__fieldnames = kwargs.get("fieldnames")
-            self.__dict_buff = csv.DictWriter(self.__csv_file, self.__fieldnames)
-            if self.__mode == 'w':
-                self.__dict_buff.writeheader()
-        elif self.__mode == 'r':
-            self.__dict_buff = csv.DictReader(self.__csv_file)
+        # Open and start csv file
+        self.__open_csv(mode='w')
+        self.__dict_buff.writeheader()
+        self.__close_csv()
 
     """
     Open a file if it exists
@@ -113,21 +110,28 @@ class SummaryFile:
     default is r
     """
 
-    def __open_file(self, mode='r'):
-        if os.path.isfile(self.__filename) and mode in ['r', 'a']:
+    def __open_csv(self, mode='a'):
+        if os.path.isfile(self.__filename):
             self.__csv_file = open(self.__filename, mode)
         elif mode == 'w':
             self.__csv_file = open(self.__filename, mode)
         else:
             raise IOError(str(self.__filename) + " FILE NOT FOUND")
 
+        # If file exists it is append or read
+        if mode in ['w', 'a']:
+            self.__dict_buff = csv.DictWriter(self.__csv_file, self.__fieldnames)
+        elif mode == 'r':
+            self.__dict_buff = csv.DictReader(self.__csv_file)
+
     """
     To not use __del__ method, close csv file
     """
 
-    def close_csv(self):
+    def __close_csv(self):
         if not self.__csv_file.closed:
             self.__csv_file.close()
+        self.__dict_buff = None
 
     """
     Write a csv row, if __mode == w or a
@@ -135,27 +139,29 @@ class SummaryFile:
     """
 
     def write_row(self, row):
-        if self.__mode in ['w', 'a']:
-            row_ready = {}
-            if isinstance(row, list):
-                for fields, data in zip(self.__fieldnames, row):
-                    row_ready[fields] = data
-            else:
-                row_ready = row
+        # If it is a list must convert first
+        row_ready = {}
+        if isinstance(row, list):
+            for fields, data in zip(self.__fieldnames, row):
+                row_ready[fields] = data
+        else:
+            row_ready = row
 
-            self.__dict_buff.writerow(row_ready)
+        # Open file first
+        self.__open_csv()
+        self.__dict_buff.writerow(row_ready)
+        self.__close_csv()
 
     """
-    Read rows, if __mode == r
+    Read rows
     return read rows from file in a list
     """
 
     def read_rows(self):
-        if self.__mode == 'r':
-            rows = [row for row in self.__dict_buff]
-            return rows
-        return None
-
+        self.__open_csv()
+        rows = [row for row in self.__dict_buff]
+        self.__close_csv()
+        return rows
 
 """
 Check if app stops execution (otherwise kill it after a time)
@@ -744,7 +750,6 @@ def main():
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
-    summary_file.close_csv()
     ########################################################################
 
 
