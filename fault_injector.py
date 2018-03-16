@@ -631,31 +631,31 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
             for kernel_info_dict in kernel_info_list:
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
-                try:
-                    valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
-                        kernel_info_dict=kernel_info_dict)
-                    breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
-                                              + kernel_info_dict["kernel_line"])
-                    r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(section="DEFAULT", conf=conf,
-                                                                               unique_id=unique_id,
-                                                                               valid_block=valid_block,
-                                                                               valid_thread=valid_thread,
-                                                                               valid_register=valid_register,
-                                                                               bits_to_flip=bits_to_flip,
-                                                                               injection_address=injection_address,
-                                                                               fault_model=fault_model,
-                                                                               breakpoint_location=breakpoint_location,
-                                                                               max_time=max_time,
-                                                                               inj_mode=inj_type)
-                    # Write a row to summary file
-                    row = [unique_id, num_rounds, fault_model]
-                    row.extend(valid_thread)
-                    row.extend(valid_block)
-                    row.extend(
-                        [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
-                    summary_file.write_row(row=row)
-                except Exception as err:
-                    print("\nERROR ON BREAK POINT MODE: Fault was not injected\n", str(err))
+                # try:
+                valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
+                    kernel_info_dict=kernel_info_dict)
+                breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
+                                          + kernel_info_dict["kernel_line"])
+                r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(section="DEFAULT", conf=conf,
+                                                                           unique_id=unique_id,
+                                                                           valid_block=valid_block,
+                                                                           valid_thread=valid_thread,
+                                                                           valid_register=valid_register,
+                                                                           bits_to_flip=bits_to_flip,
+                                                                           injection_address=injection_address,
+                                                                           fault_model=fault_model,
+                                                                           breakpoint_location=breakpoint_location,
+                                                                           max_time=max_time,
+                                                                           inj_mode=inj_type)
+                # Write a row to summary file
+                row = [unique_id, num_rounds, fault_model]
+                row.extend(valid_thread)
+                row.extend(valid_block)
+                row.extend(
+                    [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
+                summary_file.write_row(row=row)
+                # except Exception as err:
+                #     print("\nERROR ON BREAK POINT MODE: Fault was not injected\n", str(err))
                 time.sleep(2)
 
 
