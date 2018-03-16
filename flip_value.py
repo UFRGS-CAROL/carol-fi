@@ -324,7 +324,8 @@ def main():
         # Connect to signal handler event
         gdb.events.stop.connect(fault_injector_signal)
 
-    print(os.environ['CAROL_FI_INFO'])
+    print(valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
+     flip_log_file, debug, gdb_init_strings, inj_type)
     # Start app execution
     gdb.execute("r")
 
