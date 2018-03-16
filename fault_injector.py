@@ -407,7 +407,7 @@ def run_gdb_fault_injection(**kwargs):
     for t in thread_signal_list:
         t.start()
 
-    print("\n\n", fi_process.pid())
+    print("\n\n", fi_process.pid)
     exit(-1)
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
