@@ -31,24 +31,19 @@ this thread will be killed
 """
 
 
-# class RunGDB(multiprocessing.Process):
-#     def __init__(self, unique_id, gdb_exec_name, flip_script, queue, lock):
-#         super(RunGDB, self).__init__()
-#         self.__gdb_exe_name = gdb_exec_name
-#         self.__flip_script = flip_script
-#         self.__unique_id = unique_id
-#         self.__lock = lock
-#         self.__queue = queue
+class RunGDB(multiprocessing.Process):
+    def __init__(self, unique_id, gdb_exec_name, flip_script):
+        super(RunGDB, self).__init__()
+        self.__gdb_exe_name = gdb_exec_name
+        self.__flip_script = flip_script
+        self.__unique_id = unique_id
 
-def run_gdb_process(unique_id, gdb_exec_name, flip_script, queue, lock):
-    with lock:
-        queue.put(int(os.getpid()))
-
-    if DEBUG:
-        print("GDB Thread run, section and id: ", unique_id)
-    start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_exec_name
-    start_cmd += " -n -q -batch -x " + flip_script
-    os.system(start_cmd)
+    def run(self):
+        if DEBUG:
+            print("GDB Thread run, section and id: ", self.__unique_id)
+        start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exec_name
+        start_cmd += " -n -q -batch -x " + self.__flip_script
+        os.system(start_cmd)
 
 
 """
@@ -176,7 +171,7 @@ Check if app stops execution (otherwise kill it after a time)
 """
 
 
-def finish(section, conf, logging, timestamp_start, end_time):
+def finish(section, conf, logging, timestamp_start, end_time, pid):
     is_hang = False
     now = int(time.time())
 
@@ -184,7 +179,7 @@ def finish(section, conf, logging, timestamp_start, end_time):
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     gdb_exec_name = conf.get(section, "gdbExecName")
     check_running = "ps -e | grep -i " + gdb_exec_name
-    kill_strs = conf.get(section, "killStrs")
+    kill_strs = conf.get(section, "killStrs" + ";" + "kill -9" + str(pid)
 
     while (now - timestamp_start) < (max_wait_time * 2):
         time.sleep(max_wait_time / 10)
@@ -401,20 +396,13 @@ def run_gdb_fault_injection(**kwargs):
     # Create one thread to start gdb script
     flip_script = 'flip_value.py'
 
-    # Declare a Queue to get process pid
-    lock = multiprocessing.Lock()
-    q = multiprocessing.Queue()
-
-    with multiprocessing.Pool(poolsize) as pool:
-        pool.apply_async(run_gdb_process(gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
-                         flip_script=flip_script, unique_id=unique_id, queue=q,
-                         lock=lock)
+    # Start fault injection process
+    fi_process = RunGDB(gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
+                        flip_script=flip_script, unique_id=unique_id)
+    fi_process.start()
 
     # Start counting time
     timestamp_start = int(time.time())
-
-    # Start fault injection tread
-    th.start()
 
     # Start signal fault injection threads, if this mode was selected
     for t in thread_signal_list:
@@ -422,7 +410,7 @@ def run_gdb_fault_injection(**kwargs):
 
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-                     end_time=end_signal)
+                     end_time=end_signal, pid=fi_process.pid())
 
     # Run pos execution function
     pos_execution(conf=conf, section=section)
@@ -432,8 +420,9 @@ def run_gdb_fault_injection(**kwargs):
     output_file = conf.get(section, "outputFile")
     is_sdc = check_sdcs(gold_file=gold_file, output_file=output_file, logging=logging)
 
-    # Make sure threads finish before trying to execute again
-    th.join()
+    # Make sure process finish before trying to execute again
+    fi_process.join()
+    fi_process.terminate()
 
     # Also signal ones
     for t in thread_signal_list:
@@ -450,7 +439,7 @@ def run_gdb_fault_injection(**kwargs):
         reg_old_value = re.findall("reg_old_value: (\S+)", reg_old_value)[0]
         reg_new_value = re.findall('reg_new_value: (\S+)', reg_new_value)[0]
         fault_successful = True
-    except:
+    except Exception as e:
         reg_new_value = reg_old_value = ''
         fault_successful = False
 
