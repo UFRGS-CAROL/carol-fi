@@ -41,7 +41,7 @@ class RunGDB(multiprocessing.Process):
     def run(self):
         if DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
-        start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exec_name
+        start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -q -batch -x " + self.__flip_script
         os.system(start_cmd)
 
