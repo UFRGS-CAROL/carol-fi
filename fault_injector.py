@@ -179,7 +179,7 @@ def finish(section, conf, logging, timestamp_start, end_time, pid):
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     gdb_exec_name = conf.get(section, "gdbExecName")
     check_running = "ps -e | grep -i " + gdb_exec_name
-    kill_strs = conf.get(section, "killStrs" + ";" + "kill -9" + str(pid)
+    kill_strs = conf.get(section, "killStrs") + ";" + "kill -9 " + str(pid)
 
     while (now - timestamp_start) < (max_wait_time * 2):
         time.sleep(max_wait_time / 10)
