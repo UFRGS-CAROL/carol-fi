@@ -401,6 +401,7 @@ def run_gdb_fault_injection(**kwargs):
                         flip_script=flip_script, unique_id=unique_id)
     fi_process.start()
 
+    print "\n\n\nAQUQUQUQUi\n\n\n"
     # Start counting time
     timestamp_start = int(time.time())
 
