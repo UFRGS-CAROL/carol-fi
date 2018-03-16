@@ -33,7 +33,7 @@ this thread will be killed
 
 class RunGDB(multiprocessing.Process):
     def __init__(self, unique_id, gdb_exec_name, flip_script):
-        super(RunGDB, self).__init__()
+        multiprocessing.Process.__init__(self)
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
@@ -408,7 +408,7 @@ def run_gdb_fault_injection(**kwargs):
         t.start()
 
     print("\n\n", fi_process.pid())
-
+    exit(-1)
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
                      end_time=end_signal, pid=fi_process.pid())
