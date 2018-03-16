@@ -396,8 +396,8 @@ def run_gdb_fault_injection(**kwargs):
     flip_script = 'flip_value.py'
 
     # Start fault injection process
-    fi_process = RunGDB(gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
-                        flip_script=flip_script, unique_id=unique_id)
+    fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"), flip_script=flip_script)
+
     fi_process.start()
 
     # Start counting time
@@ -407,7 +407,11 @@ def run_gdb_fault_injection(**kwargs):
     for t in thread_signal_list:
         t.start()
 
-    print("\n\n", fi_process)
+    try:
+        print("\n\n", fi_process.pid())
+    except:
+        exit(-1)
+        
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
                      end_time=end_signal, pid=fi_process.pid())
