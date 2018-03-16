@@ -290,7 +290,7 @@ def main():
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
 
     [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
-     flip_log_file, debug, gdb_init_strings, inj_type, gdb_output] = str(os.environ['CAROL_FI_INFO']).split('|')
+     flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Set global vars to be used
     global_valid_block = valid_block.split(",")
@@ -324,6 +324,7 @@ def main():
         # Connect to signal handler event
         gdb.events.stop.connect(fault_injector_signal)
 
+    print(os.environ['CAROL_FI_INFO'])
     # Start app execution
     gdb.execute("r")
 

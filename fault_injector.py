@@ -318,13 +318,12 @@ The default parameters are necessary for break and signal mode differentiations
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type, gdb_output):
+                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
-    print(flip_log_file, debug, gdb_init_strings, inj_type)
-    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type + "|" + gdb_output
+    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type
 
     os.environ['CAROL_FI_INFO'] = env_string
 
@@ -388,7 +387,7 @@ def run_gdb_fault_injection(**kwargs):
                    fault_model=fault_model,
                    injection_site=injection_address,
                    breakpoint_location=breakpoint_location,
-                   flip_log_file=flip_log_file, inj_type=inj_mode, gdb_output="/tmp/test.txt")
+                   flip_log_file=flip_log_file, inj_type=inj_mode)
 
     # Run pre execution function
     pre_execution(conf=conf, section=section)
