@@ -13,10 +13,13 @@ import filecmp
 import shutil
 import argparse
 import csv
+
+import psutil
+
 import common_functions as cf
 
 # Debug env var
-DEBUG = True
+DEBUG = False
 
 # Injection mode
 # 0 -> Instruction output
@@ -177,19 +180,20 @@ def finish(section, conf, logging, timestamp_start, end_time, pid):
 
     # Wait 2 times the normal duration of the program before killing it
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
-    gdb_exec_name = conf.get(section, "gdbExecName")
-    check_running = "ps -e | grep -i " + gdb_exec_name
+    # gdb_exec_name = conf.get(section, "gdbExecName")
+    # check_running = "ps -e | grep -i " + gdb_exec_name
     kill_strs = conf.get(section, "killStrs") + ";" + "kill -9 " + str(pid)
 
     while (now - timestamp_start) < (max_wait_time * 2):
         time.sleep(max_wait_time / 10)
 
         # Check if the gdb is still running, if not, stop waiting
-        proc = subprocess.Popen(check_running, stdout=subprocess.PIPE, shell=True)
-        (out, err) = proc.communicate()
+        # proc = subprocess.Popen(check_running, stdout=subprocess.PIPE, shell=True)
+        # (out, err) = proc.communicate()
 
-        if not re.search(gdb_exec_name, str(out)):
-            logging.debug("Process " + str(gdb_exec_name) + " not running, out:" + str(out))
+        # if not re.search(gdb_exec_name, str(out)):
+        if not psutil.pid_exists(pid):
+            logging.debug("Process " + str(pid) + " not running, out:" + str(out))
             logging.debug("check command: " + check_running)
             break
         now = int(time.time())
@@ -407,11 +411,9 @@ def run_gdb_fault_injection(**kwargs):
     for t in thread_signal_list:
         t.start()
 
-    print("\n\n", fi_process.pid)
-    exit(-1)
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-                     end_time=end_signal, pid=fi_process.pid())
+                     end_time=end_signal, pid=fi_process)
 
     # Run pos execution function
     pos_execution(conf=conf, section=section)
