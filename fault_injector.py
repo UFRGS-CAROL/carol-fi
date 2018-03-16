@@ -6,6 +6,7 @@ import time
 import datetime
 import random
 import subprocess
+import multiprocessing
 import threading
 import re
 import filecmp
@@ -22,6 +23,7 @@ DEBUG = True
 injection_mode = 0
 
 """
+LEGACY
 Class RunGdb: necessary to run gdb while
 the main thread register the time
 If RunGdb execution time > max timeout allowed
@@ -29,19 +31,24 @@ this thread will be killed
 """
 
 
-class RunGDB(threading.Thread):
-    def __init__(self, unique_id, gdb_exec_name, flip_script):
-        threading.Thread.__init__(self)
-        self.__gdb_exe_name = gdb_exec_name
-        self.__flip_script = flip_script
-        self.__unique_id = unique_id
+# class RunGDB(multiprocessing.Process):
+#     def __init__(self, unique_id, gdb_exec_name, flip_script, queue, lock):
+#         super(RunGDB, self).__init__()
+#         self.__gdb_exe_name = gdb_exec_name
+#         self.__flip_script = flip_script
+#         self.__unique_id = unique_id
+#         self.__lock = lock
+#         self.__queue = queue
 
-    def run(self):
-        if DEBUG:
-            print("GDB Thread run, section and id: ", self.__unique_id)
-        start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
-        start_cmd += " -n -q -batch -x " + self.__flip_script
-        os.system(start_cmd)
+def run_gdb_process(unique_id, gdb_exec_name, flip_script, queue, lock):
+    with lock:
+        queue.put(int(os.getpid()))
+
+    if DEBUG:
+        print("GDB Thread run, section and id: ", unique_id)
+    start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_exec_name
+    start_cmd += " -n -q -batch -x " + flip_script
+    os.system(start_cmd)
 
 
 """
@@ -162,6 +169,7 @@ class SummaryFile:
         rows = [row for row in self.__dict_buff]
         self.__close_csv()
         return rows
+
 
 """
 Check if app stops execution (otherwise kill it after a time)
@@ -361,12 +369,14 @@ def run_gdb_fault_injection(**kwargs):
         valid_thread = kwargs.get('valid_thread')
         injection_address = kwargs.get('injection_address')
         breakpoint_location = kwargs.get('breakpoint_location')
+        poolsize = 1
 
     elif inj_mode == 'signal':
         signal_cmd = conf.get("DEFAULT", "signalCmd")
         seq_signals = int(conf.get("DEFAULT", "seqSignals"))
         max_thread_fi = int(conf.get("DEFAULT", "numThreadsFI"))
         max_wait_time = end_signal * max_wait_times
+        poolsize = max_thread_fi
 
         for i in range(0, max_thread_fi):
             thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
@@ -390,40 +400,46 @@ def run_gdb_fault_injection(**kwargs):
 
     # Create one thread to start gdb script
     flip_script = 'flip_value.py'
-    th = RunGDB(gdb_exec_name=conf.get("DEFAULT", "gdbExecName"), flip_script=flip_script, unique_id=unique_id)
+
+    # Declare a Queue to get process pid
+    lock = multiprocessing.Lock()
+    q = multiprocessing.Queue()
+
+    with multiprocessing.Pool(poolsize) as pool:
+        pool.apply_async(run_gdb_process(gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
+                         flip_script=flip_script, unique_id=unique_id, queue=q,
+                         lock=lock)
 
     # Start counting time
     timestamp_start = int(time.time())
 
-    try:
-        # Start fault injection tread
-        th.start()
+    # Start fault injection tread
+    th.start()
 
-        # Start signal fault injection threads, if this mode was selected
-        for t in thread_signal_list:
-            t.start()
+    # Start signal fault injection threads, if this mode was selected
+    for t in thread_signal_list:
+        t.start()
 
-        # Check if app stops execution (otherwise kill it after a time)
-        is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-                         end_time=end_signal)
+    # Check if app stops execution (otherwise kill it after a time)
+    is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
+                     end_time=end_signal)
 
-        # Run pos execution function
-        pos_execution(conf=conf, section=section)
+    # Run pos execution function
+    pos_execution(conf=conf, section=section)
 
-        # Check output files for SDCs
-        gold_file = conf.get(section, "goldFile")
-        output_file = conf.get(section, "outputFile")
-        is_sdc = check_sdcs(gold_file=gold_file, output_file=output_file, logging=logging)
+    # Check output files for SDCs
+    gold_file = conf.get(section, "goldFile")
+    output_file = conf.get(section, "outputFile")
+    is_sdc = check_sdcs(gold_file=gold_file, output_file=output_file, logging=logging)
 
-        # Make sure threads finish before trying to execute again
-        th.join()
+    # Make sure threads finish before trying to execute again
+    th.join()
 
-        # Also signal ones
-        for t in thread_signal_list:
-            t.join()
-        del thread_signal_list
-    except Exception as e:
-        logging.info("Thread crash error: " + str(e))
+    # Also signal ones
+    for t in thread_signal_list:
+        t.join()
+    del thread_signal_list
+
     # Search for set values for register
     # Must be done before save output
 
