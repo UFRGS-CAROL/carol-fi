@@ -221,6 +221,7 @@ def finish(section, conf, logging, timestamp_start, end_time, pid):
         pid_existence = pid_exists(pid)
         if not pid_existence:
             logging.debug("Process " + str(pid) + " not running")
+        print("Pid existence", pid_existence, "now - timestamp", now - timestamp_start)
 
     # check execution finished before or after waitTime
     if (now - timestamp_start) < max_wait_time:
