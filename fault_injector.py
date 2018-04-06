@@ -437,9 +437,12 @@ def run_gdb_fault_injection(**kwargs):
     for t in thread_signal_list:
         t.start()
 
+    test_time = time.time()
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
                      end_time=end_signal, pid=fi_process.pid)
+
+    print("\ntest time ", time.time() - test_time)
 
     # Run pos execution function
     pos_execution(conf=conf, section=section)
@@ -451,7 +454,7 @@ def run_gdb_fault_injection(**kwargs):
 
     # Make sure process finish before trying to execute again
     fi_process.join()
-    fi_process.terminate()
+    del fi_process
 
     # Also signal ones
     for t in thread_signal_list:
