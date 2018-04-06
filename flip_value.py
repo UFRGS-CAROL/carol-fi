@@ -235,6 +235,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         reg_content_fliped = str(int(reg_content_new, 2))
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content_fliped)
+        print(reg_cmd_flipped)
 
         global_logging.info("reg_new_value: " + str(reg_content_new))
 
