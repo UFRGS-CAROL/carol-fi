@@ -178,20 +178,14 @@ def finish(section, conf, logging, timestamp_start, end_time, pid):
     is_hang = False
     now = int(time.time())
 
-    # Wait 2 times the normal duration of the program before killing it
+    # Wait maxWaitTimes the normal duration of the program before killing it
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
-    # gdb_exec_name = conf.get(section, "gdbExecName")
-    # check_running = "ps -e | grep -i " + gdb_exec_name
     kill_strs = conf.get(section, "killStrs") + ";" + "kill -9 " + str(pid)
 
     while (now - timestamp_start) < (max_wait_time * 2):
         time.sleep(max_wait_time / 10)
 
         # Check if the gdb is still running, if not, stop waiting
-        # proc = subprocess.Popen(check_running, stdout=subprocess.PIPE, shell=True)
-        # (out, err) = proc.communicate()
-
-        # if not re.search(gdb_exec_name, str(out)):
         if not psutil.pid_exists(pid):
             logging.debug("Process " + str(pid) + " not running, out:" + str(out))
             logging.debug("check command: " + check_running)
