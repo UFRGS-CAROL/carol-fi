@@ -186,7 +186,7 @@ def pid_exists(pid):
         # to know that in a portable fashion.
         raise ValueError('invalid PID 0')
     try:
-        os.kill(pid, 0)
+        print(os.kill(pid, 0))
     except OSError as err:
         if err.errno == errno.ESRCH:
             # ESRCH == No such process
