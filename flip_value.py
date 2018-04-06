@@ -2,6 +2,9 @@ import random
 import gdb
 import re
 import os
+
+import sys
+
 import common_functions as cf  # All common functions will be at common_functions module
 import time
 
@@ -345,3 +348,4 @@ global_fault_model, global_valid_register, global_logging = [None] * 3
 
 # Call main execution
 main()
+sys.exit()
