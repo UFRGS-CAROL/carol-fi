@@ -3,6 +3,7 @@ import gdb
 import re
 import os
 import common_functions as cf  # All common functions will be at common_functions module
+import time
 
 gdbTypesDict = {
     gdb.TYPE_CODE_PTR: "The type is a pointer.",
@@ -310,6 +311,7 @@ def main():
     except gdb.error as err:
         print("initializing setup: " + str(err))
 
+    st = time.time()
     # Will only if breakpoint mode is activated
     breakpoint_kernel_line = None
     if inj_type == 'break':
@@ -336,6 +338,7 @@ def main():
         gdb.execute("c")
         breakpoint_kernel_address.delete()
 
+    print("\n\n", st - time.time(), "\n\n")
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
 global_fault_model, global_valid_register, global_logging = [None] * 3
