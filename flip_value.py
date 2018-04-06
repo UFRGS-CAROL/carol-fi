@@ -175,6 +175,7 @@ def fault_injection_breakpoint(event):
         global_logging.exception("Fault Injection Successful")
 
     except Exception as err:
+        print(err)
         global_logging.exception("fault_injection_python_exception: " + str(err))
         global_logging.exception("Fault Injection Went Wrong")
 
@@ -341,7 +342,7 @@ def main():
         gdb.execute("c")
         breakpoint_kernel_address.delete()
 
-    print("\n\n", time.time() - st , "\n\n")
+    print("\n\n", time.time() - st, "\n\n")
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
 global_fault_model, global_valid_register, global_logging = [None] * 3
