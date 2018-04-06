@@ -182,18 +182,14 @@ def finish(section, conf, logging, timestamp_start, end_time, pid):
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     kill_strs = conf.get(section, "killStrs") + ";" + "kill -9 " + str(pid)
 
-    while (now - timestamp_start) < (max_wait_time * 2):
-        time.sleep(max_wait_time / 10)
-
-        # Check if the gdb is still running, if not, stop waiting
-        if not psutil.pid_exists(pid):
-            logging.debug("Process " + str(pid) + " not running, out:" + str(out))
-            logging.debug("check command: " + check_running)
-            break
+    while (now - timestamp_start) < max_wait_time and psutil.pid_exists(pid):
+        time.sleep(max_wait_time / 10.0)
         now = int(time.time())
+        if not psutil.pid_exists(pid):
+            logging.debug("Process " + str(pid) + " not running")
 
     # check execution finished before or after waitTime
-    if (now - timestamp_start) < max_wait_time * 2:
+    if (now - timestamp_start) < max_wait_time:
         logging.info("Execution finished before waitTime")
     else:
         logging.info("Execution did not finish before waitTime")
