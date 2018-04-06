@@ -14,7 +14,9 @@ import shutil
 import argparse
 import csv
 
-import psutil
+# import psutil
+
+import errno
 
 import common_functions as cf
 
@@ -169,6 +171,36 @@ class SummaryFile:
         return rows
 
 
+"""Check whether pid exists in the current process table.
+UNIX only.
+"""
+
+
+def pid_exists(pid):
+    if pid < 0:
+        return False
+    if pid == 0:
+        # According to "man 2 kill" PID 0 refers to every process
+        # in the process group of the calling process.
+        # On certain systems 0 is a valid PID but we have no way
+        # to know that in a portable fashion.
+        raise ValueError('invalid PID 0')
+    try:
+        os.kill(pid, 0)
+    except OSError as err:
+        if err.errno == errno.ESRCH:
+            # ESRCH == No such process
+            return False
+        elif err.errno == errno.EPERM:
+            # EPERM clearly means there's a process to deny access to
+            return True
+        else:
+            # According to "man 2 kill" possible error values are
+            # (EINVAL, EPERM, ESRCH)
+            raise
+    else:
+        return True
+
 """
 Check if app stops execution (otherwise kill it after a time)
 """
@@ -182,10 +214,12 @@ def finish(section, conf, logging, timestamp_start, end_time, pid):
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     kill_strs = conf.get(section, "killStrs") + ";" + "kill -9 " + str(pid)
 
-    while (now - timestamp_start) < max_wait_time and psutil.pid_exists(pid):
+    pid_existence = pid_exists(pid)
+    while (now - timestamp_start) < max_wait_time and pid_existence:
         time.sleep(max_wait_time / 10.0)
         now = int(time.time())
-        if not psutil.pid_exists(pid):
+        pid_existence = pid_exists(pid)
+        if not pid_existence:
             logging.debug("Process " + str(pid) + " not running")
 
     # check execution finished before or after waitTime
