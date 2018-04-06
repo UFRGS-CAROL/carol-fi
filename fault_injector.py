@@ -18,6 +18,8 @@ import psutil
 
 import errno
 
+import sys
+
 import common_functions as cf
 
 # Debug env var
@@ -49,6 +51,7 @@ class RunGDB(multiprocessing.Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -q -batch -x " + self.__flip_script
         os.system(start_cmd)
+        sys.exit(0)
 
 
 """
