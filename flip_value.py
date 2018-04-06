@@ -338,7 +338,7 @@ def main():
         gdb.execute("c")
         breakpoint_kernel_address.delete()
 
-    print("\n\n", st - time.time(), "\n\n")
+    print("\n\n", time.time() - st , "\n\n")
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
 global_fault_model, global_valid_register, global_logging = [None] * 3
