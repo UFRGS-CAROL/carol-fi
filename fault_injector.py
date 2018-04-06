@@ -715,6 +715,8 @@ def profiler_caller(conf):
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     os.system(profiler_cmd)
 
+    print(acc_time / cf.MAX_TIMES_TO_PROFILE)
+
     return acc_time / cf.MAX_TIMES_TO_PROFILE, None
 
 
