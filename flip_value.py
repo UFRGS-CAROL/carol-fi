@@ -25,6 +25,10 @@ function called when the execution is stopped by a breakpoint
 def fault_injection_breakpoint(event):
     global global_valid_block, global_valid_thread, global_valid_register
     global global_bits_to_flip, global_fault_model, global_logging
+    global ready_to_inject
+
+    if not ready_to_inject:
+        return
 
     # This if avoid the creation of another event connection
     # for some reason gdb cannot breakpoint addresses before
@@ -156,6 +160,10 @@ def main():
     global global_valid_block, global_valid_thread, global_bits_to_flip
     global global_fault_model, global_valid_register, global_logging
 
+    # This var will control if fault can be injected
+    global ready_to_inject
+    ready_to_inject = False
+
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
@@ -210,6 +218,7 @@ def main():
     # Put breakpoint only it is breakpoint mode
     if inj_type == 'break':
         breakpoint_kernel_line.delete()
+        ready_to_inject = True
         breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
         # Continue execution until the next breakpoint
@@ -220,6 +229,7 @@ def main():
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
 global_fault_model, global_valid_register, global_logging = [None] * 3
+ready_to_inject = False
 
 # Call main execution
 main()
