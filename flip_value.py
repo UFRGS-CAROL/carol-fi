@@ -6,132 +6,7 @@ import os
 import common_functions as cf  # All common functions will be at common_functions module
 import time
 
-gdbTypesDict = {
-    gdb.TYPE_CODE_PTR: "The type is a pointer.",
-    gdb.TYPE_CODE_ARRAY: "The type is an array.",
-    gdb.TYPE_CODE_STRUCT: "The type is a structure.",
-    gdb.TYPE_CODE_UNION: "The type is a union.",
-    gdb.TYPE_CODE_ENUM: "The type is an enum.",
-    gdb.TYPE_CODE_FLAGS: "A bit flags type, used for things such as status registers.",
-    gdb.TYPE_CODE_FUNC: "The type is a function.",
-    gdb.TYPE_CODE_INT: "The type is an integer type.",
-    gdb.TYPE_CODE_FLT: "A floating point type.",
-    gdb.TYPE_CODE_VOID: "The special type void.",
-    gdb.TYPE_CODE_SET: "A Pascal set type.",
-    gdb.TYPE_CODE_RANGE: "A range type, that is, an integer type with bounds.",
-    gdb.TYPE_CODE_STRING: "A string type. Note that this is only used for certain languages with language-defined string types; C strings are not represented this way.",
-    gdb.TYPE_CODE_BITSTRING: "A string of bits. It is deprecated.",
-    gdb.TYPE_CODE_ERROR: "An unknown or erroneous type.",
-    gdb.TYPE_CODE_METHOD: "A method type, as found in C++ or Java.",
-    gdb.TYPE_CODE_METHODPTR: "A pointer-to-member-function.",
-    gdb.TYPE_CODE_MEMBERPTR: "A pointer-to-member.",
-    gdb.TYPE_CODE_REF: "A reference type.",
-    gdb.TYPE_CODE_CHAR: "A character type.",
-    gdb.TYPE_CODE_BOOL: "A boolean type.",
-    gdb.TYPE_CODE_COMPLEX: "A complex float type.",
-    gdb.TYPE_CODE_TYPEDEF: "A typedef to some other type.",
-    gdb.TYPE_CODE_NAMESPACE: "A C++ namespace.",
-    gdb.TYPE_CODE_DECFLOAT: "A decimal floating point type.",
-    gdb.TYPE_CODE_INTERNAL_FUNCTION: "A function internal to gdb. This is the type used to represent convenience functions.", }
-
-
-def choose_frame_flip(frame_symbols):
-    tag = "choose_frame_flip"
-    buf_log = ""
-    try:
-        frames_num = len(frame_symbols)
-        if frames_num <= 0:
-            # logging.debug(str("No frames to get symbols, returning False"))
-            return False
-        random.seed()
-        frame_pos = random.randint(0, frames_num - 1)
-        frame = frame_symbols[frame_pos][0]
-        symbols = frame_symbols[frame_pos][1]
-        print("\n\n", symbols, "\n\n")
-        symbols_num = len(symbols)
-        while symbols_num <= 0:
-            frame_symbols.pop(frame_pos)
-            frames_num -= 1
-            if frames_num <= 0:
-                # logging.debug(str("Could not get symbols to flip values, returning False"))
-                return False
-
-            frame_pos = random.randint(0, frames_num - 1)
-            frame = frame_symbols[frame_pos][0]
-            symbols = frame_symbols[frame_pos][1]
-            symbols_num = len(symbols)
-
-        symbol_pos = random.randint(0, symbols_num - 1)
-        symbol = symbols[symbol_pos]
-        varGDB = symbol.value(frame)
-
-        return False, buf_log
-    except Exception as err:
-        # logging.exception("pythonException: " + str(err))
-        return False, buf_log
-
-
-"""
-Get all the symbols of the stacked frames, returns a list of tuples [frame, symbolsList]
-where frame is a GDB Frame object and symbolsList is a list of all symbols of this frame
-"""
-
-
-def get_all_valid_symbols():
-    all_symbols = list()
-    frame = gdb.selected_frame()
-    while frame:
-        symbols = get_frame_symbols(frame)
-        if symbols is not None:
-            all_symbols.append([frame, symbols])
-        frame = frame.older()
-    return all_symbols
-
-
-"""
-Returns a list of all symbols of the frame, frame is a GDB Frame object
-"""
-
-
-def get_frame_symbols(frame):
-    try:
-        symbols = list()
-        block = frame.block()
-        while block:
-            for symbol in block:
-                if is_bit_flip_possible(symbol, frame):
-                    symbols.append(symbol)
-            block = block.superblock
-        return symbols
-    except:
-        return None
-
-"""
-Returns True if we can bitflip some bit of this symbol, i.e. if this is a variable or
-constant and not functions and another symbols
-"""
-
-
-def is_bit_flip_possible(symbol, frame):
-    if symbol.is_variable or symbol.is_constant or symbol.is_argument:
-        varGDB = symbol.value(frame)
-        address = re.sub("<.*>|\".*\"", "", str(varGDB.address))
-        if varGDB.address is not None and not varGDB.is_optimized_out and hex(int(address, 16)) > hex(int("0x0", 16)):
-            return True
-    return False
-
-
 ########################################################################################################################
-
-"""
-Getting information
-"""
-
-
-def getting_frame_information():
-    all_frames = get_all_valid_symbols()
-    choose_frame_flip(all_frames)
-
 
 """
 function called when the execution is stopped by a signal
@@ -139,7 +14,7 @@ function called when the execution is stopped by a signal
 
 
 def fault_injector_signal(event):
-    getting_frame_information()
+    pass
 
 
 """
@@ -235,7 +110,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         reg_content_fliped = str(int(reg_content_new, 2))
         # send the new value to gdb
         reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content_fliped)
-        print(reg_cmd_flipped)
+        print("\n\nAqui aconteceu isso" ,reg_cmd_flipped)
 
         global_logging.info("reg_new_value: " + str(reg_content_new))
 
