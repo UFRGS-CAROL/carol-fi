@@ -441,10 +441,9 @@ def run_gdb_fault_injection(**kwargs):
 
     test_time = time.time()
     # Check if app stops execution (otherwise kill it after a time)
-    # is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-    #                  end_time=end_signal, p=fi_process)
-    is_hang = False
-    
+    is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
+                     end_time=end_signal, p=fi_process)
+
     print("\ntest time ", time.time() - test_time)
 
     # Run pos execution function
