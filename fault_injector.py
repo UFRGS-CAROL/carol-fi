@@ -215,7 +215,7 @@ def finish(section, conf, logging, timestamp_start, end_time, p):
 
     # Wait maxWaitTimes the normal duration of the program before killing it
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
-    kill_strs = conf.get(section, "killStrs") + ";" + "kill -9 " + str(pid)
+    kill_strs = conf.get(section, "killStrs")  # + ";" + "kill -9 " + str(pid)
 
     p_is_alive = p.is_alive()
     while (now - timestamp_start) < max_wait_time and p_is_alive:
