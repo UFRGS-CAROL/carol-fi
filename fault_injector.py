@@ -13,13 +13,6 @@ import filecmp
 import shutil
 import argparse
 import csv
-
-import psutil
-
-import errno
-
-import sys
-
 import common_functions as cf
 
 # Debug env var
