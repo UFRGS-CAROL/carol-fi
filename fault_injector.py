@@ -178,38 +178,38 @@ UNIX only.
 """
 
 
-def pid_exists(pid):
-    # if pid < 0:
-    #     return False
-    # if pid == 0:
-    #     # According to "man 2 kill" PID 0 refers to every process
-    #     # in the process group of the calling process.
-    #     # On certain systems 0 is a valid PID but we have no way
-    #     # to know that in a portable fashion.
-    #     raise ValueError('invalid PID 0')
-    # try:
-    #     print(os.kill(pid, 0))
-    # except OSError as err:
-    #     if err.errno == errno.ESRCH:
-    #         # ESRCH == No such process
-    #         return False
-    #     elif err.errno == errno.EPERM:
-    #         # EPERM clearly means there's a process to deny access to
-    #         return True
-    #     else:
-    #         # According to "man 2 kill" possible error values are
-    #         # (EINVAL, EPERM, ESRCH)
-    #         raise
-    # else:
-    #     return True
-    return psutil.pid_exists(pid)
+# def pid_exists(pid):
+#     # if pid < 0:
+#     #     return False
+#     # if pid == 0:
+#     #     # According to "man 2 kill" PID 0 refers to every process
+#     #     # in the process group of the calling process.
+#     #     # On certain systems 0 is a valid PID but we have no way
+#     #     # to know that in a portable fashion.
+#     #     raise ValueError('invalid PID 0')
+#     # try:
+#     #     print(os.kill(pid, 0))
+#     # except OSError as err:
+#     #     if err.errno == errno.ESRCH:
+#     #         # ESRCH == No such process
+#     #         return False
+#     #     elif err.errno == errno.EPERM:
+#     #         # EPERM clearly means there's a process to deny access to
+#     #         return True
+#     #     else:
+#     #         # According to "man 2 kill" possible error values are
+#     #         # (EINVAL, EPERM, ESRCH)
+#     #         raise
+#     # else:
+#     #     return True
+#     return psutil.pid_exists(pid)
 
 """
 Check if app stops execution (otherwise kill it after a time)
 """
 
 
-def finish(section, conf, logging, timestamp_start, end_time, pid):
+def finish(section, conf, logging, timestamp_start, end_time, p):
     is_hang = False
     now = int(time.time())
 
@@ -217,14 +217,14 @@ def finish(section, conf, logging, timestamp_start, end_time, pid):
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     kill_strs = conf.get(section, "killStrs") + ";" + "kill -9 " + str(pid)
 
-    pid_existence = pid_exists(pid)
-    while (now - timestamp_start) < max_wait_time and pid_existence:
+    p_is_alive = p.is_alive()
+    while (now - timestamp_start) < max_wait_time and p_is_alive:
         time.sleep(max_wait_time / 10.0)
         now = int(time.time())
-        pid_existence = pid_exists(pid)
-        if not pid_existence:
-            logging.debug("Process " + str(pid) + " not running")
-        print("Pid existence", pid_existence, "now - timestamp", now - timestamp_start)
+        p_is_alive = p.is_alive()
+        if not p_is_alive:
+            logging.debug("Process not running")
+        print("Pid existence", p_is_alive, "now - timestamp", now - timestamp_start)
 
     # check execution finished before or after waitTime
     if (now - timestamp_start) < max_wait_time:
@@ -442,7 +442,7 @@ def run_gdb_fault_injection(**kwargs):
     test_time = time.time()
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-                     end_time=end_signal, pid=fi_process.pid)
+                     end_time=end_signal, p=fi_process)
 
     print("\ntest time ", time.time() - test_time)
 
