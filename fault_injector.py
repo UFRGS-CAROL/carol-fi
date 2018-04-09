@@ -649,6 +649,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 row.extend(valid_block)
                 row.extend(
                     [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
+                print(row)
                 summary_file.write_row(row=row)
                 # except Exception as err:
                 #     print("\nERROR ON BREAK POINT MODE: Fault was not injected\n", str(err))
