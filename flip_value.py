@@ -1,12 +1,7 @@
-import random
 import gdb
 import re
 import os
-
 import common_functions as cf  # All common functions will be at common_functions module
-import time
-
-########################################################################################################################
 
 """
 function called when the execution is stopped by a signal
@@ -194,7 +189,6 @@ def main():
     except gdb.error as err:
         print("initializing setup: " + str(err))
 
-    st = time.time()
     # Will only if breakpoint mode is activated
     breakpoint_kernel_line = None
     if inj_type == 'break':
