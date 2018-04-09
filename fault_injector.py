@@ -729,7 +729,7 @@ def main():
 
     # Csv log
     fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
-                  'block_x', 'block_y', 'block_z', 'old_value', 'new_value',
+                  'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                   'injection_address', 'register', 'breakpoint_location', 'fault_successful']
 
     ########################################################################
