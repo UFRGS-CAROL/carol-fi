@@ -569,7 +569,7 @@ def gen_injection_site(kernel_info_dict):
             if 'R' in i:
                 valid_register = i
                 break
-
+        valid_register = valid_register.replace("[", "").replace("]", "").replace("-", "")
         # Avoid cases like this: MOV R3, 0x2
         if valid_register is None:
             raise NotImplementedError("LINE COULD NOT BE PARSED")
