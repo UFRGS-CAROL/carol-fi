@@ -23,7 +23,15 @@ DEBUG = False
 injection_mode = 0
 
 """
-LEGACY
+Run some command and return the output
+"""
+
+
+def run_command(command):
+    output = os.popen(command).read()
+    return output
+
+"""
 Class RunGdb: necessary to run gdb while
 the main thread register the time
 If RunGdb execution time > max timeout allowed
@@ -43,8 +51,13 @@ class RunGDB(multiprocessing.Process):
             print("GDB Thread run, section and id: ", self.__unique_id)
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -batch -x " + self.__flip_script
-        os.system(start_cmd)
+        # os.system(start_cmd)
+        self.__command_output = run_command(start_cmd)
 
+    def gen_output(self):
+        output_file = open(cf.INJ_OUTPUT_DIR)
+        output_file.writelines(self.__command_output)
+        output_file.close()
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
@@ -294,13 +307,21 @@ Check output files for SDCs
 """
 
 
-def check_sdcs(gold_file, output_file, logging):
+def check_sdcs(gold_file, output_file, logging, sdc_check_script):
     if not os.path.isfile(output_file):
         logging.error("outputFile not found: " + str(output_file))
-    if os.path.isfile(gold_file) and os.path.isfile(output_file):
-        return not filecmp.cmp(gold_file, output_file, shallow=False)
-    else:
         return False
+    elif not os.path.isfile(gold_file):
+        logging.error("gold_file not found: " + str(gold_file))
+        return False
+    elif not os.path.isfile(sdc_check_script):
+        logging.error("sdc check script file not found: " + str(gold_file))
+        return False
+    if os.path.isfile(gold_file) and os.path.isfile(output_file):
+        script_content = {}
+        execfile(sdc_check_script, script_content)
+        # SDC check function call
+        return script_content['sdc_check'](gold_file, output_file)
 
 
 """
@@ -346,6 +367,9 @@ def run_gdb_fault_injection(**kwargs):
     init_signal = 0.0
     end_signal = float(kwargs.get('max_time'))
 
+    # SDC check parameters
+    current_path = kwargs.get('current_path')
+
     # Logging file
     flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
     logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
@@ -357,14 +381,12 @@ def run_gdb_fault_injection(**kwargs):
         valid_thread = kwargs.get('valid_thread')
         injection_address = kwargs.get('injection_address')
         breakpoint_location = kwargs.get('breakpoint_location')
-        poolsize = 1
 
     elif inj_mode == 'signal':
         signal_cmd = conf.get("DEFAULT", "signalCmd")
         seq_signals = int(conf.get("DEFAULT", "seqSignals"))
         max_thread_fi = int(conf.get("DEFAULT", "numThreadsFI"))
         max_wait_time = end_signal * max_wait_times
-        poolsize = max_thread_fi
 
         for i in range(0, max_thread_fi):
             thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
@@ -401,20 +423,17 @@ def run_gdb_fault_injection(**kwargs):
     for t in thread_signal_list:
         t.start()
 
-    test_time = time.time()
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
                      end_time=end_signal, p=fi_process)
 
-    print("\ntest time ", time.time() - test_time)
-
     # Run pos execution function
     pos_execution(conf=conf, section=section)
 
+    sdc_check_script = current_path + '/' + conf.get('goldenCheckScript')
     # Check output files for SDCs
-    gold_file = conf.get(section, "goldFile")
-    output_file = conf.get(section, "outputFile")
-    is_sdc = check_sdcs(gold_file=gold_file, output_file=output_file, logging=logging)
+    is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
+                        sdc_check_script=sdc_check_script)
 
     # Make sure process finish before trying to execute again
     fi_process.join()
@@ -625,7 +644,7 @@ by creating a breakpoint and steeping into it
 
 
 def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file,
-                                     max_time):
+                                     max_time, current_path):
     for num_rounds in range(iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
@@ -649,7 +668,8 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                                                                                       fault_model=fault_model,
                                                                                       breakpoint_location=breakpoint_location,
                                                                                       max_time=max_time,
-                                                                                      inj_mode=inj_type)
+                                                                                      inj_mode=inj_type,
+                                                                                      current_path=current_path)
                 # Write a row to summary file
                 row = [unique_id, num_rounds, fault_model]
                 row.extend(valid_thread)
@@ -721,7 +741,8 @@ def main():
 
     # First set env vars
     # GDB python cannot find common_functions.py, so I added this directory to PYTHONPATH
-    os.environ['PYTHONPATH'] = "$PYTHONPATH:" + os.path.dirname(os.path.realpath(__file__))
+    current_path = os.path.dirname(os.path.realpath(__file__))
+    os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path
 
     ########################################################################
     # Profiler step
@@ -754,7 +775,7 @@ def main():
         kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
         fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                          kernel_info_list=kernel_info_list, summary_file=summary_file,
-                                         max_time=max_time_app)
+                                         max_time=max_time_app, current_path=current_path)
     elif 'signal' in inj_type:
         # The hard mode
         fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,

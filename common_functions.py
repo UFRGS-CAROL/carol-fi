@@ -18,6 +18,8 @@ MAX_TIMES_TO_PROFILE = 2
 
 # TMP file that will store kernel information
 KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
+GOLDEN_OUTPUT_DIR = "/tmp/carol_fi_golden_bench_output.txt"
+INJ_OUTPUT_DIR = "/tmp/carol_fi_inj_bench_output.txt"
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
