@@ -46,7 +46,6 @@ class RunGDB(multiprocessing.Process):
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
-        self._command_output = None
 
     def run(self):
         if DEBUG:
@@ -54,13 +53,9 @@ class RunGDB(multiprocessing.Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -batch -x " + self.__flip_script
         # os.system(start_cmd)
-        self._command_output = run_command(start_cmd)
-        print(self._command_output)
-
-
-    def gen_output(self):
+        command_output = run_command(start_cmd)
         with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
-            output_file.writelines(self._command_output)
+            output_file.writelines(command_output)
 
 
 """
@@ -434,9 +429,6 @@ def run_gdb_fault_injection(**kwargs):
     # Run pos execution function
     pos_execution(conf=conf, section=section)
     sdc_check_script = current_path + '/' + conf.get('DEFAULT', 'goldenCheckScript')
-
-    # save output
-    fi_process.gen_output()
 
     # Check output files for SDCs
     is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
