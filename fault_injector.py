@@ -55,6 +55,7 @@ class RunGDB(multiprocessing.Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -batch -x " + self.__flip_script
         os.system(start_cmd + " > " + cf.INJ_OUTPUT_DIR + " 2>/tmp/temp.txt")
+        os.system("cat /tmp/temp.txt")
         # command_output = run_command(start_cmd)
         # with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
         #      output_file.writelines(command_output)
