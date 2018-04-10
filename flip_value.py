@@ -68,8 +68,10 @@ Flip a bit or multiple bits based on a fault model
 
 def generic_injector(valid_register, bits_to_flip, fault_model):
     # get register content
+    print(cf.execute_command(gdb, "stepi"))
     reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
-
+    print(reg_cmd)
+    
     m = re.match('\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
 
     if m:
