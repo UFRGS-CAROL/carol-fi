@@ -29,9 +29,9 @@ Run some command and return the output
 
 
 def run_command(command):
-    # output = os.popen(command).read()
-    os.system(command)
-    # return output
+    output = os.popen(command).read()
+    #os.system(command)
+    return output
 
 
 """
@@ -55,10 +55,9 @@ class RunGDB(multiprocessing.Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -batch -x " + self.__flip_script
         # os.system(start_cmd)
-        # command_output = \
-        run_command(start_cmd)
-        # with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
-        #     output_file.writelines(command_output)
+        command_output = run_command(start_cmd)
+        with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
+             output_file.writelines(command_output)
 
 
 """
@@ -432,8 +431,8 @@ def run_gdb_fault_injection(**kwargs):
     sdc_check_script = current_path + '/' + conf.get('DEFAULT', 'goldenCheckScript')
 
     # Check output files for SDCs
-    is_sdc = False #check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
-                    #    sdc_check_script=sdc_check_script)
+    is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
+                        sdc_check_script=sdc_check_script)
 
     # Make sure process finish before trying to execute again
     fi_process.join()
@@ -700,8 +699,7 @@ def profiler_caller(conf):
     for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
-        # print(
-        run_command(profiler_cmd)#)
+        print(run_command(profiler_cmd))
         end = time.time()
         acc_time += end - start
 
@@ -709,10 +707,9 @@ def profiler_caller(conf):
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    # gold_ouput = \
-    run_command(profiler_cmd)
-    # print(gold_ouput)
-    return acc_time / cf.MAX_TIMES_TO_PROFILE, None #gold_ouput
+    gold_ouput = run_command(profiler_cmd)
+    print(gold_ouput)
+    return acc_time / cf.MAX_TIMES_TO_PROFILE, gold_ouput
 
 
 """
