@@ -31,6 +31,7 @@ def run_command(command):
     output = os.popen(command).read()
     return output
 
+
 """
 Class RunGdb: necessary to run gdb while
 the main thread register the time
@@ -58,6 +59,7 @@ class RunGDB(multiprocessing.Process):
         output_file = open(cf.INJ_OUTPUT_DIR)
         output_file.writelines(self.__command_output)
         output_file.close()
+
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
@@ -515,7 +517,7 @@ step
 
 
 def get_valid_address(addresses):
-    m = registers = instruction = address = byte_location = None
+    m = registers = instruction = address = byte_location = instruction_line = None
 
     # search for a valid instruction
     while not m:
@@ -530,7 +532,7 @@ def get_valid_address(addresses):
             else:
                 print("it choose something:", instruction_line)
 
-    return registers, instruction, address, byte_location
+    return registers, instruction, address, byte_location, instruction_line
 
 
 """
@@ -577,7 +579,7 @@ def gen_injection_site(kernel_info_dict):
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
     # A injection site is a list of [registers, instruction, address, byte_location]
-    registers, _, injection_site, _ = get_valid_address(kernel_info_dict["addresses"])
+    registers, _, injection_site, _, instrution_line = get_valid_address(kernel_info_dict["addresses"])
 
     # Randomly select (a) bit(s) to flip
     # Max double bit flip
@@ -605,7 +607,7 @@ def gen_injection_site(kernel_info_dict):
     r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, cf.MAX_SIZE_REGISTER)
     bits_to_flip[1] = random.choice(r)
 
-    return valid_thread, valid_block, valid_register, bits_to_flip, injection_site
+    return valid_thread, valid_block, valid_register, bits_to_flip, injection_site, instrution_line
 
 
 """
@@ -654,7 +656,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
                 # try:
-                valid_thread, valid_block, valid_register, bits_to_flip, injection_address = gen_injection_site(
+                valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_site(
                     kernel_info_dict=kernel_info_dict)
                 breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
                                           + kernel_info_dict["kernel_line"])
@@ -676,7 +678,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 row.extend(valid_block)
                 row.extend(
                     [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ, hang,
-                     sdc])
+                     sdc, instruction_line])
                 print(row)
                 summary_file.write_row(row=row)
                 # except Exception as err:
@@ -695,26 +697,23 @@ def profiler_caller(conf):
     # First MAX_TIMES_TO_PROFILE is necessary to measure the application running time
     os.environ['CAROL_FI_INFO'] = conf.get(
         "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                      "kernelBreaks") + "|" + "True" + "|" + conf.get(
-        "DEFAULT", "goldFile")
+                                                      "kernelBreaks") + "|" + "True"
 
     for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
-        os.system(profiler_cmd)
+        # os.system(profiler_cmd)
+        run_command(profiler_cmd)
         end = time.time()
         acc_time += end - start
 
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-        "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + conf.get(
-        "DEFAULT", "goldFile")
+        "DEFAULT", "kernelBreaks") + "|" + "False"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    os.system(profiler_cmd)
+    gold_ouput = run_command(profiler_cmd)
 
-    print(acc_time / cf.MAX_TIMES_TO_PROFILE)
-
-    return acc_time / cf.MAX_TIMES_TO_PROFILE, None
+    return acc_time / cf.MAX_TIMES_TO_PROFILE, gold_ouput
 
 
 """
@@ -751,6 +750,9 @@ def main():
     # that is,
     inj_type = conf.get("DEFAULT", "injType")
     max_time_app, gold_out_app = profiler_caller(conf)
+    # save gold file
+    with open(cf.GOLDEN_OUTPUT_DIR, "w") as gold_file:
+        gold_file.writelines(gold_out_app)
     ########################################################################
     # Injector setup
     # Get fault models
@@ -759,7 +761,8 @@ def main():
     # Csv log
     fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
-                  'injection_address', 'register', 'breakpoint_location', 'fault_successful', 'crash', 'sdc']
+                  'injection_address', 'register', 'breakpoint_location', 'fault_successful',
+                  'crash', 'sdc', 'instruction_line']
 
     ########################################################################
     # Fault injection
