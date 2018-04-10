@@ -444,7 +444,7 @@ def run_gdb_fault_injection(**kwargs):
         section=section, is_sdc=is_sdc, is_hang=is_hang, conf=conf, logging=logging, unique_id=unique_id,
         flip_log_file=flip_log_file)  # , gdb_fi_log_file=gdb_fi_log_file)
 
-    return reg_old_value, reg_new_value, fault_successful
+    return reg_old_value, reg_new_value, fault_successful, is_hang, is_sdc
 
 
 """
@@ -457,6 +457,10 @@ def parse_line(instruction_line):
     instruction = ''
     address = ''
     byte_location = ''
+
+    # Do not process MOV instructions
+    if 'mov' in instruction_line or 'MOV' in instruction_line:
+        return None, None, None, None, None
 
     comma_line_count = instruction_line.count(',')
 
@@ -597,10 +601,13 @@ def fault_injection_by_signal(conf, fault_models, inj_type, iterations, summary_
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
             unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
-            r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(unique_id=unique_id, inj_mode='signal',
-                                                                       fault_model=fault_model, section="DEFAULT",
-                                                                       valid_register="R30", conf=conf,
-                                                                       bits_to_flip=[31, 2], max_time=max_time)
+            r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(unique_id=unique_id,
+                                                                                  inj_mode='signal',
+                                                                                  fault_model=fault_model,
+                                                                                  section="DEFAULT",
+                                                                                  valid_register="R30", conf=conf,
+                                                                                  bits_to_flip=[31, 2],
+                                                                                  max_time=max_time)
             # Write a row to summary file
             row = [unique_id, num_rounds, fault_model]
             row.extend([None, None, None])
@@ -632,23 +639,24 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                     kernel_info_dict=kernel_info_dict)
                 breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
                                           + kernel_info_dict["kernel_line"])
-                r_old_val, r_new_val, fault_succ = run_gdb_fault_injection(section="DEFAULT", conf=conf,
-                                                                           unique_id=unique_id,
-                                                                           valid_block=valid_block,
-                                                                           valid_thread=valid_thread,
-                                                                           valid_register=valid_register,
-                                                                           bits_to_flip=bits_to_flip,
-                                                                           injection_address=injection_address,
-                                                                           fault_model=fault_model,
-                                                                           breakpoint_location=breakpoint_location,
-                                                                           max_time=max_time,
-                                                                           inj_mode=inj_type)
+                r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(section="DEFAULT", conf=conf,
+                                                                                      unique_id=unique_id,
+                                                                                      valid_block=valid_block,
+                                                                                      valid_thread=valid_thread,
+                                                                                      valid_register=valid_register,
+                                                                                      bits_to_flip=bits_to_flip,
+                                                                                      injection_address=injection_address,
+                                                                                      fault_model=fault_model,
+                                                                                      breakpoint_location=breakpoint_location,
+                                                                                      max_time=max_time,
+                                                                                      inj_mode=inj_type)
                 # Write a row to summary file
                 row = [unique_id, num_rounds, fault_model]
                 row.extend(valid_thread)
                 row.extend(valid_block)
                 row.extend(
-                    [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ])
+                    [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ, hang,
+                     sdc])
                 print(row)
                 summary_file.write_row(row=row)
                 # except Exception as err:
@@ -730,7 +738,7 @@ def main():
     # Csv log
     fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
-                  'injection_address', 'register', 'breakpoint_location', 'fault_successful']
+                  'injection_address', 'register', 'breakpoint_location', 'fault_successful', 'crash', 'sdc']
 
     ########################################################################
     # Fault injection
@@ -753,7 +761,7 @@ def main():
                                   summary_file=summary_file, max_time=max_time_app)
 
     # Clear /tmp files generated
-    #os.system("rm -f /tmp/carol-fi-kernel-info.txt")
+    os.system("rm -f /tmp/carol-fi-kernel-info.txt")
     ########################################################################
 
 
