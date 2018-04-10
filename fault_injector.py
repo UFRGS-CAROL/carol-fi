@@ -228,9 +228,7 @@ Copy the logs and output(if fault not masked) to a selected folder
 """
 
 
-def save_output(section, is_sdc, is_hang, conf, logging, unique_id, flip_log_file):
-    output_file = conf.get(section, "outputFile")
-
+def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, output_file):
     # FI successful
     fi_succ = False
     if os.path.isfile(flip_log_file):
@@ -459,8 +457,8 @@ def run_gdb_fault_injection(**kwargs):
 
     # Copy output files to a folder
     save_output(
-        section=section, is_sdc=is_sdc, is_hang=is_hang, conf=conf, logging=logging, unique_id=unique_id,
-        flip_log_file=flip_log_file)  # , gdb_fi_log_file=gdb_fi_log_file)
+        section=section, is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
+        flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_DIR)
 
     return reg_old_value, reg_new_value, fault_successful, is_hang, is_sdc
 
@@ -782,6 +780,8 @@ def main():
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
+    os.system("rm -f " + cf.GOLDEN_OUTPUT_DIR)
+    os.system("rm -f " + cf.INJ_OUTPUT_DIR)
     ########################################################################
 
 
