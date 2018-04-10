@@ -431,8 +431,11 @@ def run_gdb_fault_injection(**kwargs):
 
     # Run pos execution function
     pos_execution(conf=conf, section=section)
+    sdc_check_script = current_path + '/' + conf.get('DEFAULT', 'goldenCheckScript')
 
-    sdc_check_script = current_path + '/' + conf.get('goldenCheckScript')
+    # save output
+    fi_process.gen_output()
+
     # Check output files for SDCs
     is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
                         sdc_check_script=sdc_check_script)
@@ -702,8 +705,7 @@ def profiler_caller(conf):
     for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
-        # os.system(profiler_cmd)
-        run_command(profiler_cmd)
+        print(run_command(profiler_cmd))
         end = time.time()
         acc_time += end - start
 
@@ -712,7 +714,7 @@ def profiler_caller(conf):
         "DEFAULT", "kernelBreaks") + "|" + "False"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     gold_ouput = run_command(profiler_cmd)
-
+    print(gold_ouput)
     return acc_time / cf.MAX_TIMES_TO_PROFILE, gold_ouput
 
 
