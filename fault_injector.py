@@ -56,7 +56,7 @@ class RunGDB(multiprocessing.Process):
         self.__command_output = run_command(start_cmd)
 
     def gen_output(self):
-        output_file = open(cf.INJ_OUTPUT_DIR)
+        output_file = open(cf.INJ_OUTPUT_DIR, "w")
         output_file.writelines(self.__command_output)
         output_file.close()
 
