@@ -433,8 +433,9 @@ def run_gdb_fault_injection(**kwargs):
     # Check output files for SDCs
     is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
                         sdc_check_script=sdc_check_script)
-    print("aqui\n\n")
+    print("GOLDEN OUTPUT\n\n")
     os.system('cat ' + cf.GOLDEN_OUTPUT_DIR)
+    print("INJECTION OUTPUT")
     os.system('cat ' + cf.INJ_OUTPUT_DIR)
     print("aqui\n\n")
     # Make sure process finish before trying to execute again
@@ -750,8 +751,8 @@ def main():
     inj_type = conf.get("DEFAULT", "injType")
     max_time_app, gold_out_app = profiler_caller(conf)
     # save gold file
-    # with open(cf.GOLDEN_OUTPUT_DIR, "w") as gold_file:
-    #     gold_file.writelines(gold_out_app)
+    with open(cf.GOLDEN_OUTPUT_DIR, "w") as gold_file:
+        gold_file.writelines(gold_out_app)
     ########################################################################
     # Injector setup
     # Get fault models
