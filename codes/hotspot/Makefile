@@ -9,7 +9,7 @@ ARCH= -gencode arch=compute_30,code=sm_30 \
 #-gencode arch=compute_62,code=[sm_62,compute_62]
 
 
-NVCC_FLAGS= $(ARCH) #-arch=sm_35
+NVCC_FLAGS= $(ARCH) -Xptxas -v #-arch=sm_35
 
 NVIDIA_INC=/usr/local/cuda/include/
 NVIDIA_LIB=/usr/local/cuda/lib64/

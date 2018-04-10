@@ -599,7 +599,7 @@ def gen_injection_site(kernel_info_dict, max_num_regs):
 
     # Register file
     elif injection_mode == 'RF':
-        valid_register = 'R' + str(random.randint(0, max_num_regs + 1))
+        valid_register = 'R' + str(random.randint(0, max_num_regs))
 
     # Make sure that the same bit is not going to be selected
     r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, cf.MAX_SIZE_REGISTER)
@@ -655,7 +655,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
                 # try:
                 valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_site(
-                    kernel_info_dict=kernel_info_dict)
+                    kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "injectionSite")))
                 breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
                                           + kernel_info_dict["kernel_line"])
                 r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(section="DEFAULT", conf=conf,
