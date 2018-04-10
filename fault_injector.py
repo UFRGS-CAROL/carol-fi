@@ -655,7 +655,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
                 # try:
                 valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_site(
-                    kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "injectionSite")))
+                    kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")))
                 breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
                                           + kernel_info_dict["kernel_line"])
                 r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(section="DEFAULT", conf=conf,
