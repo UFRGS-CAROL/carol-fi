@@ -46,7 +46,7 @@ class RunGDB(multiprocessing.Process):
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
-        self.__command_output = None
+        self._command_output = None
 
     def run(self):
         if DEBUG:
@@ -54,13 +54,13 @@ class RunGDB(multiprocessing.Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -batch -x " + self.__flip_script
         # os.system(start_cmd)
-        self.__command_output = run_command(start_cmd)
+        self._command_output = run_command(start_cmd)
         print(self.__command_output)
 
 
     def gen_output(self):
         with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
-            output_file.writelines(self.__command_output)
+            output_file.writelines(self._command_output)
 
 
 """
