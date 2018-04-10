@@ -19,8 +19,9 @@ import common_functions as cf
 DEBUG = False
 
 # Injection mode
-# 0 -> Instruction output
-injection_mode = 0
+# INST_OUT -> Instruction output
+# RF -> Register File
+injection_mode = 'RF'
 
 """
 Run some command and return the output
@@ -569,7 +570,7 @@ to inject a fault.
 """
 
 
-def gen_injection_site(kernel_info_dict):
+def gen_injection_site(kernel_info_dict, max_num_regs):
     global injection_mode
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
@@ -586,7 +587,7 @@ def gen_injection_site(kernel_info_dict):
     # Selects it it is in the instruction output
     # or register file
     valid_register = None
-    if injection_mode == 0:
+    if injection_mode == 'INST_OUT':
         for i in reversed(registers):
             if 'R' in i:
                 valid_register = i
@@ -597,8 +598,8 @@ def gen_injection_site(kernel_info_dict):
             raise NotImplementedError("LINE COULD NOT BE PARSED")
 
     # Register file
-    elif injection_mode == 1:
-        raise NotImplementedError
+    elif injection_mode == 'RF':
+        valid_register = 'R' + str(random.randint(0, max_num_regs + 1))
 
     # Make sure that the same bit is not going to be selected
     r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, cf.MAX_SIZE_REGISTER)
