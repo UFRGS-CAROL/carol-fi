@@ -71,7 +71,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
     print("STEP PASSOU")
     print(cf.execute_command(gdb, "info frame"))
     reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
-    print(reg_cmd)
+    print("REG BEFORE", reg_cmd)
 
     m = re.match('\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
 
@@ -116,6 +116,8 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
         # Log command return only something was printed
         if len(reg_cmd_flipped) > 0:
             global_logging.info("flip command return: " + str(reg_cmd_flipped))
+
+        print("REG MODIFIED ", cf.execute_command(gdb, "p/t $" + str(valid_register)))
 
         # Return the fault confirmation
         return reg_content_old != reg_content_new
