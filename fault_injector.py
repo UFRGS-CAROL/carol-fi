@@ -433,7 +433,10 @@ def run_gdb_fault_injection(**kwargs):
     # Check output files for SDCs
     is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
                         sdc_check_script=sdc_check_script)
-
+    print("aqui\n\n")
+    os.system('cat ' + cf.GOLDEN_OUTPUT_DIR)
+    os.system('cat ' + cf.INJ_OUTPUT_DIR)
+    print("aqui\n\n")
     # Make sure process finish before trying to execute again
     fi_process.join()
     del fi_process
