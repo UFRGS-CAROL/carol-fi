@@ -46,6 +46,7 @@ class RunGDB(multiprocessing.Process):
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
+        self.__command_output = None
 
     def run(self):
         if DEBUG:
@@ -56,9 +57,8 @@ class RunGDB(multiprocessing.Process):
         self.__command_output = run_command(start_cmd)
 
     def gen_output(self):
-        output_file = open(cf.INJ_OUTPUT_DIR, "w")
-        output_file.writelines(self.__command_output)
-        output_file.close()
+        with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
+            output_file.writelines(self.__command_output)
 
 
 """
