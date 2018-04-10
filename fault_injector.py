@@ -55,9 +55,10 @@ class RunGDB(multiprocessing.Process):
         start_cmd += " -n -batch -x " + self.__flip_script
         # os.system(start_cmd)
         self.__command_output = run_command(start_cmd)
+        print(self.__command_output)
+
 
     def gen_output(self):
-        print(self.__command_output)
         with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
             output_file.writelines(self.__command_output)
 
