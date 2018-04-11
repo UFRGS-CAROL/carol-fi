@@ -1,6 +1,6 @@
 # Remove GDB specific outputs from gold and inj output
 CLEAN_GOLD=/tmp/clean_carol_fi_gold.txt
-CLENA_INJ_OUTPUT=CLEAN_GOLD=/tmp/clean_carol_fi_inj.txt
+CLEAN_INJ_OUTPUT=/tmp/clean_carol_fi_inj.txt
 TMP=/tmp/carol_buff.txt
 
 cat ${GOLD_OUTPUT_PATH} > ${CLEAN_GOLD}
