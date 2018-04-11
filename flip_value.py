@@ -221,6 +221,7 @@ def main():
 
     # Continue execution until the next breakpoint
     gdb.execute("c")
+    print("depois do continue\n\n\n")
     breakpoint_kernel_address.delete()
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
