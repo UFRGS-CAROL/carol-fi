@@ -200,8 +200,6 @@ def main():
     except gdb.error as err:
         print("initializing setup: " + str(err))
 
-    gdb.execute("set new-console on")
-
     # Will only if breakpoint mode is activated
     breakpoint_kernel_line = None
     if inj_type == 'break':
