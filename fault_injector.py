@@ -792,7 +792,7 @@ def main():
                                   summary_file=summary_file, max_time=max_time_app)
 
     # Clear /tmp files generated
-    os.system("rm -f /tmp/carol-fi-kernel-info.txt")
+    # os.system("rm -f /tmp/carol-fi-kernel-info.txt")
     # os.system("rm -f " + cf.GOLDEN_OUTPUT_DIR)
     # os.system("rm -f " + cf.INJ_OUTPUT_DIR)
     # os.system("rm -f /tmp/diff_*.log")
