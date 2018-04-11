@@ -53,10 +53,12 @@ class RunGDB(multiprocessing.Process):
         start_cmd += " -n -batch -x " + self.__flip_script
         command_output, err = run_command(start_cmd)
         output_file = open(cf.INJ_OUTPUT_DIR, 'w')
+
         output_file.write(command_output)
         if err:
             output_file.write(err)
         output_file.close()
+        os.system('cat ' + cf.INJ_OUTPUT_DIR)
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
