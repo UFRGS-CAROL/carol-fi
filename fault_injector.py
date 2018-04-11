@@ -410,6 +410,9 @@ def run_gdb_fault_injection(**kwargs):
     # Create one thread to start gdb script
     flip_script = 'flip_value.py'
 
+    # remove old output file and create a new one
+    open(cf.INJ_OUTPUT_DIR, "w").close()
+
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"), flip_script=flip_script)
 
