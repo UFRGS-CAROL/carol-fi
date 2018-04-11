@@ -169,7 +169,7 @@ def main():
 
     # Set logging on
     gdb.execute("set logging on")
-    gdb.execute("set logging file " + str(cf.INJ_OUTPUT_DIR))
+    gdb.execute("set inferior-tty " + str(cf.INJ_OUTPUT_DIR))
 
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
@@ -227,6 +227,7 @@ def main():
         gdb.execute("c")
         breakpoint_kernel_address.delete()
 
+    gdb.execute("set inferior-tty")
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
 global_fault_model, global_valid_register, global_logging = [None] * 3
