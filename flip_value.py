@@ -173,7 +173,6 @@ def main():
     # First parse line
     # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
-
     [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
      flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
 
@@ -196,31 +195,32 @@ def main():
         print("initializing setup: " + str(err))
 
     # Will only if breakpoint mode is activated
-    breakpoint_kernel_line = None
-    if inj_type == 'break':
-        # Place the first breakpoint, it is only to avoid
-        # address memory error
-        breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
+    # breakpoint_kernel_line = None
+    # if inj_type == 'break':
 
-        # Define which function to call when the execution stops, e.g. when a breakpoint is hit
-        # or a interruption signal is received
-        gdb.events.stop.connect(fault_injection_breakpoint)
-    elif inj_type == 'signal':
-        # Connect to signal handler event
-        gdb.events.stop.connect(fault_injector_signal)
+    # Place the first breakpoint, it is only to avoid
+    # address memory error
+    breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
+
+    # Define which function to call when the execution stops, e.g. when a breakpoint is hit
+    # or a interruption signal is received
+    gdb.events.stop.connect(fault_injection_breakpoint)
+    # elif inj_type == 'signal':
+    #     # Connect to signal handler event
+    #     gdb.events.stop.connect(fault_injector_signal)
 
     # Start app execution
     gdb.execute("r")
 
     # Put breakpoint only it is breakpoint mode
-    if inj_type == 'break':
-        breakpoint_kernel_line.delete()
-        ready_to_inject = True
-        breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
+    # if inj_type == 'break':
+    breakpoint_kernel_line.delete()
+    ready_to_inject = True
+    breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
-        # Continue execution until the next breakpoint
-        gdb.execute("c")
-        breakpoint_kernel_address.delete()
+    # Continue execution until the next breakpoint
+    gdb.execute("c")
+    breakpoint_kernel_address.delete()
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
 global_fault_model, global_valid_register, global_logging = [None] * 3

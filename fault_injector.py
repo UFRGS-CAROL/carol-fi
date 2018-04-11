@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 
-import logging
 import os
 import time
 import datetime
@@ -377,8 +376,8 @@ def run_gdb_fault_injection(**kwargs):
     unique_id = kwargs.get('unique_id')
     valid_register = kwargs.get('valid_register')
     conf = kwargs.get('conf')
-    max_wait_times = int(conf.get("DEFAULT", "maxWaitTimes"))
-    init_signal = 0.0
+    # max_wait_times = int(conf.get("DEFAULT", "maxWaitTimes"))
+    # init_signal = 0.0
     end_signal = float(kwargs.get('max_time'))
 
     # SDC check parameters
@@ -396,16 +395,16 @@ def run_gdb_fault_injection(**kwargs):
         injection_address = kwargs.get('injection_address')
         breakpoint_location = kwargs.get('breakpoint_location')
 
-    elif inj_mode == 'signal':
-        signal_cmd = conf.get("DEFAULT", "signalCmd")
-        seq_signals = int(conf.get("DEFAULT", "seqSignals"))
-        max_thread_fi = int(conf.get("DEFAULT", "numThreadsFI"))
-        max_wait_time = end_signal * max_wait_times
-
-        for i in range(0, max_thread_fi):
-            thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
-                                                init=init_signal, end=end_signal, seq_signals=seq_signals,
-                                                logging=logging, threads_num=max_thread_fi))
+    # elif inj_mode == 'signal':
+    #     signal_cmd = conf.get("DEFAULT", "signalCmd")
+    #     seq_signals = int(conf.get("DEFAULT", "seqSignals"))
+    #     max_thread_fi = int(conf.get("DEFAULT", "numThreadsFI"))
+    #     max_wait_time = end_signal * max_wait_times
+    #
+    #     for i in range(0, max_thread_fi):
+    #         thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
+    #                                             init=init_signal, end=end_signal, seq_signals=seq_signals,
+    #                                             logging=logging, threads_num=max_thread_fi))
 
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
@@ -423,11 +422,9 @@ def run_gdb_fault_injection(**kwargs):
     pre_execution(conf=conf, section=section)
 
     # Create one thread to start gdb script
-    flip_script = 'flip_value.py'
-
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
-                        flip_script=flip_script, current_dir=current_path)
+                        flip_script=cf.FLIP_SCRIPT, current_dir=current_path)
 
     fi_process.start()
 
@@ -435,8 +432,8 @@ def run_gdb_fault_injection(**kwargs):
     timestamp_start = int(time.time())
 
     # Start signal fault injection threads, if this mode was selected
-    for t in thread_signal_list:
-        t.start()
+    # for t in thread_signal_list:
+    #     t.start()
 
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
@@ -456,9 +453,9 @@ def run_gdb_fault_injection(**kwargs):
     # remove thrash
     del fi_process
     # Also signal ones
-    for t in thread_signal_list:
-        t.join()
-    del thread_signal_list
+    # for t in thread_signal_list:
+    #     t.join()
+    # del thread_signal_list
 
     # Search for set values for register
     # Must be done before save output
@@ -629,26 +626,26 @@ this function performs fault injection
 by sending a OS signal to the application
 """
 
-
-def fault_injection_by_signal(conf, fault_models, inj_type, iterations, summary_file, max_time):
-    for num_rounds in range(iterations):
-        # Execute the fault injector for each one of the sections(apps) of the configuration file
-        for fault_model in fault_models:
-            unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
-            r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(unique_id=unique_id,
-                                                                                  inj_mode='signal',
-                                                                                  fault_model=fault_model,
-                                                                                  section="DEFAULT",
-                                                                                  valid_register="R30", conf=conf,
-                                                                                  bits_to_flip=[31, 2],
-                                                                                  max_time=max_time)
-            # Write a row to summary file
-            row = [unique_id, num_rounds, fault_model]
-            row.extend([None, None, None])
-            row.extend([None, None, None])
-            row.extend(
-                [r_old_val, r_new_val, 0, "", "", "", fault_succ])
-            summary_file.write_row(row=row)
+#
+# def fault_injection_by_signal(conf, fault_models, inj_type, iterations, summary_file, max_time):
+#     for num_rounds in range(iterations):
+#         # Execute the fault injector for each one of the sections(apps) of the configuration file
+#         for fault_model in fault_models:
+#             unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
+#             r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(unique_id=unique_id,
+#                                                                                   inj_mode='signal',
+#                                                                                   fault_model=fault_model,
+#                                                                                   section="DEFAULT",
+#                                                                                   valid_register="R30", conf=conf,
+#                                                                                   bits_to_flip=[31, 2],
+#                                                                                   max_time=max_time)
+#             # Write a row to summary file
+#             row = [unique_id, num_rounds, fault_model]
+#             row.extend([None, None, None])
+#             row.extend([None, None, None])
+#             row.extend(
+#                 [r_old_val, r_new_val, 0, "", "", "", fault_succ])
+#             summary_file.write_row(row=row)
 
 
 """
@@ -791,10 +788,10 @@ def main():
         fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                          kernel_info_list=kernel_info_list, summary_file=summary_file,
                                          max_time=max_time_app, current_path=current_path)
-    elif 'signal' in inj_type:
-        # The hard mode
-        fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
-                                  summary_file=summary_file, max_time=max_time_app)
+    # elif 'signal' in inj_type:
+    #     # The hard mode
+    #     fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
+    #                               summary_file=summary_file, max_time=max_time_app)
 
         # Clear /tmp files generated
         # os.system("rm -f /tmp/carol-fi-kernel-info.txt")
