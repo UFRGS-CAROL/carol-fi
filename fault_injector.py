@@ -429,6 +429,9 @@ def run_gdb_fault_injection(**kwargs):
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
                      end_time=end_signal, p=fi_process)
 
+    # Make sure process finish before trying to execute again
+    fi_process.join()
+
     # Run pos execution function
     pos_execution(conf=conf, section=section)
     sdc_check_script = current_path + '/' + conf.get('DEFAULT', 'goldenCheckScript')
@@ -440,10 +443,9 @@ def run_gdb_fault_injection(**kwargs):
     print("INJECTION OUTPUT")
     os.system('cat ' + cf.INJ_OUTPUT_DIR)
     print("aqui\n\n")
-    # Make sure process finish before trying to execute again
-    fi_process.join()
-    del fi_process
 
+    # remove thrash
+    del fi_process
     # Also signal ones
     for t in thread_signal_list:
         t.join()
