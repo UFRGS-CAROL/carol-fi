@@ -6,14 +6,16 @@ CLEAN_GOLD=/tmp/clean_carol_fi_gold.txt
 sed '/\[New Thread/d' ${GOLD_OUTPUT_PATH} > ${CLEAN_GOLD}
 sed '/\[Thread/d' ${CLEAN_GOLD} > ${CLEAN_GOLD}
 sed '/\[Switching/d' ${CLEAN_GOLD} > ${CLEAN_GOLD}
-sed '/Breakpoint/d' ${CLEAN_GOLD} > ${CLEAN_GOLD}
+# Remove breakpoint and folowing line
+sed -e '/Breakpoint/,+2d' ${CLEAN_GOLD} > ${CLEAN_GOLD}
 
 # Remove inj output
 CLEAN_INJ_OUTPUT=/tmp/clean_carol_fi_inj.txt
 sed '/\[New Thread/d' ${INJ_OUTPUT_PATH} > ${CLEAN_INJ_OUTPUT}
 sed '/\[Thread/d' ${CLEAN_INJ_OUTPUT} > ${CLEAN_INJ_OUTPUT}
 sed '/\[Switching/d' ${CLEAN_INJ_OUTPUT} > ${CLEAN_INJ_OUTPUT}
-sed '/Breakpoint/d' ${CLEAN_INJ_OUTPUT} > ${CLEAN_INJ_OUTPUT}
+# Remove breakpoint and folowing line
+sed -e '/Breakpoint/,+2d' ${CLEAN_INJ_OUTPUT} > ${CLEAN_INJ_OUTPUT}
 
 
 
