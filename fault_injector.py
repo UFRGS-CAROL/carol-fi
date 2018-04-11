@@ -54,7 +54,8 @@ class RunGDB(multiprocessing.Process):
             print("GDB Thread run, section and id: ", self.__unique_id)
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -batch -x " + self.__flip_script
-        command_output = run_command(start_cmd)
+        # command_output = run_command(start_cmd)
+        os.system(start_cmd)
         # with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
         #       output_file.writelines(command_output)
         # print(command_output)
