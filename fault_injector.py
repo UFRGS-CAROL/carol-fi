@@ -54,10 +54,8 @@ class RunGDB(multiprocessing.Process):
         command_output, err = run_command(start_cmd)
         with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
             output_file.write(command_output)
-            # output_file.write(err)
-        print(command_output)
-        print(err)
-
+            if err:
+                output_file.write(err)
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
@@ -199,7 +197,7 @@ def finish(section, conf, logging, timestamp_start, end_time, p):
         p_is_alive = p.is_alive()
         if not p_is_alive:
             logging.debug("Process not running")
-        print("Pid existence", p_is_alive, "now - timestamp", now - timestamp_start)
+        # print("Pid existence", p_is_alive, "now - timestamp", now - timestamp_start)
 
     # check execution finished before or after waitTime
     if (now - timestamp_start) < max_wait_time:
@@ -319,10 +317,10 @@ def check_sdcs(gold_file, output_file, logging, sdc_check_script, app_name):
         os.environ['GOLD_OUTPUT_PATH'] = cf.GOLDEN_OUTPUT_DIR
         os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
         os.environ['APP'] = app_name
+        diff_log = '/tmp/diff_{}.log'.format(app_name)
+        os.environ['DIFF_LOG'] = diff_log
         os.system("sh " + sdc_check_script)
-        print("\n\nclean gold")
-        os.system("cat /tmp/clean_carol_fi_gold.txt")
-        with open('/tmp/diff_{}.log'.format('matrixmul')) as fi:
+        with open(diff_log, 'r') as fi:
             if len(fi.readlines()) != 0:
                 return False
     return True
