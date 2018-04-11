@@ -58,7 +58,7 @@ class RunGDB(multiprocessing.Process):
         command_output, err = run_command(start_cmd)
         with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
             output_file.write(command_output)
-            output_file.write(err)
+            # output_file.write(err)
         print(command_output)
         print(err)
 
