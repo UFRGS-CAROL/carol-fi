@@ -43,8 +43,8 @@ def fault_injection_breakpoint(event):
         global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
 
         # Do the fault injection magic
-        for i in range(0, 27):
-            generic_injector('R' + str(i), global_bits_to_flip, 3)
+        # for i in range(0, 27):
+        #     generic_injector('R' + str(i), global_bits_to_flip, 3)
 
         global_logging.info("Fault Injection Successful")
     except Exception as err:
