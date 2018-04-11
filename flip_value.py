@@ -47,6 +47,7 @@ def fault_injection_breakpoint(event):
         #     generic_injector('R' + str(i), global_bits_to_flip, 3)
 
         global_logging.info("Fault Injection Successful")
+        print("\n\nPASSOU\n\n\n")
     except Exception as err:
         global_logging.exception("fault_injection_python_exception: " + str(err))
         global_logging.exception("Fault Injection Went Wrong")
