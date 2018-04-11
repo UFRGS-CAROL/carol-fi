@@ -15,9 +15,6 @@ import argparse
 import csv
 import common_functions as cf
 
-# Debug env var
-DEBUG = False
-
 # Injection mode
 # INST_OUT -> Instruction output
 # RF -> Register File
@@ -29,9 +26,8 @@ Run some command and return the output
 
 
 def run_command(command):
-    proc = subprocess.Popen([command], stdout=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
-    #os.system(command)
     return out, err
 
 
@@ -51,7 +47,7 @@ class RunGDB(multiprocessing.Process):
         self.__unique_id = unique_id
 
     def run(self):
-        if DEBUG:
+        if cf.DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -batch -x " + self.__flip_script
@@ -320,10 +316,17 @@ def check_sdcs(gold_file, output_file, logging, sdc_check_script):
         logging.error("sdc check script file not found: " + str(gold_file))
         return False
     if os.path.isfile(gold_file) and os.path.isfile(output_file):
-        script_content = {}
-        execfile(sdc_check_script, script_content)
+        # script_content = {}
+        # execfile(sdc_check_script, script_content)
         # SDC check function call
-        return script_content['sdc_check'](gold_file, output_file)
+        os.environ['GOLD_OUTPUT_PATH'] = cf.GOLDEN_OUTPUT_DIR
+        os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
+        os.environ['APP'] = 'matrixmul'
+        out, err = run_command(['sh', sdc_check_script])
+        with open('/tmp/diff_{}.log'.format('matrixmul')) as fi:
+            if len(fi.readlines()) != 0:
+                return False
+    return True
 
 
 """
@@ -530,7 +533,7 @@ def get_valid_address(addresses):
 
         registers, address, byte_location, instruction, m = parse_line(instruction_line)
 
-        if DEBUG:
+        if cf.DEBUG:
             if not m:
                 print("it is stopped here:", instruction_line)
             else:
@@ -706,7 +709,7 @@ def profiler_caller(conf):
     for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
-        print(run_command(profiler_cmd))
+        run_command([profiler_cmd])
         end = time.time()
         acc_time += end - start
 
@@ -714,8 +717,8 @@ def profiler_caller(conf):
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    gold_ouput, err = run_command(profiler_cmd)
-    print(gold_ouput)
+    gold_ouput, err = run_command([profiler_cmd])
+
     return acc_time / cf.MAX_TIMES_TO_PROFILE, gold_ouput
 
 
