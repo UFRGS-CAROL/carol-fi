@@ -166,11 +166,10 @@ def main():
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     # gdb.execute("set pagination off")
-    gdb.execute("set logging on")
-    gdb.execute("set logging overwrite on")
-    gdb.execute("set new-console on")
     gdb.execute("set logging file test_log.txt")
     gdb.execute("set logging redirect on")
+    gdb.execute("set logging overwrite on")
+    gdb.execute("set logging on")
 
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
@@ -200,6 +199,8 @@ def main():
 
     except gdb.error as err:
         print("initializing setup: " + str(err))
+
+    gdb.execute("set new-console on")
 
     # Will only if breakpoint mode is activated
     breakpoint_kernel_line = None
