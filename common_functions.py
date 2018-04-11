@@ -23,6 +23,7 @@ INJ_OUTPUT_DIR = "/tmp/carol_fi_inj_bench_output.txt"
 INJ_ERR_DIR = "/tmp/carol_fi_inj_bench_err.txt"
 CAROL_FI_RUN_SH = "carol_fi_run.sh"
 FLIP_SCRIPT = 'flip_value.py'
+DIFF_LOG = '/tmp/diff.log'
 
 # Debug env var
 DEBUG = False

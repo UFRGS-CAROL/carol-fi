@@ -314,7 +314,7 @@ Check output files for SDCs
 """
 
 
-def check_sdcs(gold_file, output_file, logging, sdc_check_script, app_name):
+def check_sdcs(gold_file, output_file, logging, sdc_check_script):
     if not os.path.isfile(output_file):
         logging.error("outputFile not found: " + str(output_file))
         return False
@@ -327,12 +327,9 @@ def check_sdcs(gold_file, output_file, logging, sdc_check_script, app_name):
     if os.path.isfile(gold_file) and os.path.isfile(output_file):
         os.environ['GOLD_OUTPUT_PATH'] = cf.GOLDEN_OUTPUT_DIR
         os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
-
-        os.environ['APP'] = app_name
-        diff_log = '/tmp/diff_{}.log'.format(app_name)
-        os.environ['DIFF_LOG'] = diff_log
+        os.environ['DIFF_LOG'] = cf.DIFF_LOG
         os.system("sh " + sdc_check_script)
-        with open(diff_log, 'r') as fi:
+        with open(cf.DIFF_LOG, 'r') as fi:
             if len(fi.readlines()) != 0:
                 return False
     return True
@@ -449,7 +446,7 @@ def run_gdb_fault_injection(**kwargs):
 
     # Check output files for SDCs
     is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
-                        sdc_check_script=sdc_check_script, app_name=conf.get('DEFAULT', 'appName'))
+                        sdc_check_script=sdc_check_script)
 
     # remove thrash
     del fi_process
