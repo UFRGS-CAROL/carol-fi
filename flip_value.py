@@ -211,7 +211,7 @@ def main():
         gdb.events.stop.connect(fault_injector_signal)
 
     # Start app execution
-    gdb.execute("r" + cf.INJ_OUTPUT_DIR)
+    gdb.execute("r " + cf.INJ_OUTPUT_DIR)
 
     # Put breakpoint only it is breakpoint mode
     if inj_type == 'break':
