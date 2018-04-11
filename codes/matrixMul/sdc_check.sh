@@ -16,6 +16,7 @@ sed '/\[Switching/d' ${CLEAN_INJ_OUTPUT} > ${CLEAN_INJ_OUTPUT}
 sed '/Breakpoint/d' ${CLEAN_INJ_OUTPUT} > ${CLEAN_INJ_OUTPUT}
 
 
+
 # SDC checking diff
 # Must compare all things here
 # Copied from SASSIFI

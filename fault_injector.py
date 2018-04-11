@@ -327,6 +327,7 @@ def check_sdcs(gold_file, output_file, logging, sdc_check_script, app_name):
     if os.path.isfile(gold_file) and os.path.isfile(output_file):
         os.environ['GOLD_OUTPUT_PATH'] = cf.GOLDEN_OUTPUT_DIR
         os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
+
         os.environ['APP'] = app_name
         diff_log = '/tmp/diff_{}.log'.format(app_name)
         os.environ['DIFF_LOG'] = diff_log
