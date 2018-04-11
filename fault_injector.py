@@ -13,6 +13,9 @@ import filecmp
 import shutil
 import argparse
 import csv
+
+import sys
+
 import common_functions as cf
 
 # Injection mode
@@ -39,40 +42,24 @@ this thread will be killed
 """
 
 
-def run(run_args):
-    unique_id, gdb_exec_name, flip_script = run_args
-    if cf.DEBUG:
-        print("GDB Thread run, section and id: ", unique_id)
-    start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_exec_name
-    start_cmd += ' -n -batch -x ' + flip_script
-    out, err = run_command([start_cmd])
-    with open(cf.INJ_OUTPUT_DIR, "w") as out_file:
-        out_file.write(out)
+class RunGDB(multiprocessing.Process):
+    def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir):
+        multiprocessing.Process.__init__(self)
+        self.__gdb_exe_name = gdb_exec_name
+        self.__flip_script = flip_script
+        self.__unique_id = unique_id
+        self.__current_dir = current_dir
 
-# class RunGDB(multiprocessing.Process):
-#     def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir):
-#         multiprocessing.Process.__init__(self)
-#         self.__gdb_exe_name = gdb_exec_name
-#         self.__flip_script = flip_script
-#         self.__unique_id = unique_id
-#         self.__current_dir = current_dir
-#
-#     def run(self):
-#         if cf.DEBUG:
-#             print("GDB Thread run, section and id: ", self.__unique_id)
-#         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
-#         start_cmd += ' -n -batch -x ' + self.__flip_script
-#         os.environ['START_CMD'] = start_cmd
-#         os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
-#         os.system('sh ' + self.__current_dir + '/' + cf.CAROL_FI_RUN_SH)
-#         # command_output, err = run_command(start_cmd)
-#         # output_file = open(cf.INJ_OUTPUT_DIR, 'w')
-#         #
-#         # output_file.write(command_output)
-#         # if err:
-#         #     output_file.write(err)
-#         # output_file.close()
-#         # os.system('cat ' + cf.INJ_OUTPUT_DIR)
+    def run(self):
+        if cf.DEBUG:
+            print("GDB Thread run, section and id: ", self.__unique_id)
+        start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
+        start_cmd += ' -n -batch -x ' + self.__flip_script
+        # THIS IS NECESSARY
+        sys.stdout = open(cf.INJ_OUTPUT_DIR, "w", buffering=0)
+        sys.stderr = open(cf.INJ_ERR_DIR, "w", buffering=0)
+        os.system(start_cmd)
+
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
@@ -431,10 +418,8 @@ def run_gdb_fault_injection(**kwargs):
     flip_script = 'flip_value.py'
 
     # Start fault injection process
-    # fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
-    #                     flip_script=flip_script, current_dir=current_path)
-
-    fi_process = multiprocessing.Process(target=run, args=((unique_id, conf.get("DEFAULT", "gdbExecName"), flip_script), ))
+    fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
+                        flip_script=flip_script, current_dir=current_path)
 
     fi_process.start()
 

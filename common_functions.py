@@ -20,6 +20,7 @@ MAX_TIMES_TO_PROFILE = 2
 KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
 GOLDEN_OUTPUT_DIR = "/tmp/carol_fi_golden_bench_output.txt"
 INJ_OUTPUT_DIR = "/tmp/carol_fi_inj_bench_output.txt"
+INJ_ERR_DIR = "/tmp/carol_fi_inj_bench_output.txt"
 CAROL_FI_RUN_SH = "carol_fi_run.sh"
 
 # Debug env var
