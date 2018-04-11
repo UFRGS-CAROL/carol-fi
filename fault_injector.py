@@ -56,8 +56,8 @@ class RunGDB(multiprocessing.Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
         # THIS IS NECESSARY
-        sys.stdout = open(cf.INJ_OUTPUT_DIR, "w", buffering=0)
-        sys.stderr = open(cf.INJ_ERR_DIR, "w", buffering=0)
+        sys.stdout = open(cf.INJ_OUTPUT_DIR, "a", buffering=0)
+        sys.stderr = open(cf.INJ_ERR_DIR, "a", buffering=0)
         os.system(start_cmd)
 
 
