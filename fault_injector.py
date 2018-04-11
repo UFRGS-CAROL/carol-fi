@@ -40,25 +40,29 @@ this thread will be killed
 
 
 class RunGDB(multiprocessing.Process):
-    def __init__(self, unique_id, gdb_exec_name, flip_script):
+    def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir):
         multiprocessing.Process.__init__(self)
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
+        self.__current_dir = current_dir
 
     def run(self):
         if cf.DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
-        start_cmd += " -n -batch -x " + self.__flip_script
-        command_output, err = run_command(start_cmd)
-        output_file = open(cf.INJ_OUTPUT_DIR, 'w')
-
-        output_file.write(command_output)
-        if err:
-            output_file.write(err)
-        output_file.close()
-        os.system('cat ' + cf.INJ_OUTPUT_DIR)
+        start_cmd += ' -n -batch -x ' + self.__flip_script
+        os.environ['START_CMD'] = start_cmd
+        os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
+        os.system('sh ' + self.__current_dir + '/' + cf.CAROL_FI_RUN_SH)
+        # command_output, err = run_command(start_cmd)
+        # output_file = open(cf.INJ_OUTPUT_DIR, 'w')
+        #
+        # output_file.write(command_output)
+        # if err:
+        #     output_file.write(err)
+        # output_file.close()
+        # os.system('cat ' + cf.INJ_OUTPUT_DIR)
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
