@@ -52,17 +52,8 @@ class RunGDB(multiprocessing.Process):
             print("GDB Thread run, section and id: ", self.__unique_id)
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
-        # os.environ['START_CMD'] = start_cmd
-        # os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
+        print(start_cmd + ' > ' + cf.INJ_OUTPUT_DIR)
         os.system(start_cmd + ' > ' + cf.INJ_OUTPUT_DIR)
-        # command_output, err = run_command(start_cmd)
-        # output_file = open(cf.INJ_OUTPUT_DIR, 'w')
-        #
-        # output_file.write(command_output)
-        # if err:
-        #     output_file.write(err)
-        # output_file.close()
-        # os.system('cat ' + cf.INJ_OUTPUT_DIR)
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
