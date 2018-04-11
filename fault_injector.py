@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 from __future__ import print_function
+
+import logging
 import os
 import time
 import datetime
@@ -9,7 +11,6 @@ import subprocess
 import multiprocessing
 import threading
 import re
-import filecmp
 import shutil
 import argparse
 import csv
@@ -43,12 +44,14 @@ this thread will be killed
 
 
 class RunGDB(multiprocessing.Process):
-    def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir):
-        multiprocessing.Process.__init__(self)
+    def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir, name):
+        # multiprocessing.Process.__init__(self)
+        super(RunGDB, self).__init__()
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
         self.__current_dir = current_dir
+        self.__name = name
 
     def run(self):
         if cf.DEBUG:
