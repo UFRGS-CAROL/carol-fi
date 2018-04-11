@@ -29,9 +29,10 @@ Run some command and return the output
 
 
 def run_command(command):
-    output = os.popen(command).read()
+    proc = subprocess.Popen([command], stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
     #os.system(command)
-    return output
+    return out, err
 
 
 """
@@ -54,11 +55,12 @@ class RunGDB(multiprocessing.Process):
             print("GDB Thread run, section and id: ", self.__unique_id)
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -batch -x " + self.__flip_script
-        # command_output = run_command(start_cmd)
-        os.system(start_cmd)
-        # with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
-        #       output_file.writelines(command_output)
-        # print(command_output)
+        command_output, err = run_command(start_cmd)
+        with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
+            output_file.writelines(command_output)
+            output_file.writelines(err)
+        print(command_output)
+        print(err)
 
 
 """
@@ -716,7 +718,7 @@ def profiler_caller(conf):
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    gold_ouput = run_command(profiler_cmd)
+    gold_ouput, err = run_command(profiler_cmd)
     print(gold_ouput)
     return acc_time / cf.MAX_TIMES_TO_PROFILE, gold_ouput
 
