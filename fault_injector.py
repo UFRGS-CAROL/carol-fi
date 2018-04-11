@@ -443,10 +443,6 @@ def run_gdb_fault_injection(**kwargs):
     is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
                         sdc_check_script=sdc_check_script)
 
-    print("INJECTION OUTPUT")
-    os.system('cat ' + cf.INJ_OUTPUT_DIR)
-    print("aqui\n\n")
-
     # remove thrash
     del fi_process
     # Also signal ones
@@ -793,8 +789,8 @@ def main():
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
-    os.system("rm -f " + cf.GOLDEN_OUTPUT_DIR)
-    os.system("rm -f " + cf.INJ_OUTPUT_DIR)
+    # os.system("rm -f " + cf.GOLDEN_OUTPUT_DIR)
+    # os.system("rm -f " + cf.INJ_OUTPUT_DIR)
     ########################################################################
 
 
