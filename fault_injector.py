@@ -320,6 +320,7 @@ def check_sdcs(gold_file, output_file, logging, sdc_check_script, app_name):
         os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
         os.environ['APP'] = app_name
         os.system("sh " + sdc_check_script)
+        print("\n\nclean gold")
         os.system("cat /tmp/clean_carol_fi_gold.txt")
         with open('/tmp/diff_{}.log'.format('matrixmul')) as fi:
             if len(fi.readlines()) != 0:
