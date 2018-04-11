@@ -166,10 +166,6 @@ def main():
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     # gdb.execute("set pagination off")
-    gdb.execute("set logging file test_log.txt")
-    gdb.execute("set logging redirect on")
-    gdb.execute("set logging overwrite on")
-    gdb.execute("set logging on")
 
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
