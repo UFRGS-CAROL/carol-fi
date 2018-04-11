@@ -441,7 +441,7 @@ def run_gdb_fault_injection(**kwargs):
 
     # Check output files for SDCs
     is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
-                        sdc_check_script=sdc_check_script)
+                        sdc_check_script=sdc_check_script, app_name=conf.get('DEFAULT', 'appName'))
 
     # remove thrash
     del fi_process
