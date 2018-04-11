@@ -43,11 +43,9 @@ def fault_injection_breakpoint(event):
         global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
 
         # Do the fault injection magic
-        # for i in range(0, 27):
-        #     generic_injector('R' + str(i), global_bits_to_flip, 3)
+        generic_injector(global_valid_register, global_bits_to_flip, 3)
 
         global_logging.info("Fault Injection Successful")
-        print("\n\nPASSOU\n\n\n")
     except Exception as err:
         global_logging.exception("fault_injection_python_exception: " + str(err))
         global_logging.exception("Fault Injection Went Wrong")
@@ -221,9 +219,7 @@ def main():
 
     # Continue execution until the next breakpoint
     gdb.execute("c")
-    print("depois do continue\n\n\n")
     breakpoint_kernel_address.delete()
-    print("depois do delete \n\n\n")
     gdb.execute("c")
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
