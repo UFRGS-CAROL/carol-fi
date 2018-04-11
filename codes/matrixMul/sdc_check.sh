@@ -21,4 +21,5 @@ sed '/Breakpoint/d' ${CLEAN_INJ_OUTPUT} > ${CLEAN_INJ_OUTPUT}
 # Copied from SASSIFI
 # APP, GOLD_OUTPUT_PATH and INJ_OUTPUT_PATH are set on python script
 diff ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} > ${DIFF_LOG}
+
 #rm -f /tmp/${CLEAN_GOLD} /tmp/${CLEAN_INJ_OUTPUT}
