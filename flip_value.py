@@ -224,6 +224,7 @@ def main():
     print("depois do continue\n\n\n")
     breakpoint_kernel_address.delete()
     print("depois do delete \n\n\n")
+    gdb.execute("c")
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
 global_fault_model, global_valid_register, global_logging = [None] * 3
