@@ -305,7 +305,7 @@ Check output files for SDCs
 """
 
 
-def check_sdcs(gold_file, output_file, logging, sdc_check_script):
+def check_sdcs(gold_file, output_file, logging, sdc_check_script, app_name):
     if not os.path.isfile(output_file):
         logging.error("outputFile not found: " + str(output_file))
         return False
@@ -316,12 +316,9 @@ def check_sdcs(gold_file, output_file, logging, sdc_check_script):
         logging.error("sdc check script file not found: " + str(gold_file))
         return False
     if os.path.isfile(gold_file) and os.path.isfile(output_file):
-        # script_content = {}
-        # execfile(sdc_check_script, script_content)
-        # SDC check function call
         os.environ['GOLD_OUTPUT_PATH'] = cf.GOLDEN_OUTPUT_DIR
         os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
-        os.environ['APP'] = 'matrixmul'
+        os.environ['APP'] = app_name
         os.system("sh " + sdc_check_script)
         with open('/tmp/diff_{}.log'.format('matrixmul')) as fi:
             if len(fi.readlines()) != 0:
@@ -794,6 +791,7 @@ def main():
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
     # os.system("rm -f " + cf.GOLDEN_OUTPUT_DIR)
     # os.system("rm -f " + cf.INJ_OUTPUT_DIR)
+    # os.system("rm -f /tmp/diff_*.log")
     ########################################################################
 
 
