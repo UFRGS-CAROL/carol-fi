@@ -168,6 +168,7 @@ def main():
     gdb.execute("set pagination off")
     gdb.execute("set logging on")
     gdb.execute("set logging file " + cf.INJ_OUTPUT_DIR)
+    gdb.execute("set logging redirect on")
 
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
