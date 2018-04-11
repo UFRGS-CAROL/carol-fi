@@ -52,8 +52,17 @@ class RunGDB(multiprocessing.Process):
             print("GDB Thread run, section and id: ", self.__unique_id)
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
-        print(start_cmd + ' > ' + cf.INJ_OUTPUT_DIR)
-        os.system(start_cmd + ' > ' + cf.INJ_OUTPUT_DIR)
+        os.environ['START_CMD'] = start_cmd
+        os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
+        os.system('sh ' + self.__current_dir + '/' + cf.CAROL_FI_RUN_SH)
+        # command_output, err = run_command(start_cmd)
+        # output_file = open(cf.INJ_OUTPUT_DIR, 'w')
+        #
+        # output_file.write(command_output)
+        # if err:
+        #     output_file.write(err)
+        # output_file.close()
+        # os.system('cat ' + cf.INJ_OUTPUT_DIR)
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
@@ -460,9 +469,9 @@ def run_gdb_fault_injection(**kwargs):
         fault_successful = False
 
     # Copy output files to a folder
-    # save_output(
-    #     section=section, is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
-    #     flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_DIR)
+    save_output(
+        section=section, is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
+        flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_DIR)
 
     return reg_old_value, reg_new_value, fault_successful, is_hang, is_sdc
 
