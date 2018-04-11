@@ -55,13 +55,18 @@ class RunGDB(multiprocessing.Process):
     def run(self):
         if cf.DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
-        os.environ['CUDA_DEVICE_WAITS_ON_EXCEPTION'] = '1'
-        os.environ['GDB_EXE'] = self.__gdb_exe_name
-        os.environ['GDB_CAROLFI_FLAGS'] = '-n -batch -x'
-        os.environ['PYTHON_SCRIPT'] = self.__flip_script
-        # start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
-        # start_cmd += ' -n -batch -x ' + self.__flip_script
-        os.system('sh carol_fi_run.sh')
+        # os.environ['CUDA_DEVICE_WAITS_ON_EXCEPTION'] = '1'
+        # os.environ['GDB_EXE'] = self.__gdb_exe_name
+        # os.environ['GDB_CAROLFI_FLAGS'] = '-n -batch -x'
+        # os.environ['PYTHON_SCRIPT'] = self.__flip_script
+        start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
+        start_cmd += ' -n -batch -x ' + self.__flip_script
+        stdout, stderr = run_command([start_cmd])
+        with open(cf.INJ_OUTPUT_DIR, 'w') as fout:
+            fout.write(stdout)
+        if stderr:
+            with open(cf.INJ_ERR_DIR, 'w') as ferr:
+                ferr.write(stderr)
 
 
 """

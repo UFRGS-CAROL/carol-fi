@@ -165,7 +165,6 @@ def main():
 
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
-    # gdb.execute("set pagination off")
 
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
@@ -211,7 +210,7 @@ def main():
         gdb.events.stop.connect(fault_injector_signal)
 
     # Start app execution
-    gdb.execute("r " + cf.INJ_OUTPUT_DIR)
+    gdb.execute("r")
 
     # Put breakpoint only it is breakpoint mode
     if inj_type == 'break':
