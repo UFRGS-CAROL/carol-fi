@@ -44,14 +44,13 @@ this thread will be killed
 
 
 class RunGDB(multiprocessing.Process):
-    def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir, name):
+    def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir):
         # multiprocessing.Process.__init__(self)
         super(RunGDB, self).__init__()
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
         self.__current_dir = current_dir
-        self.__name = name
 
     def run(self):
         if cf.DEBUG:
