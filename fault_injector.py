@@ -469,9 +469,9 @@ def run_gdb_fault_injection(**kwargs):
         fault_successful = False
 
     # Copy output files to a folder
-    save_output(
-        section=section, is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
-        flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_DIR)
+    # save_output(
+    #     section=section, is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
+    #     flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_DIR)
 
     return reg_old_value, reg_new_value, fault_successful, is_hang, is_sdc
 
