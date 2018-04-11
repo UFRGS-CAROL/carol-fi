@@ -421,7 +421,8 @@ def run_gdb_fault_injection(**kwargs):
     flip_script = 'flip_value.py'
 
     # Start fault injection process
-    fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"), flip_script=flip_script)
+    fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
+                        flip_script=flip_script, current_dir=current_path)
 
     fi_process.start()
 
