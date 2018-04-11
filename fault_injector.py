@@ -52,10 +52,11 @@ class RunGDB(multiprocessing.Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += " -n -batch -x " + self.__flip_script
         command_output, err = run_command(start_cmd)
-        with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
-            output_file.write(command_output)
-            if err:
-                output_file.write(err)
+        output_file = open(cf.INJ_OUTPUT_DIR, 'w')
+        output_file.write(command_output)
+        if err:
+            output_file.write(err)
+        output_file.close()
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
@@ -412,9 +413,6 @@ def run_gdb_fault_injection(**kwargs):
 
     # Create one thread to start gdb script
     flip_script = 'flip_value.py'
-
-    # remove old output file and create a new one
-    open(cf.INJ_OUTPUT_DIR, "w").close()
 
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"), flip_script=flip_script)
