@@ -306,6 +306,8 @@ Check output files for SDCs
 
 
 def check_sdcs(gold_file, output_file, logging, sdc_check_script):
+    print("\n\nAQUI SCRIPT\n", sdc_check_script)
+
     if not os.path.isfile(output_file):
         logging.error("outputFile not found: " + str(output_file))
         return False
@@ -322,7 +324,6 @@ def check_sdcs(gold_file, output_file, logging, sdc_check_script):
         os.environ['GOLD_OUTPUT_PATH'] = cf.GOLDEN_OUTPUT_DIR
         os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
         os.environ['APP'] = 'matrixmul'
-        print("\n\nAQUI SCRIPT\n", sdc_check_script)
         out, err = run_command(['sh', sdc_check_script])
         with open('/tmp/diff_{}.log'.format('matrixmul')) as fi:
             if len(fi.readlines()) != 0:
