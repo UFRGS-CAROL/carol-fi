@@ -209,7 +209,7 @@ def finish(section, conf, logging, timestamp_start, end_time, p):
         p_is_alive = p.is_alive()
         if not p_is_alive:
             logging.debug("Process not running")
-        # print("Pid existence", p_is_alive, "now - timestamp", now - timestamp_start)
+            # print("Pid existence", p_is_alive, "now - timestamp", now - timestamp_start)
 
     # check execution finished before or after waitTime
     if (now - timestamp_start) < max_wait_time:
@@ -474,9 +474,9 @@ def run_gdb_fault_injection(**kwargs):
         fault_successful = False
 
     # Copy output files to a folder
-    # save_output(
-    #     section=section, is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
-    #     flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_DIR)
+    save_output(
+        section=section, is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
+        flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_DIR)
 
     return reg_old_value, reg_new_value, fault_successful, is_hang, is_sdc
 
@@ -796,12 +796,12 @@ def main():
         fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                   summary_file=summary_file, max_time=max_time_app)
 
-    # Clear /tmp files generated
-    # os.system("rm -f /tmp/carol-fi-kernel-info.txt")
-    # os.system("rm -f " + cf.GOLDEN_OUTPUT_DIR)
-    # os.system("rm -f " + cf.INJ_OUTPUT_DIR)
-    # os.system("rm -f /tmp/diff_*.log")
-    ########################################################################
+        # Clear /tmp files generated
+        # os.system("rm -f /tmp/carol-fi-kernel-info.txt")
+        # os.system("rm -f " + cf.GOLDEN_OUTPUT_DIR)
+        # os.system("rm -f " + cf.INJ_OUTPUT_DIR)
+        # os.system("rm -f /tmp/diff_*.log")
+        ########################################################################
 
 
 ########################################################################
