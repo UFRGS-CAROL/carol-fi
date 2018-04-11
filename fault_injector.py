@@ -57,8 +57,8 @@ class RunGDB(multiprocessing.Process):
         start_cmd += " -n -batch -x " + self.__flip_script
         command_output, err = run_command(start_cmd)
         with open(cf.INJ_OUTPUT_DIR, "w") as output_file:
-            output_file.writelines(command_output)
-            output_file.writelines(err)
+            output_file.write(command_output)
+            output_file.write(err)
         print(command_output)
         print(err)
 
@@ -759,7 +759,7 @@ def main():
     max_time_app, gold_out_app = profiler_caller(conf)
     # save gold file
     with open(cf.GOLDEN_OUTPUT_DIR, "w") as gold_file:
-        gold_file.writelines(gold_out_app)
+        gold_file.write(gold_out_app)
     ########################################################################
     # Injector setup
     # Get fault models
