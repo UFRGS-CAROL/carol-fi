@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 # SDC checking diff
 # Must compare all things here
