@@ -168,7 +168,6 @@ def main():
     gdb.execute("set pagination off")
 
     # Set logging on
-    gdb.execute("set logging on")
     gdb.execute("set inferior-tty " + str(cf.INJ_OUTPUT_DIR))
 
     # Connecting to a exit handler event
