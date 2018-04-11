@@ -452,8 +452,7 @@ def run_gdb_fault_injection(**kwargs):
 
     # Search for set values for register
     # Must be done before save output
-
-    # Was fault injected
+    # Was fault injected?
     try:
         reg_old_value = logging.search("reg_old_value")
         reg_new_value = logging.search("reg_new_value")
