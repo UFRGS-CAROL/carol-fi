@@ -168,7 +168,7 @@ def main():
     # gdb.execute("set pagination off")
     gdb.execute("set logging on")
     gdb.execute("set logging overwrite on")
-    gdb.execute("set logging file /tmp/test_log.txt")
+    gdb.execute("set logging file test_log.txt")
     gdb.execute("set logging redirect on")
 
     # Connecting to a exit handler event
