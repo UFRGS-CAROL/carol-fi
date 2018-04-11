@@ -60,7 +60,7 @@ class RunGDB(multiprocessing.Process):
         # THIS IS NECESSARY
         sys.stdout = open(cf.INJ_OUTPUT_DIR, "a", buffering=0)
         sys.stderr = open(cf.INJ_ERR_DIR, "a", buffering=0)
-        os.system(start_cmd)
+        os.system(start_cmd + " > allout.txt 2>&1 ")
 
 
 """
