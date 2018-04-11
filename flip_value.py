@@ -165,7 +165,7 @@ def main():
 
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
-    gdb.execute("set pagination off")
+    # gdb.execute("set pagination off")
     gdb.execute("set logging on")
     gdb.execute("set logging overwrite on")
     gdb.execute("set logging file /tmp/test_log.txt")
