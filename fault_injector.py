@@ -39,7 +39,8 @@ this thread will be killed
 """
 
 
-def run(unique_id, gdb_exec_name, flip_script, current_dir):
+def run(run_args):
+    unique_id, gdb_exec_name, flip_script = run_args
     if cf.DEBUG:
         print("GDB Thread run, section and id: ", unique_id)
     start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_exec_name
@@ -433,7 +434,7 @@ def run_gdb_fault_injection(**kwargs):
     # fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
     #                     flip_script=flip_script, current_dir=current_path)
 
-    fi_process = multiprocessing.Process(target=run, args=((unique_id, conf.get("DEFAULT", "gdbExecName"), flip_script, current_path), ))
+    fi_process = multiprocessing.Process(target=run, args=((unique_id, conf.get("DEFAULT", "gdbExecName"), flip_script), ))
 
     fi_process.start()
 
