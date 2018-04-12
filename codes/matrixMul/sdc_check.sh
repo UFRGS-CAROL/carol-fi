@@ -21,4 +21,8 @@ done
 
 diff -B ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} > ${DIFF_LOG}
 
+if grep -q "Result = FAIL" ; then
+    echo "SDC" >> ${DIFF_LOG}
+fi
+
 rm -f ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} ${TMP}
