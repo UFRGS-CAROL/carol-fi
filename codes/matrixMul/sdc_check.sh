@@ -6,7 +6,7 @@ TMP=/tmp/carol_buff.txt
 cat ${GOLD_OUTPUT_PATH} > ${CLEAN_GOLD}
 cat ${INJ_OUTPUT_PATH} > ${CLEAN_INJ_OUTPUT}
 
-for i in '/Breakpoint/,+2d' '/\[New/d' '/\[Thread/d' '/\[Switching/d' '/\[Inferior/d';
+for i in '/Breakpoint/,+2d' '/\[New/d' '/\[Thread/d' '/\[Switching/d' '/\[Inferior/d' '/Performance=/d';
 do
     for j in ${CLEAN_INJ_OUTPUT} ${CLEAN_GOLD};
     do
