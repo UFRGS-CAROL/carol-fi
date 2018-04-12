@@ -345,6 +345,7 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
         with open(cp.DIFF_LOG, 'r') as fi:
             out_lines = fi.readlines()
             if len(out_lines) != 0:
+                # Check if nvidia signals on output
                 for signal in cp.SIGNALS:
                     for line in out_lines:
                         if signal in line:
@@ -498,7 +499,7 @@ def run_gdb_fault_injection(**kwargs):
         section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
         flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
-    return reg_old_value, reg_new_value, fault_successful, is_hang, is_sdc
+    return reg_old_value, reg_new_value, fault_successful, is_hang or is_app_crash, is_sdc
 
 
 """
