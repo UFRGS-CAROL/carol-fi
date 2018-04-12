@@ -778,7 +778,10 @@ def main():
     with open(cf.GOLD_OUTPUT_PATH, "w") as gold_file:
         gold_file.write(gold_out_app)
     with open(cf.GOLD_ERR_PATH, "w") as gold_err_file:
-        gold_err_file.write(gold_err_app)
+        if gold_err_app:
+            gold_err_file.write(gold_err_app)
+        else:
+            gold_err_file.write("")
     print("###################################################\nProfile finished")
     ########################################################################
     # Injector setup
