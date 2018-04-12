@@ -21,13 +21,6 @@ done
 
 diff -B ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} > ${DIFF_LOG}
 
-if grep -q "CUDA_EXCEPTION" ${DIFF_LOG};
-then
-    rm -f ${DIFF_LOG}
-    touch ${DIFF_LOG}
-    echo "CRASH" > ${DIFF_ERR_LOG}
-fi
-
 if grep -q "Result = FAIL" ${CLEAN_INJ_OUTPUT}; then
     echo "SDC" >> ${DIFF_LOG}
 fi
@@ -38,6 +31,13 @@ diff -B ${INJ_ERR_PATH} ${GOLD_ERR_PATH} > ${DIFF_ERR_LOG}
 # ! grep -q '\[Inferior' ${INJ_OUTPUT_PATH} &&
 if ! grep -q 'exited normally\]' ${INJ_OUTPUT_PATH} ;
 then
+    echo "CRASH" > ${DIFF_ERR_LOG}
+fi
+
+if grep -q "CUDA_EXCEPTION" ${DIFF_LOG};
+then
+    rm -f ${DIFF_LOG}
+    touch ${DIFF_LOG}
     echo "CRASH" > ${DIFF_ERR_LOG}
 fi
 
