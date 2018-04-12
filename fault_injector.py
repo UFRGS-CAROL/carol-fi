@@ -211,6 +211,7 @@ def finish(section, conf, logging, timestamp_start, end_time, p):
     else:
         logging.info("Execution did not finish before waitTime")
         is_hang = True
+        p.terminate()
 
     logging.debug("now: " + str(now))
     logging.debug("timestampStart: " + str(timestamp_start))
@@ -418,7 +419,7 @@ def run_gdb_fault_injection(**kwargs):
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
                         flip_script=cf.FLIP_SCRIPT, current_dir=current_path)
-
+    fi_process.daemon = True
     fi_process.start()
 
     # Start counting time

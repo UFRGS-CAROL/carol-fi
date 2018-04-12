@@ -220,6 +220,7 @@ def main():
     # Put breakpoint only it is breakpoint mode
     # if inj_type == 'break':
     breakpoint_kernel_line.delete()
+    del breakpoint_kernel_line
     ready_to_inject = True
     breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
@@ -227,6 +228,7 @@ def main():
     gdb.execute("c")
     breakpoint_kernel_address.delete()
     gdb.execute("c")
+    del breakpoint_kernel_address
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
 global_fault_model, global_valid_register, global_logging = [None] * 3
