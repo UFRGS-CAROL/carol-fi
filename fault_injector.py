@@ -345,10 +345,11 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
         with open(cp.DIFF_LOG, 'r') as fi:
             out_lines = fi.readlines()
             if len(out_lines) != 0:
-                for i in cp.SIGNALS:
-                    if i in out_lines:
-                        is_app_crash = True
-                        break
+                for signal in cp.SIGNALS:
+                    for line in out_lines:
+                        if signal in line:
+                            is_app_crash = True
+                            break
                 if not is_app_crash:
                     is_sdc = True
 
