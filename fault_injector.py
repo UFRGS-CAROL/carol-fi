@@ -58,10 +58,11 @@ class RunGDB(multiprocessing.Process):
         stdout, stderr = run_command([start_cmd])
         with open(cf.INJ_OUTPUT_PATH, 'w') as fout:
             fout.write(stdout)
-        if stderr:
-            with open(cf.INJ_ERR_PATH, 'w') as ferr:
+        with open(cf.INJ_ERR_PATH, 'w') as ferr:
+            if stderr:
                 ferr.write(stderr)
-
+            else:
+                ferr.write("")
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
@@ -771,7 +772,7 @@ def main():
     # Max time will be obtained by running
     # it will also get app output for golden copy
     # that is,
-    print("###################################################\nProfiling application")
+    print("###################################################\n1 - Profiling application")
     inj_type = conf.get("DEFAULT", "injType")
     max_time_app, gold_out_app, gold_err_app = profiler_caller(conf)
     # save gold file
@@ -782,7 +783,9 @@ def main():
             gold_err_file.write(gold_err_app)
         else:
             gold_err_file.write("")
-    print("###################################################\nProfile finished")
+    print("1 - Profile finished\n###################################################")
+    print("2 - Starting fault injection\n###################################################")
+    print("2 - {} faults will be injected".format(args.iterations))
     ########################################################################
     # Injector setup
     # Get fault models
@@ -814,6 +817,8 @@ def main():
     #     fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
     #                               summary_file=summary_file, max_time=max_time_app)
 
+    print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
+    print("###################################################")
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
     os.system("rm -f " + cf.GOLD_OUTPUT_PATH)
