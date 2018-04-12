@@ -275,6 +275,7 @@ def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, out
     # if os.path.isfile(output_file) and (not masked) and fi_succ:
     shutil.move(cf.INJ_OUTPUT_PATH, cp_dir)
     shutil.move(cf.INJ_ERR_PATH, cp_dir)
+    shutil.move(cf.DIFF_LOG, cp_dir)
 
 
 """
@@ -786,6 +787,7 @@ def main():
     print("1 - Profile finished\n###################################################")
     print("2 - Starting fault injection\n###################################################")
     print("2 - {} faults will be injected".format(args.iterations))
+    print("###################################################")
     ########################################################################
     # Injector setup
     # Get fault models
