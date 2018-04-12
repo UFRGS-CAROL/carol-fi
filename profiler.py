@@ -52,10 +52,13 @@ def set_breakpoints(kernel_conf_string):
     for kernel_line in breakpoints_list:
         # Just to make sure things like this: kernel.cu:52;<nothing here>
         if len(kernel_line) > 0:
+            kernel_begin, kernel_end = kernel_line.split("-")
+
             kernel_info = {
                 'breakpoint': gdb.Breakpoint(kernel_line),
-                'kernel_name': kernel_line.split(":")[0],
-                'kernel_line': kernel_line.split(":")[1]
+                'kernel_name': kernel_begin.split(":")[0],
+                'kernel_line': kernel_begin.split(":")[1],
+                'kernel_end_line': kernel_end.split(":")[1]
             }
 
             kernel_info_list.append(kernel_info)

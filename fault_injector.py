@@ -63,6 +63,7 @@ class RunGDB(multiprocessing.Process):
             else:
                 ferr.write("")
 
+
 """
 Signal the app to stop so GDB can execute the script to flip a value
 """
@@ -692,8 +693,13 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_location(
                     kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
                     injection_site=conf.get("DEFAULT", "injectionSite"))
+
+                kernel_begin = kernel_info_dict["kernel_line"]
+                kernel_end = kernel_info_dict["kernel_end_line"]
+                rand_line = random.randint(int(kernel_begin), int(kernel_end))
                 breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
-                                          + kernel_info_dict["kernel_line"])
+                                          + str(rand_line))
+
                 r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(section="DEFAULT", conf=conf,
                                                                                       unique_id=unique_id,
                                                                                       valid_block=valid_block,

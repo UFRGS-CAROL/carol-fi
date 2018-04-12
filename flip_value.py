@@ -23,8 +23,8 @@ def fault_injection_breakpoint(event):
     global global_bits_to_flip, global_fault_model, global_logging
     global ready_to_inject
 
-    if not ready_to_inject:
-        return
+    # if not ready_to_inject:
+    #     return
 
     # This if avoid the creation of another event connection
     # for some reason gdb cannot breakpoint addresses before
@@ -220,16 +220,20 @@ def main():
 
     # Put breakpoint only it is breakpoint mode
     # if inj_type == 'break':
-    breakpoint_kernel_line.delete()
-    del breakpoint_kernel_line
+    # breakpoint_kernel_line.delete()
+    # del breakpoint_kernel_line
     ready_to_inject = True
-    breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
+    # breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
 
     # Continue execution until the next breakpoint
     gdb.execute("c")
-    breakpoint_kernel_address.delete()
+    # breakpoint_kernel_address.delete()
+    breakpoint_kernel_line.delete()
     gdb.execute("c")
-    del breakpoint_kernel_address
+
+    # del breakpoint_kernel_address
+    # del breakpoint_kernel_line
+
 
 global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
 global_fault_model, global_valid_register, global_logging = [None] * 3
