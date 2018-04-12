@@ -23,6 +23,7 @@ diff -B ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} > ${DIFF_LOG}
 
 if grep -q "CUDA_EXCEPTION" ${DIFF_LOG};
 then
+    rm -f ${DIFF_LOG}
     touch ${DIFF_LOG}
     echo "CRASH" > ${DIFF_ERR_LOG}
 fi
