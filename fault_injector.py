@@ -734,9 +734,9 @@ def profiler_caller(conf):
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    gold_ouput, err = run_command([profiler_cmd])
+    out, err = run_command([profiler_cmd])
 
-    return acc_time / cf.MAX_TIMES_TO_PROFILE, gold_ouput
+    return acc_time / cf.MAX_TIMES_TO_PROFILE, out, err
 
 
 """
@@ -771,11 +771,15 @@ def main():
     # Max time will be obtained by running
     # it will also get app output for golden copy
     # that is,
+    print("###################################################\nProfiling application")
     inj_type = conf.get("DEFAULT", "injType")
-    max_time_app, gold_out_app = profiler_caller(conf)
+    max_time_app, gold_out_app, gold_err_app = profiler_caller(conf)
     # save gold file
     with open(cf.GOLD_OUTPUT_PATH, "w") as gold_file:
         gold_file.write(gold_out_app)
+    with open(cf.GOLD_ERR_PATH, "w") as gold_err_file:
+        gold_err_file.write(gold_err_app)
+    print("###################################################\nProfile finished")
     ########################################################################
     # Injector setup
     # Get fault models
