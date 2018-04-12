@@ -39,11 +39,17 @@ def fault_injection_breakpoint(event):
                                                                                        str(global_valid_thread[2]))
         thread_focus = gdb.execute(change_focus_cmd, to_string=True)
 
+    except Exception as err:
+        global_logging.exception("CUDA_FOCUS_exception: " + str(err))
+        global_logging.exception("Fault Injection Went Wrong")
+        return
+
+    try:
         # Thread focus return information
         global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
 
         # Do the fault injection magic
-        generic_injector(global_valid_register, global_bits_to_flip, 3)
+        generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)
 
         global_logging.info("Fault Injection Successful")
     except Exception as err:
