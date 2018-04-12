@@ -25,8 +25,13 @@ if grep -q "Result = FAIL" ${CLEAN_INJ_OUTPUT}; then
     echo "SDC" >> ${DIFF_LOG}
 fi
 
-if grep -q "CUDA_EXCEPTION" ${CLEAN_INJ_OUTPUT}; then
-    echo "" > ${DIFF_LOG}
+# diff stderr
+diff -B ${INJ_ERR_PATH} ${GOLD_ERR_PATH} > ${DIFF_ERR_LOG}
+
+# ! grep -q '\[Inferior' ${INJ_OUTPUT_PATH} &&
+if ! grep -q 'exited normally\]' ${INJ_OUTPUT_PATH} ;
+then
+    echo "CRASH" > ${DIFF_ERR_LOG}
 fi
 
 rm -f ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} ${TMP}

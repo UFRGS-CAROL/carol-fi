@@ -56,10 +56,10 @@ class RunGDB(multiprocessing.Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
         stdout, stderr = run_command([start_cmd])
-        with open(cf.INJ_OUTPUT_DIR, 'w') as fout:
+        with open(cf.INJ_OUTPUT_PATH, 'w') as fout:
             fout.write(stdout)
         if stderr:
-            with open(cf.INJ_ERR_DIR, 'w') as ferr:
+            with open(cf.INJ_ERR_PATH, 'w') as ferr:
                 ferr.write(stderr)
 
 
@@ -272,7 +272,8 @@ def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, out
 
     shutil.move(flip_log_file, cp_dir)
     # if os.path.isfile(output_file) and (not masked) and fi_succ:
-    shutil.move(output_file, cp_dir)
+    shutil.move(cf.INJ_OUTPUT_PATH, cp_dir)
+    shutil.move(cf.INJ_ERR_PATH, cp_dir)
 
 
 """
@@ -310,25 +311,45 @@ Check output files for SDCs
 """
 
 
-def check_sdcs(gold_file, output_file, logging, sdc_check_script):
-    if not os.path.isfile(output_file):
-        logging.error("outputFile not found: " + str(output_file))
-        return False
-    elif not os.path.isfile(gold_file):
-        logging.error("gold_file not found: " + str(gold_file))
-        return False
+def check_sdcs_and_app_crash(logging, sdc_check_script):
+    is_sdc = False
+    is_app_crash = False
+    if not os.path.isfile(cf.INJ_OUTPUT_PATH):
+        logging.error("outputFile not found: " + cf.INJ_OUTPUT_PATH)
+        is_app_crash = True
+    elif not os.path.isfile(cf.GOLD_OUTPUT_PATH):
+        logging.error("gold_file not found: " + cf.GOLD_OUTPUT_PATH)
+        raise ValueError("GOLD FILE NOT FOUND")
     elif not os.path.isfile(sdc_check_script):
-        logging.error("sdc check script file not found: " + str(gold_file))
-        return False
-    if os.path.isfile(gold_file) and os.path.isfile(output_file):
-        os.environ['GOLD_OUTPUT_PATH'] = cf.GOLDEN_OUTPUT_DIR
-        os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_DIR
+        logging.error("sdc check script file not found: " + sdc_check_script)
+        raise ValueError("SDC CHECK SCRIPT NOT FOUND")
+    elif not os.path.isfile(cf.INJ_ERR_PATH):
+        logging.error("possible crash, stderr not found: " + cf.INJ_OUTPUT_PATH)
+        is_app_crash = True
+    elif not os.path.isfile(cf.GOLD_ERR_PATH):
+        logging.error("gold_err_file not found: " + cf.GOLD_ERR_PATH)
+        raise ValueError("GOLD ERR FILE NOT FOUND")
+    if os.path.isfile(cf.GOLD_OUTPUT_PATH) and os.path.isfile(cf.INJ_OUTPUT_PATH) and os.path.isfile(
+            cf.GOLD_ERR_PATH) and os.path.isfile(cf.INJ_ERR_PATH):
+        # Set environ variables for sdc_check_script
+        os.environ['GOLD_OUTPUT_PATH'] = cf.GOLD_OUTPUT_PATH
+        os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_PATH
+        os.environ['GOLD_ERR_PATH'] = cf.GOLD_ERR_PATH
+        os.environ['INJ_ERR_PATH'] = cf.INJ_ERR_PATH
         os.environ['DIFF_LOG'] = cf.DIFF_LOG
+        os.environ['DIFF_ERR_LOG'] = cf.DIFF_ERR_LOG
         os.system("sh " + sdc_check_script)
+
+        # Test if files are ok
         with open(cf.DIFF_LOG, 'r') as fi:
             if len(fi.readlines()) != 0:
-                return False
-    return True
+                is_sdc = True
+        with open(cf.DIFF_ERR_LOG, 'r') as fi_err:
+            err_lines = fi_err.readlines()
+            if len(err_lines) != 0:
+                is_app_crash = True
+
+    return is_sdc, is_app_crash
 
 
 """
@@ -441,8 +462,7 @@ def run_gdb_fault_injection(**kwargs):
     sdc_check_script = current_path + '/' + conf.get('DEFAULT', 'goldenCheckScript')
 
     # Check output files for SDCs
-    is_sdc = check_sdcs(gold_file=cf.GOLDEN_OUTPUT_DIR, output_file=cf.INJ_OUTPUT_DIR, logging=logging,
-                        sdc_check_script=sdc_check_script)
+    is_sdc, is_app_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
 
     # remove thrash
     del fi_process
@@ -466,8 +486,8 @@ def run_gdb_fault_injection(**kwargs):
 
     # Copy output files to a folder
     save_output(
-        section=section, is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
-        flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_DIR)
+        section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
+        flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_PATH)
 
     return reg_old_value, reg_new_value, fault_successful, is_hang, is_sdc
 
@@ -754,7 +774,7 @@ def main():
     inj_type = conf.get("DEFAULT", "injType")
     max_time_app, gold_out_app = profiler_caller(conf)
     # save gold file
-    with open(cf.GOLDEN_OUTPUT_DIR, "w") as gold_file:
+    with open(cf.GOLD_OUTPUT_PATH, "w") as gold_file:
         gold_file.write(gold_out_app)
     ########################################################################
     # Injector setup
@@ -789,9 +809,11 @@ def main():
 
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
-    os.system("rm -f " + cf.GOLDEN_OUTPUT_DIR)
-    os.system("rm -f " + cf.INJ_OUTPUT_DIR)
-    os.system("rm -f /tmp/diff.log")
+    os.system("rm -f " + cf.GOLD_OUTPUT_PATH)
+    os.system("rm -f " + cf.INJ_OUTPUT_PATH)
+    os.system("rm -f " + cf.GOLD_ERR_PATH)
+    os.system("rm -f " + cf.INJ_ERR_PATH)
+    os.system("rm -f " + cf.DIFF_ERR_LOG + " " + cf.DIFF_LOG)
     ########################################################################
 
 

@@ -18,12 +18,14 @@ MAX_TIMES_TO_PROFILE = 2
 
 # TMP file that will store kernel information
 KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
-GOLDEN_OUTPUT_DIR = "/tmp/carol_fi_golden_bench_output.txt"
-INJ_OUTPUT_DIR = "/tmp/carol_fi_inj_bench_output.txt"
-INJ_ERR_DIR = "/tmp/carol_fi_inj_bench_err.txt"
+GOLD_OUTPUT_PATH = "/tmp/carol_fi_golden_bench_output.txt"
+INJ_OUTPUT_PATH = "/tmp/carol_fi_inj_bench_output.txt"
+GOLD_ERR_PATH = "/tmp/carol_fi_inj_bench_err.txt"
+INJ_ERR_PATH = "/tmp/carol_fi_inj_bench_err.txt"
 CAROL_FI_RUN_SH = "carol_fi_run.sh"
 FLIP_SCRIPT = 'flip_value.py'
 DIFF_LOG = '/tmp/diff.log'
+DIFF_ERR_LOG = '/tmp/diff_err.log'
 
 # Debug env var
 DEBUG = False
