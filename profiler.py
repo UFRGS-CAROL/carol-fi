@@ -48,6 +48,7 @@ def set_breakpoints(kernel_conf_string):
     # to retrieve info of each
     # kernel
     global kernel_info_list
+    print(kernel_info_list)
     breakpoints_list = kernel_conf_string.split(";")
     print(breakpoints_list)
     for kernel_line in breakpoints_list:
