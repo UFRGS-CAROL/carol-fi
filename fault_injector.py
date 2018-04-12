@@ -18,11 +18,6 @@ import sys
 
 import common_functions as cf
 
-# Injection mode
-# INST_OUT -> Instruction output
-# RF -> Register File
-injection_mode = 'RF'
-
 """
 Run some command and return the output
 """
@@ -364,7 +359,7 @@ def run_gdb_fault_injection(**kwargs):
     valid_block, valid_thread, injection_address, breakpoint_location = list(), list(), '', ''
 
     # Declare all FI threads
-    thread_signal_list = []
+    # thread_signal_list = []
 
     # This are the mandatory parameters
     inj_mode = kwargs.get('inj_mode')
@@ -580,14 +575,13 @@ to inject a fault.
 """
 
 
-def gen_injection_site(kernel_info_dict, max_num_regs):
-    global injection_mode
+def gen_injection_location(kernel_info_dict, max_num_regs, injection_site):
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
     # A injection site is a list of [registers, instruction, address, byte_location]
-    registers, _, injection_site, _, instrution_line = get_valid_address(kernel_info_dict["addresses"])
+    registers, _, address, _, instrution_line = get_valid_address(kernel_info_dict["addresses"])
 
     # Randomly select (a) bit(s) to flip
     # Max double bit flip
@@ -597,7 +591,7 @@ def gen_injection_site(kernel_info_dict, max_num_regs):
     # Selects it it is in the instruction output
     # or register file
     valid_register = None
-    if injection_mode == 'INST_OUT':
+    if injection_site == 'INST_OUT':
         for i in reversed(registers):
             if 'R' in i:
                 valid_register = i
@@ -608,14 +602,14 @@ def gen_injection_site(kernel_info_dict, max_num_regs):
             raise NotImplementedError("LINE COULD NOT BE PARSED")
 
     # Register file
-    elif injection_mode == 'RF':
+    elif injection_site == 'RF':
         valid_register = 'R' + str(random.randint(0, max_num_regs))
 
     # Make sure that the same bit is not going to be selected
     r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, cf.MAX_SIZE_REGISTER)
     bits_to_flip[1] = random.choice(r)
 
-    return valid_thread, valid_block, valid_register, bits_to_flip, injection_site, instrution_line
+    return valid_thread, valid_block, valid_register, bits_to_flip, address, instrution_line
 
 
 """
@@ -664,8 +658,9 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
                 # try:
-                valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_site(
-                    kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")))
+                valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_location(
+                    kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
+                    injection_site=conf.get("DEFAULT", "injectionSite"))
                 breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
                                           + kernel_info_dict["kernel_line"])
                 r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(section="DEFAULT", conf=conf,
