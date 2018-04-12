@@ -49,6 +49,7 @@ def set_breakpoints(kernel_conf_string):
     # kernel
     global kernel_info_list
     breakpoints_list = kernel_conf_string.split(";")
+    print(breakpoints_list)
     for kernel_line in breakpoints_list:
         # Just to make sure things like this: kernel.cu:52;<nothing here>
         if len(kernel_line) > 0:

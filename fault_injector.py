@@ -735,6 +735,7 @@ def profiler_caller(conf):
     acc_time = 0
 
     # First MAX_TIMES_TO_PROFILE is necessary to measure the application running time
+
     os.environ['CAROL_FI_INFO'] = conf.get(
         "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
                                                       "kernelBreaks") + "|" + "True"
