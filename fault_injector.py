@@ -817,6 +817,7 @@ def main():
     #     fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
     #                               summary_file=summary_file, max_time=max_time_app)
 
+    print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")
     # Clear /tmp files generated
