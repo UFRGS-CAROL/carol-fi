@@ -14,9 +14,8 @@ import shutil
 import argparse
 import csv
 
-import sys
-
 import common_functions as cf
+import common_parameters as cp
 
 """
 Run some command and return the output
@@ -47,7 +46,7 @@ class RunGDB(multiprocessing.Process):
         self.__current_dir = current_dir
 
     def run(self):
-        if cf.DEBUG:
+        if cp.DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
         # os.environ['CUDA_DEVICE_WAITS_ON_EXCEPTION'] = '1'
         # os.environ['GDB_EXE'] = self.__gdb_exe_name
@@ -56,9 +55,9 @@ class RunGDB(multiprocessing.Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
         stdout, stderr = run_command([start_cmd])
-        with open(cf.INJ_OUTPUT_PATH, 'w') as fout:
+        with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
             fout.write(stdout)
-        with open(cf.INJ_ERR_PATH, 'w') as ferr:
+        with open(cp.INJ_ERR_PATH, 'w') as ferr:
             if stderr:
                 ferr.write(stderr)
             else:
@@ -273,9 +272,9 @@ def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, out
 
     shutil.move(flip_log_file, cp_dir)
     # if os.path.isfile(output_file) and (not masked) and fi_succ:
-    shutil.move(cf.INJ_OUTPUT_PATH, cp_dir)
-    shutil.move(cf.INJ_ERR_PATH, cp_dir)
-    shutil.move(cf.DIFF_LOG, cp_dir)
+    shutil.move(cp.INJ_OUTPUT_PATH, cp_dir)
+    shutil.move(cp.INJ_ERR_PATH, cp_dir)
+    shutil.move(cp.DIFF_LOG, cp_dir)
 
 
 """
@@ -316,37 +315,44 @@ Check output files for SDCs
 def check_sdcs_and_app_crash(logging, sdc_check_script):
     is_sdc = False
     is_app_crash = False
-    if not os.path.isfile(cf.INJ_OUTPUT_PATH):
-        logging.error("outputFile not found: " + cf.INJ_OUTPUT_PATH)
+    if not os.path.isfile(cp.INJ_OUTPUT_PATH):
+        logging.error("outputFile not found: " + cp.INJ_OUTPUT_PATH)
         is_app_crash = True
-    elif not os.path.isfile(cf.GOLD_OUTPUT_PATH):
-        logging.error("gold_file not found: " + cf.GOLD_OUTPUT_PATH)
+    elif not os.path.isfile(cp.GOLD_OUTPUT_PATH):
+        logging.error("gold_file not found: " + cp.GOLD_OUTPUT_PATH)
         raise ValueError("GOLD FILE NOT FOUND")
     elif not os.path.isfile(sdc_check_script):
         logging.error("sdc check script file not found: " + sdc_check_script)
         raise ValueError("SDC CHECK SCRIPT NOT FOUND")
-    elif not os.path.isfile(cf.INJ_ERR_PATH):
-        logging.error("possible crash, stderr not found: " + cf.INJ_OUTPUT_PATH)
+    elif not os.path.isfile(cp.INJ_ERR_PATH):
+        logging.error("possible crash, stderr not found: " + cp.INJ_OUTPUT_PATH)
         is_app_crash = True
-    elif not os.path.isfile(cf.GOLD_ERR_PATH):
-        logging.error("gold_err_file not found: " + cf.GOLD_ERR_PATH)
+    elif not os.path.isfile(cp.GOLD_ERR_PATH):
+        logging.error("gold_err_file not found: " + cp.GOLD_ERR_PATH)
         raise ValueError("GOLD ERR FILE NOT FOUND")
-    if os.path.isfile(cf.GOLD_OUTPUT_PATH) and os.path.isfile(cf.INJ_OUTPUT_PATH) and os.path.isfile(
-            cf.GOLD_ERR_PATH) and os.path.isfile(cf.INJ_ERR_PATH):
+    if os.path.isfile(cp.GOLD_OUTPUT_PATH) and os.path.isfile(cp.INJ_OUTPUT_PATH) and os.path.isfile(
+            cp.GOLD_ERR_PATH) and os.path.isfile(cp.INJ_ERR_PATH):
         # Set environ variables for sdc_check_script
-        os.environ['GOLD_OUTPUT_PATH'] = cf.GOLD_OUTPUT_PATH
-        os.environ['INJ_OUTPUT_PATH'] = cf.INJ_OUTPUT_PATH
-        os.environ['GOLD_ERR_PATH'] = cf.GOLD_ERR_PATH
-        os.environ['INJ_ERR_PATH'] = cf.INJ_ERR_PATH
-        os.environ['DIFF_LOG'] = cf.DIFF_LOG
-        os.environ['DIFF_ERR_LOG'] = cf.DIFF_ERR_LOG
+        os.environ['GOLD_OUTPUT_PATH'] = cp.GOLD_OUTPUT_PATH
+        os.environ['INJ_OUTPUT_PATH'] = cp.INJ_OUTPUT_PATH
+        os.environ['GOLD_ERR_PATH'] = cp.GOLD_ERR_PATH
+        os.environ['INJ_ERR_PATH'] = cp.INJ_ERR_PATH
+        os.environ['DIFF_LOG'] = cp.DIFF_LOG
+        os.environ['DIFF_ERR_LOG'] = cp.DIFF_ERR_LOG
         os.system("sh " + sdc_check_script)
 
         # Test if files are ok
-        with open(cf.DIFF_LOG, 'r') as fi:
-            if len(fi.readlines()) != 0:
-                is_sdc = True
-        with open(cf.DIFF_ERR_LOG, 'r') as fi_err:
+        with open(cp.DIFF_LOG, 'r') as fi:
+            out_lines = fi.readlines()
+            if len(out_lines) != 0:
+                for i in cp.SIGNALS:
+                    if i in out_lines:
+                        is_app_crash = True
+                        break
+                if not is_app_crash:
+                    is_sdc = True
+
+        with open(cp.DIFF_ERR_LOG, 'r') as fi_err:
             err_lines = fi_err.readlines()
             if len(err_lines) != 0:
                 is_app_crash = True
@@ -441,7 +447,7 @@ def run_gdb_fault_injection(**kwargs):
     # Create one thread to start gdb script
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
-                        flip_script=cf.FLIP_SCRIPT, current_dir=current_path)
+                        flip_script=cp.FLIP_SCRIPT, current_dir=current_path)
     fi_process.daemon = True
     fi_process.start()
 
@@ -489,7 +495,7 @@ def run_gdb_fault_injection(**kwargs):
     # Copy output files to a folder
     save_output(
         section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
-        flip_log_file=flip_log_file, output_file=cf.INJ_OUTPUT_PATH)
+        flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
     return reg_old_value, reg_new_value, fault_successful, is_hang, is_sdc
 
@@ -552,7 +558,7 @@ def get_valid_address(addresses):
 
         registers, address, byte_location, instruction, m = parse_line(instruction_line)
 
-        if cf.DEBUG:
+        if cp.DEBUG:
             if not m:
                 print("it is stopped here:", instruction_line)
             else:
@@ -609,7 +615,7 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site):
     # Randomly select (a) bit(s) to flip
     # Max double bit flip
     bits_to_flip = [0] * 2
-    bits_to_flip[0] = random.randint(0, cf.MAX_SIZE_REGISTER - 1)
+    bits_to_flip[0] = random.randint(0, cp.MAX_SIZE_REGISTER - 1)
 
     # Selects it it is in the instruction output
     # or register file
@@ -629,7 +635,7 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site):
         valid_register = 'R' + str(random.randint(0, max_num_regs))
 
     # Make sure that the same bit is not going to be selected
-    r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, cf.MAX_SIZE_REGISTER)
+    r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, cp.MAX_SIZE_REGISTER)
     bits_to_flip[1] = random.choice(r)
 
     return valid_thread, valid_block, valid_register, bits_to_flip, address, instrution_line
@@ -725,7 +731,7 @@ def profiler_caller(conf):
         "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
                                                       "kernelBreaks") + "|" + "True"
 
-    for i in range(0, cf.MAX_TIMES_TO_PROFILE + 1):
+    for i in range(0, cp.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
         run_command([profiler_cmd])
@@ -738,7 +744,7 @@ def profiler_caller(conf):
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     out, err = run_command([profiler_cmd])
 
-    return acc_time / cf.MAX_TIMES_TO_PROFILE, out, err
+    return acc_time / cp.MAX_TIMES_TO_PROFILE, out, err
 
 
 """
@@ -777,9 +783,9 @@ def main():
     inj_type = conf.get("DEFAULT", "injType")
     max_time_app, gold_out_app, gold_err_app = profiler_caller(conf)
     # save gold file
-    with open(cf.GOLD_OUTPUT_PATH, "w") as gold_file:
+    with open(cp.GOLD_OUTPUT_PATH, "w") as gold_file:
         gold_file.write(gold_out_app)
-    with open(cf.GOLD_ERR_PATH, "w") as gold_err_file:
+    with open(cp.GOLD_ERR_PATH, "w") as gold_err_file:
         if gold_err_app:
             gold_err_file.write(gold_err_app)
         else:
@@ -810,7 +816,7 @@ def main():
     # break mode is default option
     if 'break' in inj_type:
         # Load information file generated in profiler step
-        kernel_info_list = cf.load_file(cf.KERNEL_INFO_DIR)
+        kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
         fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                          kernel_info_list=kernel_info_list, summary_file=summary_file,
                                          max_time=max_time_app, current_path=current_path)
@@ -824,11 +830,11 @@ def main():
     print("###################################################")
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
-    os.system("rm -f " + cf.GOLD_OUTPUT_PATH)
-    os.system("rm -f " + cf.INJ_OUTPUT_PATH)
-    os.system("rm -f " + cf.GOLD_ERR_PATH)
-    os.system("rm -f " + cf.INJ_ERR_PATH)
-    os.system("rm -f " + cf.DIFF_ERR_LOG + " " + cf.DIFF_LOG)
+    os.system("rm -f " + cp.GOLD_OUTPUT_PATH)
+    os.system("rm -f " + cp.INJ_OUTPUT_PATH)
+    os.system("rm -f " + cp.GOLD_ERR_PATH)
+    os.system("rm -f " + cp.INJ_ERR_PATH)
+    os.system("rm -f " + cp.DIFF_ERR_LOG + " " + cp.DIFF_LOG)
     ########################################################################
 
 

@@ -2,6 +2,7 @@ import gdb
 import re
 import os
 import common_functions as cf  # All common functions will be at common_functions module
+import common_parameters
 
 """
 function called when the execution is stopped by a signal
@@ -85,7 +86,7 @@ def generic_injector(valid_register, bits_to_flip, fault_model):
     if m:
         reg_content = str(m.group(2))
         # Make sure that binary value will have max size register
-        reg_content_old = str('0' * (cf.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
+        reg_content_old = str('0' * (common_parameters.MAX_SIZE_REGISTER - len(reg_content))) + reg_content
         # Logging info result extracted from register
         global_logging.info("reg_old_value: " + reg_content_old)
         reg_content_new = ''

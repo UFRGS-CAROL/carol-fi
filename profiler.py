@@ -2,6 +2,8 @@ import gdb
 import os
 import common_functions as cf  # All common functions will be at common_functions module
 
+import common_parameters as cp # All commom parameters
+
 # This list will contains all kernel info
 kernel_info_list = []
 
@@ -91,9 +93,9 @@ def main():
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
     if time_profiler == 'False':
-        cf.save_file(cf.KERNEL_INFO_DIR, kernel_info_list)
+        cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
 
-        if cf.DEBUG:
+        if cp.DEBUG:
             # Finishing
             print ("If you are seeing it, profiler has been finished \n \n")
 

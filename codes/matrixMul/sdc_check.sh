@@ -22,20 +22,12 @@ done
 diff -B ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} > ${DIFF_LOG}
 grep -q "Result = FAIL" ${CLEAN_INJ_OUTPUT} >> ${DIFF_LOG}
 
-
 # diff stderr
 diff -B ${INJ_ERR_PATH} ${GOLD_ERR_PATH} > ${DIFF_ERR_LOG}
 
 if ! grep -q 'exited normally\]' ${INJ_OUTPUT_PATH} ;
 then
-    echo "CRASH" >> ${DIFF_ERR_LOG}
-fi
-
-if grep -q CUDA_EXCEPTION ${INJ_OUTPUT_PATH};
-then
-    rm -f ${DIFF_LOG}
-    touch ${DIFF_LOG}
-    echo "CRASH" > ${DIFF_ERR_LOG}
+    echo "PROGRAM_DID_EXITED_NORMALLY" >> ${DIFF_ERR_LOG}
 fi
 
 rm -f ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} ${TMP}
