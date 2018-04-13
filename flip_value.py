@@ -4,6 +4,39 @@ import os
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters
 
+
+class Breakpoint(gdb.Breakpoint):
+
+    def __init__(self):
+        super(Breakpoint, self).__init__()
+        global global_valid_block, global_valid_thread, global_valid_register
+        global global_bits_to_flip, global_fault_model, global_logging
+        global ready_to_inject
+
+        # if not ready_to_inject:
+        #     return
+
+        # This if avoid the creation of another event connection
+        # for some reason gdb cannot breakpoint addresses before
+        # a normal breakpoint is hit
+        global_logging.debug("Trying Fault Injection")
+        inferior = gdb.selected_inferior()
+
+        threadsSymbols = []
+
+        for th in inferior.threads():
+            print(dir(th))
+            try:
+                th.switch()
+                thSymbols = getAllValidSymbols()
+                if len(thSymbols) > 0:
+                    threadsSymbols.append([th, thSymbols])
+            except:
+                continue
+
+    def stop(self):
+        return True
+
 """
 function called when the execution is stopped by a signal
 """
