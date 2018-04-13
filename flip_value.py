@@ -65,13 +65,11 @@ def fault_injection_breakpoint(event):
     # a normal breakpoint is hit
     global_logging.debug("Trying Fault Injection")
     inferior = gdb.selected_inferior()
-    for i in dir(inferior):
-        try:
-            print inferior[i]
-        except:
-            pass
+
     threadsSymbols = []
+
     for th in inferior.threads():
+        print(vars(th))
         try:
             th.switch()
             thSymbols = getAllValidSymbols()
