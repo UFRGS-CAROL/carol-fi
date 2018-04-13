@@ -68,6 +68,7 @@ def fault_injection_breakpoint(event):
     threadsSymbols = []
     for th in inferior.threads():
         try:
+            print(th)
             th.switch()
             thSymbols = getAllValidSymbols()
             if len(thSymbols) > 0:
