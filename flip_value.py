@@ -316,8 +316,8 @@ def main():
     # Continue execution until the next breakpoint
     gdb.execute("c")
     # breakpoint_kernel_address.delete()
-    breakpoint_kernel_line.delete()
-    gdb.execute("c")
+    # breakpoint_kernel_line.delete()
+    # gdb.execute("c")
 
     # del breakpoint_kernel_address
     # del breakpoint_kernel_line
