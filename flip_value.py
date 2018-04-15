@@ -40,9 +40,9 @@ def chooseFrameFlip(frameSymbols):
         symbolPos = random.randint(0, symbolsNum - 1)
         symbol = symbols[symbolPos]
         varGDB = symbol.value(frame)
-        print(symbolPos, (symbol))
-        print()
-        print(symbol.type, symbol.name, symbol.line, symbol.print_name, symbol.is_variable, symbol.value)
+        for symbol_i in symbols:
+            print(symbol_i.type, symbol_i.name, symbol_i.line,
+                  symbol_i.print_name, symbol_i.is_variable, symbol_i.value)
 
         try:
             # bufLog += bitFlipValue(varGDB)
