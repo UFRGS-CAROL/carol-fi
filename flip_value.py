@@ -42,7 +42,6 @@ def chooseFrameFlip(frameSymbols):
         # varGDB = symbol.value(frame)
         for t in frameSymbols:
             for symbol_i in t[1]:
-                print(symbol_i)
                 print(symbol_i.type, symbol_i.name, symbol_i.line,
                        symbol_i.print_name, symbol_i.is_variable, symbol_i.value)
 
@@ -111,18 +110,18 @@ class Breakpoint(gdb.Breakpoint):
         global_logging.debug("Trying Fault Injection")
         inferior = gdb.selected_inferior()
 
-        # threadsSymbols = []
-        #
-        # for th in inferior.threads():
-        #     print(dir(th))
-        #     try:
-        #         th.switch()
-        #         thSymbols = getAllValidSymbols()
-        #         if len(thSymbols) > 0:
-        #             threadsSymbols.append([th, thSymbols])
-        #     except:
-        #         continue
-        chooseFrameFlip(getAllValidSymbols())
+        threadsSymbols = []
+
+        for th in inferior.threads():
+            print(dir(th))
+            try:
+                th.switch()
+                chooseFrameFlip(getAllValidSymbols())
+
+                # if len(thSymbols) > 0:
+                #     threadsSymbols.append([th, thSymbols])
+            except:
+                continue
         return True
 
 
