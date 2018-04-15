@@ -40,7 +40,7 @@ class Breakpoint(gdb.Breakpoint):
             block = block.superblock
 
         pos = random.randint(0, len(symbols))
-        print(bitFlipValue(symbols[pos]))
+        print(bitFlipValue(symbols[pos].value(frame)))
         return True
 
 
