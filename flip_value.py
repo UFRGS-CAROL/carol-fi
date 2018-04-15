@@ -148,6 +148,7 @@ def getFrameSymbols(frame):
         symbols = list()
         block = frame.block()
         while block:
+            print(block)
             for symbol in block:
                 if isBitFlipPossible(symbol, frame):
                     symbols.append(symbol)
