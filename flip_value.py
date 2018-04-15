@@ -19,20 +19,20 @@ class Breakpoint(gdb.Breakpoint):
         global global_valid_block, global_valid_thread, global_valid_register
         global global_bits_to_flip, global_fault_model, global_logging
 
-        try:
-            change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
-                                                                                           str(global_valid_block[1]),
-                                                                                           str(global_valid_block[2]),
-                                                                                           str(global_valid_thread[0]),
-                                                                                           str(global_valid_thread[1]),
-                                                                                           str(global_valid_thread[2]))
-            thread_focus = gdb.execute(change_focus_cmd, to_string=True)
-            # Thread focus return information
-            global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
-        except Exception as err:
-            global_logging.exception("CUDA_FOCUS_exception: " + str(err))
-            global_logging.exception("Fault Injection Went Wrong")
-            return
+        # try:
+        #     change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
+        #                                                                                    str(global_valid_block[1]),
+        #                                                                                    str(global_valid_block[2]),
+        #                                                                                    str(global_valid_thread[0]),
+        #                                                                                    str(global_valid_thread[1]),
+        #                                                                                    str(global_valid_thread[2]))
+        #     thread_focus = gdb.execute(change_focus_cmd, to_string=True)
+        #     # Thread focus return information
+        #     global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
+        # except Exception as err:
+        #     global_logging.exception("CUDA_FOCUS_exception: " + str(err))
+        #     global_logging.exception("Fault Injection Went Wrong")
+        #     return
 
         frame = gdb.selected_frame()
         block = frame.block()
@@ -429,23 +429,23 @@ def main():
     # First parse line
     # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
-    [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
-     flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
-
-    # Set global vars to be used
-    global_valid_block = valid_block.split(",")
-    global_valid_thread = valid_thread.split(",")
-    global_bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
-    global_fault_model = int(fault_model)
-    debug = bool(debug)
+    # [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
+    #  flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
+    #
+    # # Set global vars to be used
+    # global_valid_block = valid_block.split(",")
+    # global_valid_thread = valid_thread.split(",")
+    # global_bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
+    # global_fault_model = int(fault_model)
+    # debug = bool(debug)
     print()
     print(gdb.PYTHONDIR)
 
-    # flip_log_file = "/tmp/flip_log_test.log"
-    # debug = True
-    # gdb_init_strings = "file /home/carol/carol-fi/codes/matrixMul/matrixMul;"
-    # breakpoint_location = "matrixMul.cu:100"
-    # global_fault_model = 0
+    flip_log_file = "/tmp/flip_log_test.log"
+    debug = True
+    gdb_init_strings = "file /home/carol/carol-fi/codes/matrixMul/matrixMul;"
+    breakpoint_location = "matrixMul.cu:100"
+    global_fault_model = 0
 
     # Logging
     global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
