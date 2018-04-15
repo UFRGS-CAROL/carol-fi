@@ -40,7 +40,7 @@ def chooseFrameFlip(frameSymbols):
         symbolPos = random.randint(0, symbolsNum - 1)
         symbol = symbols[symbolPos]
         varGDB = symbol.value(frame)
-        print(symbolPos, symbol, varGDB)
+        print(symbolPos, vars(symbol), vars(varGDB))
 
         try:
             # bufLog += bitFlipValue(varGDB)
@@ -136,6 +136,7 @@ def getAllValidSymbols():
     frame = gdb.selected_frame()
     while frame:
         symbols = getFrameSymbols(frame)
+        print(frame)
         if symbols is not None:
             allSymbols.append([frame, symbols])
         frame = frame.older()
