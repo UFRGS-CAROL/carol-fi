@@ -154,8 +154,8 @@ def getFrameSymbols(frame):
         while block:
             print(block)
             for symbol in block:
-                if isBitFlipPossible(symbol, frame):
-                    symbols.append(symbol)
+                # if isBitFlipPossible(symbol, frame):
+                symbols.append(symbol)
             block = block.superblock
         return symbols
     except:
