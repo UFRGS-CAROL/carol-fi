@@ -43,7 +43,7 @@ def chooseFrameFlip(frameSymbols):
         for t in frameSymbols:
             for symbol_i in t[1]:
                 print(symbol_i)
-                 print(symbol_i.type, symbol_i.name, symbol_i.line,
+                print(symbol_i.type, symbol_i.name, symbol_i.line,
                        symbol_i.print_name, symbol_i.is_variable, symbol_i.value)
 
         try:
