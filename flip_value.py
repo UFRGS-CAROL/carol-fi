@@ -438,6 +438,8 @@ def main():
     # global_bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
     # global_fault_model = int(fault_model)
     # debug = bool(debug)
+    print()
+    print(gdb.PYTHONDIR)
 
     # flip_log_file = "/tmp/flip_log_test.log"
     # debug = True
