@@ -41,7 +41,7 @@ def chooseFrameFlip(frameSymbols):
         symbol = symbols[symbolPos]
         varGDB = symbol.value(frame)
         for t in frameSymbols:
-            for symbol_i in t[framePos][1]:
+            for symbol_i in t[1]:
                 print(symbol_i.type, symbol_i.name, symbol_i.line,
                       symbol_i.print_name, symbol_i.is_variable, symbol_i.value)
 
