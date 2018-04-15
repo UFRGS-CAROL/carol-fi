@@ -28,9 +28,6 @@ class Breakpoint(gdb.Breakpoint):
         names = set()
         symbols = []
         while block:
-            if (block.is_global):
-                print()
-                print('global vars')
             for symbol in block:
                 if (symbol.is_argument or symbol.is_variable):
                     name = symbol.name
@@ -43,7 +40,7 @@ class Breakpoint(gdb.Breakpoint):
             block = block.superblock
 
         pos = random.randint(0, len(symbols))
-        bitFlipValue(symbols[pos])
+        print(bitFlipValue(symbols[pos]))
         return True
 
 
