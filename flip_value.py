@@ -16,6 +16,9 @@ class Breakpoint(gdb.Breakpoint):
         # if not ready_to_inject:
         #     return
 
+
+
+    def stop(self):
         # This if avoid the creation of another event connection
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
@@ -33,8 +36,6 @@ class Breakpoint(gdb.Breakpoint):
                     threadsSymbols.append([th, thSymbols])
             except:
                 continue
-
-    def stop(self):
         return True
 
 """
@@ -292,11 +293,11 @@ def main():
 
     # Place the first breakpoint, it is only to avoid
     # address memory error
-    breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
-
+    # breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
+    breakpoint_kernel_line = Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT, temporary=True)
     # Define which function to call when the execution stops, e.g. when a breakpoint is hit
     # or a interruption signal is received
-    gdb.events.stop.connect(fault_injection_breakpoint)
+    # gdb.events.stop.connect(fault_injection_breakpoint)
     # elif inj_type == 'signal':
     #     # Connect to signal handler event
     #     gdb.events.stop.connect(fault_injector_signal)
