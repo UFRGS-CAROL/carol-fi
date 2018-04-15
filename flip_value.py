@@ -365,7 +365,7 @@ def main():
     flip_log_file = "/tmp/flip_log_test.log"
     debug = True
     gdb_init_strings = "file /home/carol/carol-fi/codes/matrixMul/matrixMul;"
-    breakpoint_location = "matrixMul.cu:51"
+    breakpoint_location = "matrixMul.cu:100"
 
     # Logging
     global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
