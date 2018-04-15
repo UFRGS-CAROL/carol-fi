@@ -112,16 +112,16 @@ class Breakpoint(gdb.Breakpoint):
 
         threadsSymbols = []
         gdb.execute("info variables")
-        for th in inferior.threads():
-            print(dir(th))
-            try:
-                th.switch()
-                chooseFrameFlip(getAllValidSymbols())
-
-                # if len(thSymbols) > 0:
-                #     threadsSymbols.append([th, thSymbols])
-            except:
-                continue
+        # for th in inferior.threads():
+        #     print(dir(th))
+        #     try:
+        #         th.switch()
+        #         chooseFrameFlip(getAllValidSymbols())
+        #
+        #         # if len(thSymbols) > 0:
+        #         #     threadsSymbols.append([th, thSymbols])
+        #     except:
+        #         continue
         return True
 
 
