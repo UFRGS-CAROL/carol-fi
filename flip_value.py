@@ -34,11 +34,9 @@ class Breakpoint(gdb.Breakpoint):
                     name = symbol.name
                     if not name in names:
                         # print('{} = {}'.format(name, symbol.value(frame)))
-                        try:
-                            print(symbol.name, symbol.is_variable, symbol.value, symbol.addr_class,
-                              symbol.line, symbol.value(frame).referenced_value())
-                        except:
-                            pass
+                        print(symbol.name, symbol.is_variable, symbol.value, symbol.addr_class,
+                              symbol.line, symbol.value(frame).type.strip_typedefs().code)
+
                         names.add(name)
             block = block.superblock
 
