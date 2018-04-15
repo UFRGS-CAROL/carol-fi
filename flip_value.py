@@ -43,6 +43,7 @@ def chooseFrameFlip(frameSymbols):
         for t in frameSymbols:
             for symbol_i in t[1]:
                 print(symbol_i)
+                print(symbol_i.type)
                  # print(symbol_i.type, symbol_i.name, symbol_i.line,
                  #       symbol_i.print_name, symbol_i.is_variable, symbol_i.value)
 
@@ -64,9 +65,9 @@ def chooseFrameFlip(frameSymbols):
             # bufLog += "\n"
             # bufLog += "Type sizeof: " + str(varGDB.type.strip_typedefs().sizeof)
             # bufLog += "\n"
-            if varGDB.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
-                bufLog += "Type range: " + str(varGDB.type.strip_typedefs().range())
-                bufLog += "\n"
+            # if varGDB.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
+            #     bufLog += "Type range: " + str(varGDB.type.strip_typedefs().range())
+            #     bufLog += "\n"
             # try:
             #     for field in symbol.type.fields():
             #         bufLog += "Field name: " + str(field.name)
