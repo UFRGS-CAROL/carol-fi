@@ -432,6 +432,7 @@ def main():
     debug = True
     gdb_init_strings = "file /home/carol/carol-fi/codes/matrixMul/matrixMul;"
     breakpoint_location = "matrixMul.cu:100"
+    global_fault_model = 0
 
     # Logging
     global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
