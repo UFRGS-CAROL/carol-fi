@@ -111,7 +111,7 @@ class Breakpoint(gdb.Breakpoint):
         inferior = gdb.selected_inferior()
 
         threadsSymbols = []
-
+        gdb.execute("info variables")
         for th in inferior.threads():
             print(dir(th))
             try:
