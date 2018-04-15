@@ -41,6 +41,7 @@ def chooseFrameFlip(frameSymbols):
         symbol = symbols[symbolPos]
         varGDB = symbol.value(frame)
         print(symbolPos, dir(symbol))
+        print()
         print(dir(varGDB))
 
         try:
