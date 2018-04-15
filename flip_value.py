@@ -25,25 +25,26 @@ def chooseFrameFlip(frameSymbols):
         frame = frameSymbols[framePos][0]
         symbols = frameSymbols[framePos][1]
         symbolsNum = len(symbols)
-        while symbolsNum <= 0:
-            frameSymbols.pop(framePos)
-            framesNum -= 1
-            if (framesNum <= 0):
-                # logging.debug(str("Could not get symbols to flip values, returning False"))
-                return False
-
-            framePos = random.randint(0, framesNum - 1)
-            frame = frameSymbols[framePos][0]
-            symbols = frameSymbols[framePos][1]
-            symbolsNum = len(symbols)
-
-        symbolPos = random.randint(0, symbolsNum - 1)
-        symbol = symbols[symbolPos]
-        varGDB = symbol.value(frame)
+        # while symbolsNum <= 0:
+        #     frameSymbols.pop(framePos)
+        #     framesNum -= 1
+        #     if (framesNum <= 0):
+        #         # logging.debug(str("Could not get symbols to flip values, returning False"))
+        #         return False
+        #
+        #     framePos = random.randint(0, framesNum - 1)
+        #     frame = frameSymbols[framePos][0]
+        #     symbols = frameSymbols[framePos][1]
+        #     symbolsNum = len(symbols)
+        #
+        # symbolPos = random.randint(0, symbolsNum - 1)
+        # symbol = symbols[symbolPos]
+        # varGDB = symbol.value(frame)
         for t in frameSymbols:
-            for symbol_i in t[1]:
-                print(symbol_i.type, symbol_i.name, symbol_i.line,
-                      symbol_i.print_name, symbol_i.is_variable, symbol_i.value)
+            print(t)
+            # for symbol_i in t[1]:
+            #     print(symbol_i.type, symbol_i.name, symbol_i.line,
+            #           symbol_i.print_name, symbol_i.is_variable, symbol_i.value)
 
         try:
             # bufLog += bitFlipValue(varGDB)
