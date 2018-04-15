@@ -6,17 +6,14 @@ import common_parameters
 
 
 class Breakpoint(gdb.Breakpoint):
-
-    def __init__(self):
-        super(Breakpoint, self).__init__()
-        global global_valid_block, global_valid_thread, global_valid_register
-        global global_bits_to_flip, global_fault_model, global_logging
-        global ready_to_inject
+    # def __init__(self):
+    #     super(Breakpoint, self).__init__()
+    #     global global_valid_block, global_valid_thread, global_valid_register
+    #     global global_bits_to_flip, global_fault_model, global_logging
+    #     global ready_to_inject
 
         # if not ready_to_inject:
         #     return
-
-
 
     def stop(self):
         # This if avoid the creation of another event connection
@@ -38,6 +35,7 @@ class Breakpoint(gdb.Breakpoint):
                 continue
         return True
 
+
 """
 function called when the execution is stopped by a signal
 """
@@ -48,14 +46,15 @@ def fault_injector_signal(event):
 
 
 def getAllValidSymbols():
-    allSymbols=list()
+    allSymbols = list()
     frame = gdb.selected_frame()
     while frame:
-        symbols=getFrameSymbols(frame)
+        symbols = getFrameSymbols(frame)
         if symbols is not None:
-            allSymbols.append([frame,symbols])
+            allSymbols.append([frame, symbols])
         frame = frame.older()
     return allSymbols
+
 
 # Returns a list of all symbols of the frame, frame is a GDB Frame object
 def getFrameSymbols(frame):
@@ -64,22 +63,24 @@ def getFrameSymbols(frame):
         block = frame.block()
         while block:
             for symbol in block:
-                if isBitFlipPossible(symbol,frame):
+                if isBitFlipPossible(symbol, frame):
                     symbols.append(symbol)
             block = block.superblock
         return symbols
     except:
         return None
 
+
 # Returns True if we can bitflip some bit of this symbol, i.e. if this is a variable or
 # constant and not functions and another symbols
-def isBitFlipPossible(symbol,frame):
+def isBitFlipPossible(symbol, frame):
     if symbol.is_variable or symbol.is_constant or symbol.is_argument:
         varGDB = symbol.value(frame)
-        address = re.sub("<.*>|\".*\"","",str(varGDB.address))
-        if varGDB.address is not None and not varGDB.is_optimized_out and hex(int(address,16)) > hex(int("0x0",16)):
+        address = re.sub("<.*>|\".*\"", "", str(varGDB.address))
+        if varGDB.address is not None and not varGDB.is_optimized_out and hex(int(address, 16)) > hex(int("0x0", 16)):
             return True
     return False
+
 
 """
 function called when the execution is stopped by a breakpoint
@@ -113,31 +114,31 @@ def fault_injection_breakpoint(event):
             continue
 
 
-    # try:
-    #     change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
-    #                                                                                    str(global_valid_block[1]),
-    #                                                                                    str(global_valid_block[2]),
-    #                                                                                    str(global_valid_thread[0]),
-    #                                                                                    str(global_valid_thread[1]),
-    #                                                                                    str(global_valid_thread[2]))
-    #     thread_focus = gdb.execute(change_focus_cmd, to_string=True)
-    #
-    # except Exception as err:
-    #     global_logging.exception("CUDA_FOCUS_exception: " + str(err))
-    #     global_logging.exception("Fault Injection Went Wrong")
-    #     return
-    #
-    # try:
-    #     # Thread focus return information
-    #     global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
-    #
-    #     # Do the fault injection magic
-    #     generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)
-    #
-    #     global_logging.info("Fault Injection Successful")
-    # except Exception as err:
-    #     global_logging.exception("fault_injection_python_exception: " + str(err))
-    #     global_logging.exception("Fault Injection Went Wrong")
+            # try:
+            #     change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
+            #                                                                                    str(global_valid_block[1]),
+            #                                                                                    str(global_valid_block[2]),
+            #                                                                                    str(global_valid_thread[0]),
+            #                                                                                    str(global_valid_thread[1]),
+            #                                                                                    str(global_valid_thread[2]))
+            #     thread_focus = gdb.execute(change_focus_cmd, to_string=True)
+            #
+            # except Exception as err:
+            #     global_logging.exception("CUDA_FOCUS_exception: " + str(err))
+            #     global_logging.exception("Fault Injection Went Wrong")
+            #     return
+            #
+            # try:
+            #     # Thread focus return information
+            #     global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
+            #
+            #     # Do the fault injection magic
+            #     generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)
+            #
+            #     global_logging.info("Fault Injection Successful")
+            # except Exception as err:
+            #     global_logging.exception("fault_injection_python_exception: " + str(err))
+            #     global_logging.exception("Fault Injection Went Wrong")
 
 
 """
