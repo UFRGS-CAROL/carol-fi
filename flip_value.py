@@ -1,9 +1,94 @@
+import random
+
 import gdb
 import re
 import os
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters
 
+
+"""
+
+"""
+
+
+def chooseFrameFlip(frameSymbols):
+    tag = "chooseFrameFlip"
+    bufLog = ""
+    try:
+        framesNum = len(frameSymbols)
+        if framesNum <= 0:
+            # logging.debug(str("No frames to get symbols, returning False"))
+            return False
+        random.seed()
+        framePos = random.randint(0, framesNum - 1)
+        frame = frameSymbols[framePos][0]
+        symbols = frameSymbols[framePos][1]
+        symbolsNum = len(symbols)
+        while symbolsNum <= 0:
+            frameSymbols.pop(framePos)
+            framesNum -= 1
+            if (framesNum <= 0):
+                # logging.debug(str("Could not get symbols to flip values, returning False"))
+                return False
+
+            framePos = random.randint(0, framesNum - 1)
+            frame = frameSymbols[framePos][0]
+            symbols = frameSymbols[framePos][1]
+            symbolsNum = len(symbols)
+
+        symbolPos = random.randint(0, symbolsNum - 1)
+        symbol = symbols[symbolPos]
+        varGDB = symbol.value(frame)
+        print(symbolPos, symbol, varGDB)
+
+        try:
+            # bufLog += bitFlipValue(varGDB)
+            # bufLog += "frame name: " + str(frame.name())
+            # bufLog += "\n"
+            # bufLog += "symbol name: " + str(symbol.name)
+            # bufLog += "\n"
+            # bufLog += "symbol filename: " + str(symbol.symtab.filename)
+            # bufLog += "\n"
+            # bufLog += "symbol line: " + str(symbol.line)
+            # bufLog += "\n"
+            # bufLog += "value: " + str(varGDB)
+            # bufLog += "\n"
+            # bufLog += "value address: " + str(varGDB.address)
+            # bufLog += "\n"
+            # bufLog += "Type: " + str(gdbTypesDict[varGDB.type.strip_typedefs().code])
+            # bufLog += "\n"
+            # bufLog += "Type sizeof: " + str(varGDB.type.strip_typedefs().sizeof)
+            # bufLog += "\n"
+            if varGDB.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
+                bufLog += "Type range: " + str(varGDB.type.strip_typedefs().range())
+                bufLog += "\n"
+            # try:
+            #     for field in symbol.type.fields():
+            #         bufLog += "Field name: " + str(field.name)
+            #         bufLog += "\n"
+            #         bufLog += "Field Type: " + str(gdbTypesDict[field.type.strip_typedefs().code])
+            #         bufLog += "\n"
+            #         bufLog += "Field Type sizeof: " + str(field.type.strip_typedefs().sizeof)
+            #         bufLog += "\n"
+            #         if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
+            #             bufLog += "Field Type range: " + str(field.type.strip_typedefs().range())
+            #             bufLog += "\n"
+            # except:
+            #     pass
+            return (True, bufLog)
+        except gdb.error as err:
+            raise
+            # logging.exception("gdbException: " + str(err))
+        except Exception as err:
+            # logging.exception("pythonException: " + str(err))
+            raise
+        # return (False, bufLog)
+    except Exception as err:
+        # logging.exception("pythonException: " + str(err))
+        raise
+
+    # return (False, bufLog)
 
 class Breakpoint(gdb.Breakpoint):
     # def __init__(self):
@@ -22,17 +107,18 @@ class Breakpoint(gdb.Breakpoint):
         global_logging.debug("Trying Fault Injection")
         inferior = gdb.selected_inferior()
 
-        threadsSymbols = []
-
-        for th in inferior.threads():
-            print(dir(th))
-            try:
-                th.switch()
-                thSymbols = getAllValidSymbols()
-                if len(thSymbols) > 0:
-                    threadsSymbols.append([th, thSymbols])
-            except:
-                continue
+        # threadsSymbols = []
+        #
+        # for th in inferior.threads():
+        #     print(dir(th))
+        #     try:
+        #         th.switch()
+        #         thSymbols = getAllValidSymbols()
+        #         if len(thSymbols) > 0:
+        #             threadsSymbols.append([th, thSymbols])
+        #     except:
+        #         continue
+        chooseFrameFlip(getAllValidSymbols())
         return True
 
 
@@ -315,6 +401,7 @@ def main():
 
     # Continue execution until the next breakpoint
     gdb.execute("c")
+    del breakpoint_kernel_line
     # breakpoint_kernel_address.delete()
     # breakpoint_kernel_line.delete()
     # gdb.execute("c")
