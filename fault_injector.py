@@ -745,7 +745,7 @@ def profiler_caller(conf):
         out, err = run_command([profiler_cmd])
         end = time.time()
         acc_time += end - start
-        print(out, err)
+        # print(out, err)
 
 
     # This run is to get carol-fi-kernel-info.txt
@@ -753,7 +753,7 @@ def profiler_caller(conf):
         "DEFAULT", "kernelBreaks") + "|" + "False"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     out, err = run_command([profiler_cmd])
-    print(out, err)
+    # print(out, err)
     return acc_time / cp.MAX_TIMES_TO_PROFILE, out, err
 
 

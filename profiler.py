@@ -99,7 +99,7 @@ def main():
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
     # if time_profiler == 'False':
-    cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
+    # cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
 
     if cp.DEBUG:
         # Finishing
