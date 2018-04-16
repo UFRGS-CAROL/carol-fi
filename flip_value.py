@@ -131,11 +131,12 @@ Handler attached to exit event
 
 
 def exit_handler(event):
-    global_logging.info(str("event type: exit"))
+    global logging
+    logging.info(str("event type: exit"))
     try:
-        global_logging.info(str("exit code: %d" % event.exit_code))
+        logging.info(str("exit code: %d" % event.exit_code))
     except:
-        global_logging.exception(str("exit code: no exit code available"))
+        logging.exception(str("exit code: no exit code available"))
 
 
 """
@@ -144,7 +145,8 @@ Handler attached to crash event
 
 
 def abnormal_stop(event):
-    global_logging.debug("Abnormal stop, signal:" + str(event.stop_signal))
+    global logging
+    logging.debug("Abnormal stop, signal:" + str(event.stop_signal))
 
 
 """
@@ -153,6 +155,7 @@ Main function
 
 
 def main():
+    global logging
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
 
