@@ -50,6 +50,7 @@ def set_breakpoints(kernel_conf_string):
     # kernel
     global kernel_info_list
     breakpoints_list = kernel_conf_string.split(";")
+    print(kernel_conf_string)
     for kernel_line in breakpoints_list:
         # Just to make sure things like this: kernel.cu:52;<nothing here>
         if len(kernel_line) > 0:
@@ -89,20 +90,20 @@ def main():
     # Profiler has two steps
     # First: getting kernel information
     # Run app for the first time
-    if time_profiler == 'False':
-        set_breakpoints(kernel_conf_string)
-        gdb.events.stop.connect(get_kernel_address_event)
+    # if time_profiler == 'False':
+    set_breakpoints(kernel_conf_string)
+    gdb.events.stop.connect(get_kernel_address_event)
 
     gdb.execute("r")
 
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
-    if time_profiler == 'False':
-        cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
+    # if time_profiler == 'False':
+    cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
 
-        if cp.DEBUG:
-            # Finishing
-            print ("If you are seeing it, profiler has been finished \n \n")
+    if cp.DEBUG:
+        # Finishing
+        print ("If you are seeing it, profiler has been finished \n \n")
 
 
 main()
