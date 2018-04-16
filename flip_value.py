@@ -7,7 +7,6 @@ import common_parameters
 
 
 class Breakpoint(gdb.Breakpoint):
-
     def __init__(self, block, thread, register, bits_to_flip, fault_model, logging, *args, **kwargs):
         super(Breakpoint, self).__init__(*args, **kwargs)
         self.__block = block
@@ -40,7 +39,7 @@ class Breakpoint(gdb.Breakpoint):
 
         try:
             # Do the fault injection magic
-            self.__generic_injector(self.__register, self.__bits_to_flip, self.__fault_model)
+            self.__generic_injector()
 
             self.__logging.info("Fault Injection Successful")
         except Exception as err:
@@ -54,13 +53,9 @@ class Breakpoint(gdb.Breakpoint):
     Flip a bit or multiple bits based on a fault model
     """
 
-    def __generic_injector(self, valid_register, bits_to_flip, fault_model):
+    def __generic_injector(self):
         # get register content
-        # print("STEP PASSOU")
-        # print(cf.execute_command(gdb, "info frame"))
-        reg_cmd = cf.execute_command(gdb, "p/t $" + str(valid_register))
-        # print("REG BEFORE", reg_cmd)
-
+        reg_cmd = cf.execute_command(gdb, "p/t $" + str(self.__register))
         m = re.match('\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
 
         if m:
@@ -72,32 +67,32 @@ class Breakpoint(gdb.Breakpoint):
             reg_content_new = ''
 
             # Single bit flip
-            if fault_model == 0:
+            if self.__fault_model == 0:
                 # single bit flip
-                reg_content_new = flip_a_bit(bits_to_flip[0], reg_content_old)
+                reg_content_new = flip_a_bit(self.__bits_to_flip[0], reg_content_old)
 
             # Double bit flip
-            elif fault_model == 1:
+            elif self.__fault_model == 1:
                 # multiple bit flip
-                for bit_to_flip in bits_to_flip:
+                for bit_to_flip in self.__bits_to_flip:
                     reg_content_new = flip_a_bit(bit_to_flip, reg_content_old)
 
             # Random value
-            elif fault_model == 2:
+            elif self.__fault_model == 2:
                 # random value is stored at bits_to_flip[0]
-                reg_content_new = str(bits_to_flip[0])
+                reg_content_new = str(self.__bits_to_flip[0])
 
             # Zero values
-            elif fault_model == 3:
+            elif self.__fault_model == 3:
                 reg_content_new = '0'
 
             # Least significant bits, not implemented
-            elif fault_model == 4:
+            elif self.__fault_model == 4:
                 raise NotImplementedError
 
             reg_content_fliped = str(int(reg_content_new, 2))
             # send the new value to gdb
-            reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(valid_register) + " = " + reg_content_fliped)
+            reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(self.__register) + " = " + reg_content_fliped)
 
             self.__logging.info("reg_new_value: " + str(reg_content_new))
 
@@ -111,7 +106,6 @@ class Breakpoint(gdb.Breakpoint):
             return reg_content_old != reg_content_new
         else:
             raise NotImplementedError
-
 
 
 """
@@ -135,18 +129,8 @@ def exit_handler(event):
     logging.info(str("event type: exit"))
     try:
         logging.info(str("exit code: %d" % event.exit_code))
-    except:
-        logging.exception(str("exit code: no exit code available"))
-
-
-"""
-Handler attached to crash event
-"""
-
-
-def abnormal_stop(event):
-    global logging
-    logging.debug("Abnormal stop, signal:" + str(event.stop_signal))
+    except Exception as err:
+        logging.exception(str("exit code: no exit code available ") + str(err))
 
 
 """
@@ -169,13 +153,6 @@ def main():
     [block, thread, register, bits_to_flip, fault_model, injection_site, breakpoint_location,
      flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
 
-    # Set global vars to be used
-    block = block.split(",")
-    thread = thread.split(",")
-    bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
-    fault_model = int(fault_model)
-    debug = bool(debug)
-
     # Logging
     logging = cf.Logging(log_file=flip_log_file, debug=debug)
     logging.info("Starting flip_value script")
@@ -187,44 +164,29 @@ def main():
     except gdb.error as err:
         print("initializing setup: " + str(err))
 
-    # Will only if breakpoint mode is activated
-    # breakpoint_kernel_line = None
-    # if inj_type == 'break':
+    # Set Breakpoint attributes to be used
+    block = block.split(",")
+    thread = thread.split(",")
+    bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
+    fault_model = int(fault_model)
+    # debug = bool(debug)
 
     # Place the first breakpoint, it is only to avoid
     # address memory error
     # breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
     breakpoint_kernel_line = Breakpoint(block, thread, register, bits_to_flip, fault_model, logging,
-                                        spec=breakpoint_location, type=gdb.BP_BREAKPOINT) #, temporary=True)
-    # Define which function to call when the execution stops, e.g. when a breakpoint is hit
-    # or a interruption signal is received
-    # gdb.events.stop.connect(fault_injection_breakpoint)
-    # elif inj_type == 'signal':
-    #     # Connect to signal handler event
-    #     gdb.events.stop.connect(fault_injector_signal)
+                                        spec=breakpoint_location, type=gdb.BP_BREAKPOINT)  # , temporary=True)
 
     # Start app execution
     gdb.execute("r")
 
-    # Put breakpoint only it is breakpoint mode
-    # if inj_type == 'break':
+    # Delete the breakpoint
     breakpoint_kernel_line.delete()
-    # del breakpoint_kernel_line
-    ready_to_inject = True
-    # breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
+    del breakpoint_kernel_line
 
     # Continue execution until the next breakpoint
     gdb.execute("c")
-    del breakpoint_kernel_line
-    # breakpoint_kernel_address.delete()
-    # breakpoint_kernel_line.delete()
 
-    # del breakpoint_kernel_address
-    # del breakpoint_kernel_line
-
-# global_valid_block, global_valid_thread, global_bits_to_flip = [None] * 3
-# global_fault_model, global_valid_register, global_logging = [None] * 3
-# ready_to_inject = False
 
 # Call main execution
 main()
@@ -552,7 +514,6 @@ def zeroBitFlipWordAddress(address, byteSizeof):
         gdb.execute(setCmd)
         addressOffset += 1
     return bufLog
-
 
 
 def showMemoryContent(address, byteSizeof):
