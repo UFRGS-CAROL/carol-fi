@@ -10,6 +10,7 @@ kernel_info_list = []
 # global vars loaded from config file
 conf_location = "<conf-location>"
 
+
 """
 Get kernel Threads and addresses information
 necessary to fault injection
@@ -77,8 +78,6 @@ def main():
     gdb.execute("set pagination off")
     gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
 
-    kernel_start_break = kernel_conf_string.split("-")[0]
-
     try:
         for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)
@@ -90,7 +89,7 @@ def main():
     # First: getting kernel information
     # Run app for the first time
     if time_profiler == 'False':
-        set_breakpoints(kernel_start_break)
+        set_breakpoints(kernel_conf_string)
         gdb.events.stop.connect(get_kernel_address_event)
 
     gdb.execute("r")
