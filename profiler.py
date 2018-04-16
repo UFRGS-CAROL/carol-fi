@@ -29,10 +29,10 @@ def get_kernel_address_event(event):
                 kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
                 kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
 
-                gdb.flush()
+                # gdb.flush()
                 breakpoint.delete()
 
-                kernel_info['breakpoint'] = None
+                del kernel_info['breakpoint']
                 # Need to continue after get the kernel information
                 gdb.execute("c")
 
