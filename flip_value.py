@@ -42,7 +42,7 @@ class Breakpoint(gdb.Breakpoint):
             for symbol in block:
                 if (symbol.is_argument or symbol.is_variable):
                     name = symbol.name
-                    if not name in names:
+                    if not name in names and symbol is not None:
                         # print('{} = {}'.format(name, symbol.value(frame)))
                         # print(symbol.name, symbol.is_variable, symbol.value, symbol.addr_class,
                         #       symbol.line, symbol.value(frame).type.strip_typedefs().code)
