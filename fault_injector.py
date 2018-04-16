@@ -742,9 +742,11 @@ def profiler_caller(conf):
     for i in range(0, cp.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
-        run_command([profiler_cmd])
+        out, err = run_command([profiler_cmd])
         end = time.time()
         acc_time += end - start
+        print(out, err)
+
 
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
