@@ -33,7 +33,7 @@ class Breakpoint(gdb.Breakpoint):
         except Exception as err:
             global_logging.exception("CUDA_FOCUS_exception: " + str(err))
             global_logging.exception("Fault Injection Went Wrong")
-            return True
+            return False
 
 
         try:
@@ -47,6 +47,8 @@ class Breakpoint(gdb.Breakpoint):
         except Exception as err:
             global_logging.exception("fault_injection_python_exception: " + str(err))
             global_logging.exception("Fault Injection Went Wrong")
+            return False
+
 
         return True
         # frame = gdb.selected_frame()
