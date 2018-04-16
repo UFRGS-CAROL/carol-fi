@@ -54,7 +54,8 @@ class RunGDB(multiprocessing.Process):
         # os.environ['PYTHON_SCRIPT'] = self.__flip_script
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
-        stdout, stderr = run_command([start_cmd])
+        # stdout, stderr = run_command([start_cmd])
+        os.system(start_cmd)
         with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
             fout.write(stdout)
         with open(cp.INJ_ERR_PATH, 'w') as ferr:
