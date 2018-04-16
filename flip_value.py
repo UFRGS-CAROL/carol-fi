@@ -429,23 +429,23 @@ def main():
     # First parse line
     # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
-    # [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
-    #  flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
-    #
-    # # Set global vars to be used
-    # global_valid_block = valid_block.split(",")
-    # global_valid_thread = valid_thread.split(",")
-    # global_bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
-    # global_fault_model = int(fault_model)
-    # debug = bool(debug)
+    [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
+     flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
+
+    # Set global vars to be used
+    global_valid_block = valid_block.split(",")
+    global_valid_thread = valid_thread.split(",")
+    global_bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
+    global_fault_model = int(fault_model)
+    debug = bool(debug)
     print()
     print(gdb.PYTHONDIR)
 
-    flip_log_file = "/tmp/flip_log_test.log"
-    debug = True
-    gdb_init_strings = "file /home/carol/carol-fi/codes/matrixMul/matrixMul;"
-    breakpoint_location = "matrixMul.cu:100"
-    global_fault_model = 0
+    # flip_log_file = "/tmp/flip_log_test.log"
+    # debug = True
+    # gdb_init_strings = "file /home/carol/carol-fi/codes/matrixMul/matrixMul;"
+    # breakpoint_location = "matrixMul.cu:100"
+    # global_fault_model = 0
 
     # Logging
     global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
