@@ -31,7 +31,7 @@ def get_kernel_address_event(event):
 
                 # gdb.flush()
                 breakpoint.delete()
-                del kernel_info["breakpoint"]
+                kernel_info["breakpoint"] = None
                 # Need to continue after get the kernel information
                 gdb.execute("c")
 
