@@ -129,8 +129,8 @@ def exit_handler(event):
     logging.info(str("event type: exit"))
     try:
         logging.info(str("exit code: %d" % event.exit_code))
-    except Exception as err:
-        logging.exception(str("exit code: no exit code available ") + str(err))
+    except:
+        logging.exception(str("exit code: no exit code available "))
 
 
 """
