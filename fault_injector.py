@@ -55,14 +55,17 @@ class RunGDB(Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
         stdout, stderr = run_command([start_cmd])
-        with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
-            fout.write(stdout)
-        with open(cp.INJ_ERR_PATH, 'w') as ferr:
-            if stderr:
-                ferr.write(stderr)
-            else:
-                ferr.write("")
-
+        try:
+            with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
+                fout.write(stdout)
+            with open(cp.INJ_ERR_PATH, 'w') as ferr:
+                if stderr:
+                    ferr.write(stderr)
+                else:
+                    ferr.write("")
+        except Exception as err:
+            with open(cp.INJ_ERR_PATH, 'w') as ferr:
+                ferr.write(str(stderr))
 
 # """
 # Signal the app to stop so GDB can execute the script to flip a value
@@ -428,6 +431,8 @@ def run_gdb_fault_injection(**kwargs):
     logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
     logging.info("Starting GDB script")
 
+    if cp.DEBUG:
+        print("STARTING GDB SCRIPT")
     # Parameters only for break mode
     if inj_mode == 'break':
         valid_block = kwargs.get('valid_block')
@@ -458,16 +463,26 @@ def run_gdb_fault_injection(**kwargs):
                    breakpoint_location=breakpoint_location,
                    flip_log_file=flip_log_file, inj_type=inj_mode)
 
+    if cp.DEBUG:
+        print("GEN ENV FINISHED")
+
     # Run pre execution function
     pre_execution(conf=conf, section=section)
 
+    if cp.DEBUG:
+        print("PRE EXECUTION")
     # Create one thread to start gdb script
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
                         flip_script=cp.FLIP_SCRIPT, current_dir=current_path)
+
+    if cp.DEBUG:
+        print("STARTING PROCESS")
     fi_process.daemon = True
     fi_process.start()
 
+    if cp.DEBUG:
+        print("PROCESS SPAWED")
     # Start counting time
     timestamp_start = int(time.time())
 
@@ -478,17 +493,20 @@ def run_gdb_fault_injection(**kwargs):
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
                      end_time=end_signal, p=fi_process)
-
+    if cp.DEBUG:
+        print("FINISH CHECK OK")
     # Make sure process finish before trying to execute again
     fi_process.join()
-
+    if cp.DEBUG:
+        print("PROCESS JOIN")
     # Run pos execution function
     pos_execution(conf=conf, section=section)
     sdc_check_script = current_path + '/' + conf.get('DEFAULT', 'goldenCheckScript')
 
     # Check output files for SDCs
     is_sdc, is_app_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
-
+    if cp.DEBUG:
+        print("CHECK SDCs OK")
     # remove thrash
     del fi_process
     # Also signal ones
@@ -514,6 +532,8 @@ def run_gdb_fault_injection(**kwargs):
         section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
         flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
+    if cp.DEBUG:
+        print("SAVE OUTPUT AND RETURN")
     return reg_old_value, reg_new_value, fault_successful, is_hang or is_app_crash, is_sdc
 
 
