@@ -76,7 +76,7 @@ def main():
 
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
-    gdb.execute("set pagination off")
+    # gdb.execute("set pagination off")
     # gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
     # print(gdb_init_strings)
     gdb_init_strings = "file /home/carol/carol-fi/codes/matrixMul/matrixMul;"
