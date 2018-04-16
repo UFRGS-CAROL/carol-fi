@@ -14,10 +14,11 @@ class Breakpoint(gdb.Breakpoint):
         # This if avoid the creation of another event connection
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
-        global_logging.debug("Trying Fault Injection")
-
         global global_valid_block, global_valid_thread, global_valid_register
         global global_bits_to_flip, global_fault_model, global_logging
+        global_logging.debug("Trying Fault Injection")
+
+
 
         try:
             change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
