@@ -19,20 +19,20 @@ class Breakpoint(gdb.Breakpoint):
         global global_valid_block, global_valid_thread, global_valid_register
         global global_bits_to_flip, global_fault_model, global_logging
 
-        # try:
-        #     change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
-        #                                                                                    str(global_valid_block[1]),
-        #                                                                                    str(global_valid_block[2]),
-        #                                                                                    str(global_valid_thread[0]),
-        #                                                                                    str(global_valid_thread[1]),
-        #                                                                                    str(global_valid_thread[2]))
-        #     thread_focus = gdb.execute(change_focus_cmd, to_string=True)
-        #     # Thread focus return information
-        #     global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
-        # except Exception as err:
-        #     global_logging.exception("CUDA_FOCUS_exception: " + str(err))
-        #     global_logging.exception("Fault Injection Went Wrong")
-        #     return
+        try:
+            change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(global_valid_block[0]),
+                                                                                           str(global_valid_block[1]),
+                                                                                           str(global_valid_block[2]),
+                                                                                           str(global_valid_thread[0]),
+                                                                                           str(global_valid_thread[1]),
+                                                                                           str(global_valid_thread[2]))
+            thread_focus = gdb.execute(change_focus_cmd, to_string=True)
+            # Thread focus return information
+            global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
+        except Exception as err:
+            global_logging.exception("CUDA_FOCUS_exception: " + str(err))
+            global_logging.exception("Fault Injection Went Wrong")
+            return
 
         frame = gdb.selected_frame()
         block = frame.block()
@@ -465,7 +465,7 @@ def main():
     # Place the first breakpoint, it is only to avoid
     # address memory error
     # breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
-    breakpoint_kernel_line = Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT, temporary=True)
+    breakpoint_kernel_line = Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT) #, temporary=True)
     # Define which function to call when the execution stops, e.g. when a breakpoint is hit
     # or a interruption signal is received
     # gdb.events.stop.connect(fault_injection_breakpoint)
@@ -478,7 +478,7 @@ def main():
 
     # Put breakpoint only it is breakpoint mode
     # if inj_type == 'break':
-    # breakpoint_kernel_line.delete()
+    breakpoint_kernel_line.delete()
     # del breakpoint_kernel_line
     ready_to_inject = True
     # breakpoint_kernel_address = gdb.Breakpoint(spec="*" + injection_site, type=gdb.BP_BREAKPOINT)
@@ -488,7 +488,7 @@ def main():
     del breakpoint_kernel_line
     # breakpoint_kernel_address.delete()
     # breakpoint_kernel_line.delete()
-    # gdb.execute("c")
+    gdb.execute("c")
 
     # del breakpoint_kernel_address
     # del breakpoint_kernel_line
