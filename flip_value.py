@@ -447,6 +447,8 @@ def main():
     [valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
      flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
 
+    print([valid_block, valid_thread, global_valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
+     flip_log_file, debug, gdb_init_strings, inj_type])
     # Set global vars to be used
     global_valid_block = valid_block.split(",")
     global_valid_thread = valid_thread.split(",")
