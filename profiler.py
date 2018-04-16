@@ -95,9 +95,9 @@ def main():
     if time_profiler == 'False':
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
 
-    if cp.DEBUG:
-        # Finishing
-        print ("If you are seeing it, profiler has been finished \n \n")
+    # if cp.DEBUG:
+    #     # Finishing
+    #     print ("If you are seeing it, profiler has been finished \n \n")
 
 
 main()
