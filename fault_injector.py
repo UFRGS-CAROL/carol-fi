@@ -6,13 +6,15 @@ import os
 import time
 import datetime
 import random
-import subprocess
-import multiprocessing
-import threading
+from subprocess import Popen, PIPE
+from multiprocessing import Process
+# import threading
 import re
 import shutil
 import argparse
 import csv
+
+import sys
 
 import common_functions as cf
 import common_parameters as cp
@@ -23,7 +25,7 @@ Run some command and return the output
 
 
 def run_command(command):
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    proc = Popen(command, stdout=PIPE, shell=True)
     (out, err) = proc.communicate()
     return out, err
 
@@ -36,7 +38,7 @@ this thread will be killed
 """
 
 
-class RunGDB(multiprocessing.Process):
+class RunGDB(Process):
     def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir):
         # multiprocessing.Process.__init__(self)
         super(RunGDB, self).__init__()
@@ -54,45 +56,49 @@ class RunGDB(multiprocessing.Process):
         # os.environ['PYTHON_SCRIPT'] = self.__flip_script
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
-        stdout, stderr = run_command([start_cmd])
-        with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
-            fout.write(stdout)
-        with open(cp.INJ_ERR_PATH, 'w') as ferr:
-            if stderr:
-                ferr.write(stderr)
-            else:
-                ferr.write("")
+        # stdout, stderr = run_command([start_cmd])
+        sys.stdout = open(cp.INJ_OUTPUT_PATH, 'w')
+        sys.stderr = open(cp.INJ_ERR_PATH, 'w')
+        os.system(start_cmd)
+
+        # with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
+        #     fout.write(stdout)
+        # with open(cp.INJ_ERR_PATH, 'w') as ferr:
+        #     if stderr:
+        #         ferr.write(stderr)
+        #     else:
+        #         ferr.write("")
 
 
-"""
-Signal the app to stop so GDB can execute the script to flip a value
-"""
-
-
-class SignalApp(threading.Thread):
-    def __init__(self, signal_cmd, max_wait_time, init, end, seq_signals, logging, threads_num):
-        threading.Thread.__init__(self)
-        self.__signal_cmd = signal_cmd
-        self.__max_wait_time = max_wait_time
-        self.__init = init
-        self.__end = end
-        self.__seq_signals = seq_signals
-        self.__logging = logging
-        # It is for each thread wait similar time
-        self.__max_sleep_time = end / threads_num
-
-    def run(self):
-        for i in range(0, self.__seq_signals):
-            time.sleep(self.__max_sleep_time)
-            proc = subprocess.Popen(self.__signal_cmd, stdout=subprocess.PIPE, shell=True)
-            (out, err) = proc.communicate()
-            if out is not None:
-                self.__logging.info("shell stdout: " + str(out))
-            if err is not None:
-                self.__logging.error("shell stderr: " + str(err))
-
-                # # Sleep to avoid lots of signals
-                # time.sleep(0.01)
+# """
+# Signal the app to stop so GDB can execute the script to flip a value
+# """
+#
+#
+# class SignalApp(threading.Thread):
+#     def __init__(self, signal_cmd, max_wait_time, init, end, seq_signals, logging, threads_num):
+#         threading.Thread.__init__(self)
+#         self.__signal_cmd = signal_cmd
+#         self.__max_wait_time = max_wait_time
+#         self.__init = init
+#         self.__end = end
+#         self.__seq_signals = seq_signals
+#         self.__logging = logging
+#         # It is for each thread wait similar time
+#         self.__max_sleep_time = end / threads_num
+#
+#     def run(self):
+#         for i in range(0, self.__seq_signals):
+#             time.sleep(self.__max_sleep_time)
+#             proc = subprocess.Popen(self.__signal_cmd, stdout=subprocess.PIPE, shell=True)
+#             (out, err) = proc.communicate()
+#             if out is not None:
+#                 self.__logging.info("shell stdout: " + str(out))
+#             if err is not None:
+#                 self.__logging.error("shell stderr: " + str(err))
+#
+#                 # # Sleep to avoid lots of signals
+#                 # time.sleep(0.01)
 
 
 """
@@ -212,15 +218,14 @@ def finish(section, conf, logging, timestamp_start, end_time, p):
     else:
         logging.info("Execution did not finish before waitTime")
         is_hang = True
-        p.terminate()
+    p.terminate()
 
     logging.debug("now: " + str(now))
     logging.debug("timestampStart: " + str(timestamp_start))
 
     # Kill all the processes to make sure the machine is clean for another test
     for k in kill_strs.split(";"):
-        proc = subprocess.Popen(k, stdout=subprocess.PIPE, shell=True)
-        (out, err) = proc.communicate()
+        out, err = run_command(k)
         logging.debug("kill cmd: " + k)
         if out is not None:
             logging.debug("kill cmd, shell stdout: " + str(out))
@@ -355,23 +360,26 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
         os.system("sh " + sdc_check_script)
 
         # Test if files are ok
-        with open(cp.DIFF_LOG, 'r') as fi:
-            out_lines = fi.readlines()
-            if len(out_lines) != 0:
-                # Check if nvidia signals on output
-                for signal in cp.SIGNALS:
-                    for line in out_lines:
-                        if signal in line:
-                            is_app_crash = True
-                            break
-                if not is_app_crash:
-                    is_sdc = True
+        try:
+            with open(cp.DIFF_LOG, 'r') as fi:
+                out_lines = fi.readlines()
+                if len(out_lines) != 0:
+                    # Check if nvidia signals on output
+                    for signal in cp.SIGNALS:
+                        for line in out_lines:
+                            if signal in line:
+                                is_app_crash = True
+                                break
+                    if not is_app_crash:
+                        is_sdc = True
 
-        with open(cp.DIFF_ERR_LOG, 'r') as fi_err:
-            err_lines = fi_err.readlines()
-            if len(err_lines) != 0:
-                is_app_crash = True
-
+            with open(cp.DIFF_ERR_LOG, 'r') as fi_err:
+                err_lines = fi_err.readlines()
+                if len(err_lines) != 0:
+                    is_app_crash = True
+        except:
+            is_app_crash = True
+            is_sdc = True
     return is_sdc, is_app_crash
 
 

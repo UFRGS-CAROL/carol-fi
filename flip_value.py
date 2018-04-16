@@ -35,7 +35,6 @@ class Breakpoint(gdb.Breakpoint):
         except Exception as err:
             self.__logging.exception("CUDA_FOCUS_exception: " + str(err))
             self.__logging.exception("Fault Injection Went Wrong")
-            return False
 
         try:
             # Do the fault injection magic
@@ -45,7 +44,6 @@ class Breakpoint(gdb.Breakpoint):
         except Exception as err:
             self.__logging.exception("fault_injection_python_exception: " + str(err))
             self.__logging.exception("Fault Injection Went Wrong")
-            return False
 
         return True
 
@@ -189,6 +187,7 @@ def main():
 
 
 # Call main execution
+logging = None
 main()
 
 
