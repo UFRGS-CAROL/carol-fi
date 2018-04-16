@@ -7,10 +7,6 @@ import common_parameters as cp # All commom parameters
 # This list will contains all kernel info
 kernel_info_list = []
 
-# global vars loaded from config file
-conf_location = "<conf-location>"
-
-
 """
 Get kernel Threads and addresses information
 necessary to fault injection
