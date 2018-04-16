@@ -733,11 +733,10 @@ Function that calls the profiler based on the injection mode
 
 def profiler_caller(conf):
     acc_time = 0
-
+    kernel_start_break = str(conf.get("DEFAULT", "kernelBreaks")).split("-")[0]
     # First MAX_TIMES_TO_PROFILE is necessary to measure the application running time
     os.environ['CAROL_FI_INFO'] = conf.get(
-        "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                      "kernelBreaks") + "|" + "True"
+        "DEFAULT", "gdbInitStrings") + "|" + kernel_start_break + "|" + "True"
 
     for i in range(0, cp.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
@@ -747,8 +746,7 @@ def profiler_caller(conf):
         acc_time += end - start
 
     # This run is to get carol-fi-kernel-info.txt
-    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-        "DEFAULT", "kernelBreaks") + "|" + "False"
+    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + kernel_start_break + "|" + "False"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     out, err = run_command([profiler_cmd])
 
