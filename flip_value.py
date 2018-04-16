@@ -438,8 +438,8 @@ def main():
     global_bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
     global_fault_model = int(fault_model)
     debug = bool(debug)
-    print()
-    print(gdb.PYTHONDIR)
+    # print()
+    # print(gdb.PYTHONDIR)
 
     # flip_log_file = "/tmp/flip_log_test.log"
     # debug = True
@@ -488,7 +488,6 @@ def main():
     del breakpoint_kernel_line
     # breakpoint_kernel_address.delete()
     # breakpoint_kernel_line.delete()
-    gdb.execute("c")
 
     # del breakpoint_kernel_address
     # del breakpoint_kernel_line
