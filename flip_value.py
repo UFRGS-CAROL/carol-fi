@@ -33,7 +33,7 @@ class Breakpoint(gdb.Breakpoint):
         except Exception as err:
             global_logging.exception("CUDA_FOCUS_exception: " + str(err))
             global_logging.exception("Fault Injection Went Wrong")
-            return
+            return False
 
 
         try:
