@@ -14,8 +14,6 @@ import shutil
 import argparse
 import csv
 
-import sys
-
 import common_functions as cf
 import common_parameters as cp
 
@@ -57,10 +55,7 @@ class RunGDB(Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
         # stdout, stderr = run_command([start_cmd])
-        sys.stdout = open(cp.INJ_OUTPUT_PATH, 'w')
-        sys.stderr = open(cp.INJ_ERR_PATH, 'w')
-        os.system(start_cmd)
-
+        os.system(start_cmd + " > " + cp.INJ_OUTPUT_PATH + " 2> " + cp.INJ_ERR_PATH)
         # with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
         #     fout.write(stdout)
         # with open(cp.INJ_ERR_PATH, 'w') as ferr:
