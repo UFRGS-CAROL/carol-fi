@@ -35,26 +35,40 @@ class Breakpoint(gdb.Breakpoint):
             global_logging.exception("Fault Injection Went Wrong")
             return
 
-        frame = gdb.selected_frame()
-        block = frame.block()
-        names = set()
-        symbols = []
-        while block:
-            for symbol in block:
-                if (symbol.is_argument or symbol.is_variable):
-                    name = symbol.name
-                    if not name in names and symbol is not None:
-                        # print('{} = {}'.format(name, symbol.value(frame)))
-                        # print(symbol.name, symbol.is_variable, symbol.value, symbol.addr_class,
-                        #       symbol.line, symbol.value(frame).type.strip_typedefs().code)
-                        symbols.append(symbol)
-                        names.add(name)
-            block = block.superblock
 
-        pos = random.randint(0, len(symbols))
-        print(symbols[pos].value(frame))
-        print(bitFlipValue(symbols[pos].value(frame)))
-        return True
+        try:
+            # Thread focus return information
+            global_logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
+
+            # Do the fault injection magic
+            generic_injector(global_valid_register, global_bits_to_flip, global_fault_model)
+
+            global_logging.info("Fault Injection Successful")
+        except Exception as err:
+            global_logging.exception("fault_injection_python_exception: " + str(err))
+            global_logging.exception("Fault Injection Went Wrong")
+
+
+        # frame = gdb.selected_frame()
+        # block = frame.block()
+        # names = set()
+        # symbols = []
+        # while block:
+        #     for symbol in block:
+        #         if (symbol.is_argument or symbol.is_variable):
+        #             name = symbol.name
+        #             if not name in names and symbol is not None:
+        #                 # print('{} = {}'.format(name, symbol.value(frame)))
+        #                 # print(symbol.name, symbol.is_variable, symbol.value, symbol.addr_class,
+        #                 #       symbol.line, symbol.value(frame).type.strip_typedefs().code)
+        #                 symbols.append(symbol)
+        #                 names.add(name)
+        #     block = block.superblock
+        #
+        # pos = random.randint(0, len(symbols))
+        # print(symbols[pos].value(frame))
+        # print(bitFlipValue(symbols[pos].value(frame)))
+        # return True
 
 
 def genericBitFlip(value):
