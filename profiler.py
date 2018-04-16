@@ -79,7 +79,7 @@ def main():
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
     gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
-
+    print(gdb_init_strings)
     try:
         for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)

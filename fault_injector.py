@@ -751,7 +751,7 @@ def profiler_caller(conf):
         "DEFAULT", "kernelBreaks") + "|" + "False"
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     out, err = run_command([profiler_cmd])
-
+    print(out, err)
     return acc_time / cp.MAX_TIMES_TO_PROFILE, out, err
 
 
