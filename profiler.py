@@ -19,7 +19,7 @@ necessary to fault injection
 
 def get_kernel_address_event(event):
     global kernel_info_list
-
+    stop = False
     # Search all kernels info, and all breakpoints
     for kernel_info in kernel_info_list:
         for breakpoint in event.breakpoints:
@@ -31,10 +31,14 @@ def get_kernel_address_event(event):
 
                 # gdb.flush()
                 breakpoint.delete()
+                stop = True
+                break
 
-                #del kernel_info['breakpoint']
-                # Need to continue after get the kernel information
-                gdb.execute("c")
+        if stop:
+            break
+    # del kernel_info['breakpoint']
+    # Need to continue after get the kernel information
+    gdb.execute("c")
 
 
 """
