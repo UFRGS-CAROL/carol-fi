@@ -271,12 +271,24 @@ def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, out
     if not os.path.isdir(cp_dir):
         os.makedirs(cp_dir)
 
-    shutil.move(flip_log_file, cp_dir)
+    try:
+        shutil.move(flip_log_file, cp_dir)
+    except:
+        pass
     # if os.path.isfile(output_file) and (not masked) and fi_succ:
-    shutil.move(cp.INJ_OUTPUT_PATH, cp_dir)
-    shutil.move(cp.INJ_ERR_PATH, cp_dir)
-    shutil.move(cp.DIFF_LOG, cp_dir)
+    try:
+        shutil.move(cp.INJ_OUTPUT_PATH, cp_dir)
+    except:
+        pass
 
+    try:
+        shutil.move(cp.INJ_ERR_PATH, cp_dir)
+    except:
+        pass
+    try:
+        shutil.move(cp.DIFF_LOG, cp_dir)
+    except:
+        pass
 
 """
 Pre execution commands
