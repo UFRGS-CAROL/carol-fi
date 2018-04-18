@@ -26,10 +26,10 @@ GEN_EXEC=lava_generate
 MATRIX_NAMES=output_gold_* input_distances_* input_charges_*
 
 ifeq ($(dbg), 1)
-NVCC_FLAGS+= $(ARCH) -g -G  -I$(NVIDIA_INC) -L$(NVIDIA_LIB)
+NVCC_FLAGS+= $(ARCH) -g -G
 endif
 
-NVCC_FLAGS+= -ccbin=g++-4.9
+NVCC_FLAGS+= -I$(NVIDIA_INC) -L$(NVIDIA_LIB)
 
 ALL: lava
 
