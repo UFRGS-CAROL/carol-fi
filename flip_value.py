@@ -7,8 +7,8 @@ import common_parameters
 
 
 class Breakpoint(gdb.Breakpoint):
-    def __init__(self, block=None, thread=None, register=None, bits_to_flip=None, fault_model=None, logging=None,
-                 kludge=False, *args, **kwargs):
+    def __init__(self, block, thread, register, bits_to_flip, fault_model, logging,
+                 kludge, *args, **kwargs):
         super(Breakpoint, self).__init__(*args, **kwargs)
 
         # If kernel is not accessible it must return
@@ -171,7 +171,7 @@ def main():
             logging.info("initializing setup: " + str(init_str))
 
     except gdb.error as err:
-        print("initializing setup: " + str(err))
+        print("ERROR on initializing setup: " + str(err))
 
     # Set Breakpoint attributes to be used
     block = block.split(",")
@@ -189,7 +189,7 @@ def main():
 
     kludge_breakpoint = None
     if kludge != 'None':
-        kludge_breakpoint = Breakpoint(kludge, spec=kludge, type=gdb.BP_BREAKPOINT)
+        kludge_breakpoint = Breakpoint(None, None, None, None, None, None, kludge, spec=kludge, type=gdb.BP_BREAKPOINT)
 
     # Start app execution
     gdb.execute("r")
