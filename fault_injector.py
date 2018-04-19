@@ -48,13 +48,16 @@ class RunGDB(Process):
     def run(self):
         if cp.DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
-        # os.environ['CUDA_DEVICE_WAITS_ON_EXCEPTION'] = '1'
-        # os.environ['GDB_EXE'] = self.__gdb_exe_name
-        # os.environ['GDB_CAROLFI_FLAGS'] = '-n -batch -x'
-        # os.environ['PYTHON_SCRIPT'] = self.__flip_script
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
-        stdout, stderr = run_command([start_cmd])
+        try:
+            stdout, stderr = run_command([start_cmd])
+        except Exception as err:
+            with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
+                fout.write(stdout)
+            with open(cp.INJ_ERR_PATH, 'w') as ferr:
+                ferr.write(str(stderr))
+
         try:
             with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
                 fout.write(stdout)
@@ -207,7 +210,8 @@ def finish(section, conf, logging, timestamp_start, end_time, p):
         p_is_alive = p.is_alive()
         if not p_is_alive:
             logging.debug("Process not running")
-            # print("Pid existence", p_is_alive, "now - timestamp", now - timestamp_start)
+            if cp.DEBUG:
+                print("PROCESS NOT RUNNING")
 
     # check execution finished before or after waitTime
     if (now - timestamp_start) < max_wait_time:
