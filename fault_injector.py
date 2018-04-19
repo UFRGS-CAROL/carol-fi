@@ -423,6 +423,8 @@ def run_gdb_fault_injection(**kwargs):
     # init_signal = 0.0
     end_signal = float(kwargs.get('max_time'))
 
+    kludge = kwargs.get('kludge')
+
     # SDC check parameters
     current_path = kwargs.get('current_path')
 
@@ -714,7 +716,7 @@ by creating a breakpoint and steeping into it
 
 
 def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file,
-                                     max_time, current_path):
+                                     max_time, current_path, kludge):
     for num_rounds in range(iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
@@ -745,7 +747,8 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                                                                                       breakpoint_location=breakpoint_location,
                                                                                       max_time=max_time,
                                                                                       inj_mode=inj_type,
-                                                                                      current_path=current_path)
+                                                                                      current_path=current_path,
+                                                                                      kludge=kludge)
                 # Write a row to summary file
                 row = [unique_id, num_rounds, fault_model]
                 row.extend(valid_thread)
@@ -765,13 +768,13 @@ Function that calls the profiler based on the injection mode
 """
 
 
-def profiler_caller(conf):
+def profiler_caller(conf, kludge):
     acc_time = 0
 
     # First MAX_TIMES_TO_PROFILE is necessary to measure the application running time
     os.environ['CAROL_FI_INFO'] = conf.get(
         "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                      "kernelBreaks") + "|" + "True"
+                                                      "kernelBreaks") + "|" + "True" + "|" + str(kludge)
 
     for i in range(0, cp.MAX_TIMES_TO_PROFILE + 1):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
@@ -783,7 +786,7 @@ def profiler_caller(conf):
 
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-        "DEFAULT", "kernelBreaks") + "|" + "False"
+        "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + str(kludge)
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     out, err = run_command([profiler_cmd])
     return acc_time / cp.MAX_TIMES_TO_PROFILE, out, err
@@ -816,7 +819,13 @@ def main():
     current_path = os.path.dirname(os.path.realpath(__file__))
     os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path
 
-    ########################################################################
+    # kludge
+    try:
+        kludge = conf.get("DEFAULT", "kludge")
+    except:
+        kludge = None
+
+        ########################################################################
     # Profiler step
     # Max time will be obtained by running
     # it will also get app output for golden copy
@@ -862,7 +871,7 @@ def main():
         kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
         fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                          kernel_info_list=kernel_info_list, summary_file=summary_file,
-                                         max_time=max_time_app, current_path=current_path)
+                                         max_time=max_time_app, current_path=current_path, kludge=kludge)
     # elif 'signal' in inj_type:
     #     # The hard mode
     #     fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,

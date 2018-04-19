@@ -14,7 +14,9 @@ necessary to fault injection
 
 
 def get_kernel_address_event(event):
-    global kernel_info_list
+    global kernel_info_list, global_check_kludge
+    if global_check_kludge:
+        return
 
     # Search all kernels info, and all breakpoints
     for kernel_info in kernel_info_list:
@@ -67,12 +69,12 @@ Main function
 
 
 def main():
-    global kernel_info_list
+    global kernel_info_list, global_check_kludge
 
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     # gdb.execute("set pagination off")
-    gdb_init_strings, kernel_conf_string, time_profiler = str(os.environ["CAROL_FI_INFO"]).split("|")
+    gdb_init_strings, kernel_conf_string, time_profiler, kludge = str(os.environ["CAROL_FI_INFO"]).split("|")
     # print(gdb_init_strings)
 
     try:
@@ -83,16 +85,28 @@ def main():
     except gdb.error as err:
         print ("initializing setup: " + str(err))
 
+
     # Profiler has two steps
     # First: getting kernel information
     # Run app for the first time
     if time_profiler == 'False':
         if cp.DEBUG:
             print("KERNEL INFO PROFILER")
+
+        if kludge != 'None':
+            kludge_breakpoint = gdb.Breakpoint(spec=kludge, type=gdb.BP_BREAKPOINT)
+            global_check_kludge = True
+
         set_breakpoints(kernel_conf_string)
         gdb.events.stop.connect(get_kernel_address_event)
 
     gdb.execute("r")
+
+    if kludge != 'None':
+        kludge_breakpoint.delete()
+        del kludge_breakpoint
+        global_check_kludge = False
+        gdb.execute("c")
 
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
@@ -103,5 +117,8 @@ def main():
     #     # Finishing
     #     print ("If you are seeing it, profiler has been finished \n \n")
 
+
+# Global kludge var
+global_check_kludge = None
 
 main()
