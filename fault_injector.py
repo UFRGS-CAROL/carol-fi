@@ -832,7 +832,7 @@ def main():
     # that is,
     print("###################################################\n1 - Profiling application")
     inj_type = conf.get("DEFAULT", "injType")
-    max_time_app, gold_out_app, gold_err_app = profiler_caller(conf)
+    max_time_app, gold_out_app, gold_err_app = profiler_caller(conf, kludge)
 
     # save gold file
     with open(cp.GOLD_OUTPUT_PATH, "w") as gold_file:

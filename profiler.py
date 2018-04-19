@@ -89,6 +89,7 @@ def main():
     # Profiler has two steps
     # First: getting kernel information
     # Run app for the first time
+    kludge_breakpoint = None
     if time_profiler == 'False':
         if cp.DEBUG:
             print("KERNEL INFO PROFILER")
