@@ -34,7 +34,7 @@ NVCC_FLAGS+= $(ARCH) -I$(NVIDIA_INC) -L$(NVIDIA_LIB)
 ALL: lava
 
 lava: lava.cu
-	$(NVCC) $(NVCC_FLAGS) -DLOGS lava.cu -I$(LOGHELPER_INC) -L$(LOGHELPER_LIB) -lLogHelper -Xcompiler " -fopenmp" -o lava
+	$(NVCC) $(NVCC_FLAGS) -DLOGS lava.cu -I$(LOGHELPER_INC) -L$(LOGHELPER_LIB) -lLogHelper -o lava
 
 clean:
 	rm -f lava_generate lava $(MATRIX_NAMES)
