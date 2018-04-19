@@ -103,7 +103,7 @@ def main():
 
     gdb.execute("r")
 
-    if kludge != 'None':
+    if kludge_breakpoint:
         kludge_breakpoint.delete()
         del kludge_breakpoint
         global_check_kludge = False
