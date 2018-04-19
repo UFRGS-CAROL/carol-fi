@@ -29,7 +29,7 @@ ifeq ($(dbg), 1)
 NVCC_FLAGS+= $(ARCH) -g -G
 endif
 
-NVCC_FLAGS+= -I$(NVIDIA_INC) -L$(NVIDIA_LIB)
+NVCC_FLAGS+= $(ARCH) -I$(NVIDIA_INC) -L$(NVIDIA_LIB)
 
 ALL: lava
 
