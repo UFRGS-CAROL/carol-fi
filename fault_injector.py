@@ -389,12 +389,12 @@ The default parameters are necessary for break and signal mode differentiations
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type):
+                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type, kludge):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
-    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type
+    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type + "|" + str(kludge)
 
     os.environ['CAROL_FI_INFO'] = env_string
 
@@ -429,7 +429,7 @@ def run_gdb_fault_injection(**kwargs):
     current_path = kwargs.get('current_path')
 
     # Logging file
-    flip_log_file = "/tmp/carolfi-flipvalue-" + unique_id + ".log"
+    flip_log_file = "/tmp/carolfi-flipvalue-{}.log".format(unique_id)
     logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
     logging.info("Starting GDB script")
 
@@ -463,7 +463,8 @@ def run_gdb_fault_injection(**kwargs):
                    fault_model=fault_model,
                    injection_site=injection_address,
                    breakpoint_location=breakpoint_location,
-                   flip_log_file=flip_log_file, inj_type=inj_mode)
+                   flip_log_file=flip_log_file, inj_type=inj_mode,
+                   kludge=kludge)
 
     if cp.DEBUG:
         print("GEN ENV FINISHED")

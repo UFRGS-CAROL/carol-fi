@@ -7,16 +7,25 @@ import common_parameters
 
 
 class Breakpoint(gdb.Breakpoint):
-    def __init__(self, block, thread, register, bits_to_flip, fault_model, logging, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(Breakpoint, self).__init__(*args, **kwargs)
-        self.__block = block
-        self.__thread = thread
-        self.__register = register
-        self.__bits_to_flip = bits_to_flip
-        self.__fault_model = fault_model
-        self.__logging = logging
+
+        # If kernel is not accessible it must return
+        if kwargs.get('kludge') != 'None':
+            self.__kludge = True
+            return
+
+        self.__block = kwargs.get('block')
+        self.__thread = kwargs.get('thread')
+        self.__register = kwargs.get('register')
+        self.__bits_to_flip = kwargs.get('bits_to_flip')
+        self.__fault_model = kwargs.get('fault_model')
+        self.__logging = kwargs.get('logging')
 
     def stop(self):
+        if self.__kludge:
+            return
+
         # This if avoid the creation of another event connection
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
@@ -150,7 +159,7 @@ def main():
     # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
     [block, thread, register, bits_to_flip, fault_model, injection_site, breakpoint_location,
-     flip_log_file, debug, gdb_init_strings, inj_type] = str(os.environ['CAROL_FI_INFO']).split('|')
+     flip_log_file, debug, gdb_init_strings, inj_type, kludge] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Logging
     logging = cf.Logging(log_file=flip_log_file, debug=debug)
@@ -173,11 +182,22 @@ def main():
     # Place the first breakpoint, it is only to avoid
     # address memory error
     # breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
-    breakpoint_kernel_line = Breakpoint(block, thread, register, bits_to_flip, fault_model, logging,
-                                        spec=breakpoint_location, type=gdb.BP_BREAKPOINT)  # , temporary=True)
+    breakpoint_kernel_line = Breakpoint(block=block, thread=thread, register=register, bits_to_flip=bits_to_flip,
+                                        fault_model=fault_model, logging=logging, kludge=kludge,
+                                        spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
+
+    kludge_breakpoint = None
+    if kludge != 'None':
+        kludge_breakpoint = Breakpoint(kludge=kludge, spec=kludge, type=gdb.BP_BREAKPOINT)
 
     # Start app execution
     gdb.execute("r")
+
+    # Man, this is a quick fix
+    if kludge_breakpoint:
+        kludge_breakpoint.delete()
+        del kludge_breakpoint
+        gdb.execute('c')
 
     # Delete the breakpoint
     breakpoint_kernel_line.delete()
