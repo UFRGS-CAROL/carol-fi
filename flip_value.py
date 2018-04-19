@@ -8,7 +8,7 @@ import common_parameters
 
 class Breakpoint(gdb.Breakpoint):
     def __init__(self, **kwargs):
-        super(Breakpoint, self).__init__(*args, **kwargs)
+        super(Breakpoint, self).__init__(**kwargs)
 
         # If kernel is not accessible it must return
         if kwargs.get('kludge') != 'None':
