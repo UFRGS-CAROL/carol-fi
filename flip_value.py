@@ -12,10 +12,7 @@ class Breakpoint(gdb.Breakpoint):
         super(Breakpoint, self).__init__(*args, **kwargs)
 
         # If kernel is not accessible it must return
-        if kludge != 'None':
-            self.__kludge = True
-            return
-
+        self.__kludge = True if kludge != 'None' else False
         self.__block = block
         self.__thread = thread
         self.__register = register
