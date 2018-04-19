@@ -7,7 +7,7 @@ import common_parameters
 
 
 class Breakpoint(gdb.Breakpoint):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         super(Breakpoint, self).__init__(*args, **kwargs)
 
         # If kernel is not accessible it must return
