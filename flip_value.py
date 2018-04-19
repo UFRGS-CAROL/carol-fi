@@ -7,20 +7,20 @@ import common_parameters
 
 
 class Breakpoint(gdb.Breakpoint):
-    def __init__(self, **kwargs):
-        super(Breakpoint, self).__init__(**kwargs)
+    def __init__(self, block, thread, register, bits_to_flip, fault_model, logging, kludge,*args, **kwargs):
+        super(Breakpoint, self).__init__(*args, **kwargs)
 
         # If kernel is not accessible it must return
-        if kwargs.get('kludge') != 'None':
+        if kludge != 'None':
             self.__kludge = True
             return
 
-        self.__block = kwargs.get('block')
-        self.__thread = kwargs.get('thread')
-        self.__register = kwargs.get('register')
-        self.__bits_to_flip = kwargs.get('bits_to_flip')
-        self.__fault_model = kwargs.get('fault_model')
-        self.__logging = kwargs.get('logging')
+        self.__block = block
+        self.__thread = thread
+        self.__register = register
+        self.__bits_to_flip = bits_to_flip
+        self.__fault_model = fault_model
+        self.__logging = logging
 
     def stop(self):
         if self.__kludge:
