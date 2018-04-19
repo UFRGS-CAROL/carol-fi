@@ -22,9 +22,6 @@ def get_kernel_address_event(event):
     for kernel_info in kernel_info_list:
         for breakpoint in event.breakpoints:
             # Get the addresses and thread for this kernel
-            if breakpoint == kernel_info["breakpoint"]:
-                if cp.DEBUG:
-                    print("GETTING INFO FOR {}:{}".format(kernel_info['kernel_name'], kernel_info['kernel_line']))
                 # Thread info
                 kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
                 kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
@@ -91,9 +88,6 @@ def main():
     # Run app for the first time
     kludge_breakpoint = None
     if time_profiler == 'False':
-        if cp.DEBUG:
-            print("KERNEL INFO PROFILER")
-
         if kludge != 'None':
             kludge_breakpoint = gdb.Breakpoint(spec=kludge, type=gdb.BP_BREAKPOINT)
             global_check_kludge = True
@@ -113,11 +107,6 @@ def main():
     # Save the information on file to the output
     if time_profiler == 'False':
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
-
-    # if cp.DEBUG:
-    #     # Finishing
-    #     print ("If you are seeing it, profiler has been finished \n \n")
-
 
 # Global kludge var
 global_check_kludge = None
