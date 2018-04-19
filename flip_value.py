@@ -7,7 +7,8 @@ import common_parameters
 
 
 class Breakpoint(gdb.Breakpoint):
-    def __init__(self, block, thread, register, bits_to_flip, fault_model, logging, kludge,*args, **kwargs):
+    def __init__(self, block=None, thread=None, register=None, bits_to_flip=None, fault_model=None, logging=None,
+                 kludge=False, *args, **kwargs):
         super(Breakpoint, self).__init__(*args, **kwargs)
 
         # If kernel is not accessible it must return
@@ -182,13 +183,13 @@ def main():
     # Place the first breakpoint, it is only to avoid
     # address memory error
     # breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
-    breakpoint_kernel_line = Breakpoint(block=block, thread=thread, register=register, bits_to_flip=bits_to_flip,
-                                        fault_model=fault_model, logging=logging, kludge=kludge,
+    breakpoint_kernel_line = Breakpoint(block, thread, register, bits_to_flip,
+                                        fault_model, logging, kludge,
                                         spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
 
     kludge_breakpoint = None
     if kludge != 'None':
-        kludge_breakpoint = Breakpoint(kludge=kludge, spec=kludge, type=gdb.BP_BREAKPOINT)
+        kludge_breakpoint = Breakpoint(kludge, spec=kludge, type=gdb.BP_BREAKPOINT)
 
     # Start app execution
     gdb.execute("r")
