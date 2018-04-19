@@ -400,6 +400,8 @@ def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, faul
     env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
     env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type + "|" + str(kludge)
 
+    if cp.DEBUG:
+        print("ENV STRING:", env_string)
     os.environ['CAROL_FI_INFO'] = env_string
 
 
@@ -871,12 +873,12 @@ def main():
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
 
     # break mode is default option
-    if 'break' in inj_type:
-        # Load information file generated in profiler step
-        kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
-        fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
-                                         kernel_info_list=kernel_info_list, summary_file=summary_file,
-                                         max_time=max_time_app, current_path=current_path, kludge=kludge)
+    # if 'break' in inj_type:
+    # Load information file generated in profiler step
+    kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
+    fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
+                                     kernel_info_list=kernel_info_list, summary_file=summary_file,
+                                     max_time=max_time_app, current_path=current_path, kludge=kludge)
     # elif 'signal' in inj_type:
     #     # The hard mode
     #     fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
