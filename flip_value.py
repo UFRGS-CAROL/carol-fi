@@ -184,7 +184,7 @@ def main():
     # address memory error
     # breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
     breakpoint_kernel_line = Breakpoint(block, thread, register, bits_to_flip,
-                                        fault_model, logging, kludge,
+                                        fault_model, logging, 'None',
                                         spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
 
     kludge_breakpoint = None
