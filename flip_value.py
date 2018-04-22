@@ -1,4 +1,3 @@
-import random
 import gdb
 import re
 import os
@@ -6,19 +5,18 @@ import common_functions as cf  # All common functions will be at common_function
 import common_parameters
 
 
-class Breakpoint(gdb.Breakpoint):
-    def __init__(self, block, thread, register, bits_to_flip, fault_model, logging,
-                 kludge, *args, **kwargs):
-        super(Breakpoint, self).__init__(*args, **kwargs)
-
+class FaultInjectionBreakpoint(gdb.Breakpoint):
+    def __init__(self, *args, **kwargs):
         # If kernel is not accessible it must return
-        self.__kludge = True if kludge != 'None' else False
-        self.__block = block
-        self.__thread = thread
-        self.__register = register
-        self.__bits_to_flip = bits_to_flip
-        self.__fault_model = fault_model
-        self.__logging = logging
+        self.__kludge = kwargs.pop('kludge') if 'kludge' in kwargs else None
+        self.__block = kwargs.pop('block') if 'block' in kwargs else None
+        self.__thread = kwargs.pop('thread') if 'thread' in kwargs else None
+        self.__register = kwargs.pop('register') if 'register' in kwargs else None
+        self.__bits_to_flip = kwargs.pop('bits_to_flip') if 'bits_to_flip' in kwargs else None
+        self.__fault_model = kwargs.pop('fault_model') if 'fault_model' in kwargs else None
+        self.__logging = kwargs.pop('logging') if 'logging' in kwargs else None
+
+        super(FaultInjectionBreakpoint, self).__init__(*args, **kwargs)
 
     def stop(self):
         if self.__kludge:
@@ -72,8 +70,8 @@ class Breakpoint(gdb.Breakpoint):
             self.__logging.info("reg_old_value: " + reg_content_old)
             reg_content_new = ''
 
-            # Single bit flip
-            if self.__fault_model == 0:
+            # Single bit flip or Least significant bits
+            if self.__fault_model == 0 or self.__fault_model == 4:
                 # single bit flip
                 reg_content_new = flip_a_bit(self.__bits_to_flip[0], reg_content_old)
 
@@ -92,15 +90,11 @@ class Breakpoint(gdb.Breakpoint):
             elif self.__fault_model == 3:
                 reg_content_new = '0'
 
-            # Least significant bits, not implemented
-            elif self.__fault_model == 4:
-                raise NotImplementedError
-
             reg_content_fliped = str(int(reg_content_new, 2))
             # send the new value to gdb
             reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(self.__register) + " = " + reg_content_fliped)
 
-            self.__logging.info("reg_new_value: " + str(reg_content_new))
+            self.__logging.info("reg_new_value: " + str(cf.execute_command(gdb, "p/t $" + str(self.__register))))
 
             # Log command return only something was printed
             if len(reg_cmd_flipped) > 0:
@@ -131,12 +125,12 @@ Handler attached to exit event
 
 
 def exit_handler(event):
-    global logging
-    logging.info(str("event type: exit"))
+    global global_logging
+    global_logging.info(str("event type: exit"))
     try:
-        logging.info("exit code: {}".format(str(event.exit_code)))
+        global_logging.info("exit code: {}".format(str(event.exit_code)))
     except:
-        logging.exception(str("exit code: no exit code available "))
+        global_logging.exception(str("exit code: no exit code available "))
 
 
 """
@@ -145,7 +139,7 @@ Main function
 
 
 def main():
-    global logging
+    global global_logging
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
 
@@ -160,12 +154,12 @@ def main():
      flip_log_file, debug, gdb_init_strings, inj_type, kludge] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Logging
-    logging = cf.Logging(log_file=flip_log_file, debug=debug)
-    logging.info("Starting flip_value script")
+    global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
+    global_logging.info("Starting flip_value script")
     try:
         for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)
-            logging.info("initializing setup: " + str(init_str))
+            global_logging.info("initializing setup: " + str(init_str))
 
     except gdb.error as err:
         print("ERROR on initializing setup: " + str(err))
@@ -180,25 +174,26 @@ def main():
     # Place the first breakpoint, it is only to avoid
     # address memory error
     # breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
-    breakpoint_kernel_line = Breakpoint(block, thread, register, bits_to_flip,
-                                        fault_model, logging, 'None',
-                                        spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
+    breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
+                                                      bits_to_flip=bits_to_flip, fault_model=fault_model,
+                                                      logging=global_logging, spec=breakpoint_location,
+                                                      type=gdb.BP_BREAKPOINT, temporary=True)
 
     kludge_breakpoint = None
     if kludge != 'None':
-        kludge_breakpoint = Breakpoint(None, None, None, None, None, None, kludge, spec=kludge, type=gdb.BP_BREAKPOINT)
+        kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True)
 
     # Start app execution
     gdb.execute("r")
 
     # Man, this is a quick fix
     if kludge_breakpoint:
-        kludge_breakpoint.delete()
+        # kludge_breakpoint.delete()
         del kludge_breakpoint
         gdb.execute('c')
 
     # Delete the breakpoint
-    breakpoint_kernel_line.delete()
+    # breakpoint_kernel_line.delete()
     del breakpoint_kernel_line
 
     # Continue execution until the next breakpoint
@@ -206,5 +201,5 @@ def main():
 
 
 # Call main execution
-logging = None
+global_logging = None
 main()
