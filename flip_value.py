@@ -20,7 +20,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
     def stop(self):
         if self.__kludge:
-            return
+            return True
 
         # This if avoid the creation of another event connection
         # for some reason gdb cannot breakpoint addresses before
