@@ -47,7 +47,10 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         except:
             self.__kludge = False
 
-        self.__kernel_line = kwargs.pop('kernel_line')
+        try:
+            self.__kernel_line = kwargs.pop('kernel_line')
+        except:
+            self.__kernel_line = ""
 
         super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
