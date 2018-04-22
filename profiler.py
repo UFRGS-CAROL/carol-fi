@@ -1,52 +1,20 @@
 import gdb
 import os
 import common_functions as cf  # All common functions will be at common_functions module
-
-import common_parameters as cp # All commom parameters
+import common_parameters as cp # All common parameters
 
 # This list will contains all kernel info
 kernel_info_list = []
 
 """
-Get kernel Threads and addresses information
-necessary to fault injection
-"""
-
-
-def get_kernel_address_event(event):
-    global kernel_info_list, global_check_kludge
-    if global_check_kludge:
-        return
-
-    # Search all kernels info, and all breakpoints
-    for kernel_info in kernel_info_list:
-        for breakpoint in event.breakpoints:
-            # Get the addresses and thread for this kernel
-                # Thread info
-                kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
-                kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
-
-                # gdb.flush()
-                breakpoint.delete()
-                kernel_info["breakpoint"] = None
-                # Need to continue after get the kernel information
-                gdb.execute("c")
-
-
-"""
-Set temporary breakpoints.
-After they are hit they are deleted
+ProfilerBreakpoint class
+will manager the breakpoint event when gdb stops
 """
 
 
 class ProfilerBreakpoint(gdb.Breakpoint):
-
     def __init__(self, *args, **kwargs):
-        try:
-            self.__kludge = kwargs.pop('kludge')
-        except:
-            self.__kludge = False
-
+        self.__kludge = kwargs.pop('kludge') if 'kludge' in kwargs else False
         self.__kernel_line = kwargs.get('spec')
         super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
@@ -62,6 +30,12 @@ class ProfilerBreakpoint(gdb.Breakpoint):
                 kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
                 kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
         return True
+
+
+"""
+Set temporary breakpoints.
+After they are hit they are deleted
+"""
 
 
 def set_breakpoints(kernel_conf_string):
@@ -91,22 +65,15 @@ Main function
 
 
 def main():
-    global kernel_info_list, global_check_kludge
-
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
-    # gdb.execute("set pagination off")
     gdb_init_strings, kernel_conf_string, time_profiler, kludge = str(os.environ["CAROL_FI_INFO"]).split("|")
-    # print(gdb_init_strings)
 
     try:
-
         for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)
-
     except gdb.error as err:
         print ("initializing setup: " + str(err))
-
 
     # Profiler has two steps
     # First: getting kernel information
@@ -115,17 +82,13 @@ def main():
     if time_profiler == 'False':
         if kludge != 'None':
             kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True, kludge=True)
-            global_check_kludge = True
 
         set_breakpoints(kernel_conf_string)
-        # gdb.events.stop.connect(get_kernel_address_event)
 
     gdb.execute("r")
 
     if kludge_breakpoint:
-        # kludge_breakpoint.delete()
         del kludge_breakpoint
-        global_check_kludge = False
         gdb.execute("c")
 
     gdb.execute("c")
@@ -133,12 +96,9 @@ def main():
     # Save the information on file to the output
     if time_profiler == 'False':
         for kernel_info in kernel_info_list:
-            # kernel_info["breakpoint"].delete()
             del kernel_info["breakpoint"]
             kernel_info["breakpoint"] = None
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
 
-# Global kludge var
-global_check_kludge = None
 
 main()
