@@ -39,6 +39,32 @@ After they are hit they are deleted
 """
 
 
+class ProfilerBreakpoint(gdb.Breakpoint):
+
+    def __init__(self, *args, **kwargs):
+        super(ProfilerBreakpoint, self).__init__(**kwargs)
+
+        try:
+            self.__kludge = kwargs.get('kludge')
+        except:
+            self.__kludge = False
+
+        self.__kernel_line = kwargs.get('kernel_line')
+
+    def get_kernel_line(self):
+        return self.__kernel_line
+
+    def stop(self):
+        if self.__kludge:
+            return True
+
+        for kernel_info in kernel_info_list:
+            if kernel_info["breakpoint"].get_kernel_line() == self.__kernel_line:
+                kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
+                kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
+        return True
+
+
 def set_breakpoints(kernel_conf_string):
     # We are going to set
     # temporary breakpoints
@@ -52,7 +78,8 @@ def set_breakpoints(kernel_conf_string):
             kernel_places = kernel_line.split("-")
             k_l = kernel_places[0]
             kernel_info = {
-                'breakpoint': gdb.Breakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT),
+                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True,
+                                                 kernel_line=kernel_line),
                 'kernel_name': kernel_places[0].split(":")[0],
                 'kernel_line': kernel_places[0].split(":")[1],
                 'kernel_end_line': kernel_places[1].split(":")[1]
@@ -89,11 +116,11 @@ def main():
     kludge_breakpoint = None
     if time_profiler == 'False':
         if kludge != 'None':
-            kludge_breakpoint = gdb.Breakpoint(spec=kludge, type=gdb.BP_BREAKPOINT)
+            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True, kludge=True)
             global_check_kludge = True
 
         set_breakpoints(kernel_conf_string)
-        gdb.events.stop.connect(get_kernel_address_event)
+        # gdb.events.stop.connect(get_kernel_address_event)
 
     gdb.execute("r")
 
@@ -106,6 +133,10 @@ def main():
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
     if time_profiler == 'False':
+        for kernel_info in kernel_info_list:
+            kernel_info["breakpoint"].delete()
+            del kernel_info["breakpoint"]
+            kernel_info["breakpoint"] = None
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
 
 # Global kludge var
