@@ -42,14 +42,14 @@ After they are hit they are deleted
 class ProfilerBreakpoint(gdb.Breakpoint):
 
     def __init__(self, *args, **kwargs):
-        super(ProfilerBreakpoint, self).__init__(**kwargs)
-
         try:
-            self.__kludge = kwargs.get('kludge')
+            self.__kludge = kwargs.pop('kludge')
         except:
             self.__kludge = False
 
-        self.__kernel_line = kwargs.get('kernel_line')
+        self.__kernel_line = kwargs.pop('kernel_line')
+
+        super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
     def get_kernel_line(self):
         return self.__kernel_line
