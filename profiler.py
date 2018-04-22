@@ -47,11 +47,7 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         except:
             self.__kludge = False
 
-        try:
-            self.__kernel_line = kwargs.pop('kernel_line')
-        except:
-            self.__kernel_line = ""
-
+        self.__kernel_line = kwargs.get('spec')
         super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
     def get_kernel_line(self):
@@ -81,8 +77,7 @@ def set_breakpoints(kernel_conf_string):
             kernel_places = kernel_line.split("-")
             k_l = kernel_places[0]
             kernel_info = {
-                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True,
-                                                 kernel_line=kernel_line),
+                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True),
                 'kernel_name': kernel_places[0].split(":")[0],
                 'kernel_line': kernel_places[0].split(":")[1],
                 'kernel_end_line': kernel_places[1].split(":")[1]
@@ -128,7 +123,7 @@ def main():
     gdb.execute("r")
 
     if kludge_breakpoint:
-        kludge_breakpoint.delete()
+        # kludge_breakpoint.delete()
         del kludge_breakpoint
         global_check_kludge = False
         gdb.execute("c")
@@ -137,7 +132,7 @@ def main():
     # Save the information on file to the output
     if time_profiler == 'False':
         for kernel_info in kernel_info_list:
-            kernel_info["breakpoint"].delete()
+            # kernel_info["breakpoint"].delete()
             del kernel_info["breakpoint"]
             kernel_info["breakpoint"] = None
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
