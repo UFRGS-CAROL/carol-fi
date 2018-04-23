@@ -8,7 +8,6 @@ import datetime
 import random
 from subprocess import Popen, PIPE
 from multiprocessing import Process
-# import threading
 import re
 import shutil
 import argparse
@@ -38,7 +37,6 @@ this thread will be killed
 
 class RunGDB(Process):
     def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir):
-        # multiprocessing.Process.__init__(self)
         super(RunGDB, self).__init__()
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
@@ -69,37 +67,6 @@ class RunGDB(Process):
         except Exception as err:
             with open(cp.INJ_ERR_PATH, 'w') as ferr:
                 ferr.write(str(stderr))
-
-# """
-# Signal the app to stop so GDB can execute the script to flip a value
-# """
-#
-#
-# class SignalApp(threading.Thread):
-#     def __init__(self, signal_cmd, max_wait_time, init, end, seq_signals, logging, threads_num):
-#         threading.Thread.__init__(self)
-#         self.__signal_cmd = signal_cmd
-#         self.__max_wait_time = max_wait_time
-#         self.__init = init
-#         self.__end = end
-#         self.__seq_signals = seq_signals
-#         self.__logging = logging
-#         # It is for each thread wait similar time
-#         self.__max_sleep_time = end / threads_num
-#
-#     def run(self):
-#         for i in range(0, self.__seq_signals):
-#             time.sleep(self.__max_sleep_time)
-#             proc = subprocess.Popen(self.__signal_cmd, stdout=subprocess.PIPE, shell=True)
-#             (out, err) = proc.communicate()
-#             if out is not None:
-#                 self.__logging.info("shell stdout: " + str(out))
-#             if err is not None:
-#                 self.__logging.error("shell stderr: " + str(err))
-#
-#                 # # Sleep to avoid lots of signals
-#                 # time.sleep(0.01)
-
 
 """
 Class SummaryFile: this class will write the information
@@ -296,6 +263,7 @@ def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, out
     except:
         pass
 
+
 """
 Pre execution commands
 """
@@ -412,12 +380,7 @@ return old register value, new register value
 
 
 def run_gdb_fault_injection(**kwargs):
-    valid_block, valid_thread, injection_address, breakpoint_location = list(), list(), '', ''
-
-    # Declare all FI threads
-    # thread_signal_list = []
-
-    # This are the mandatory parameters
+    # These are the mandatory parameters
     inj_mode = kwargs.get('inj_mode')
     bits_to_flip = kwargs.get('bits_to_flip')
     fault_model = kwargs.get('fault_model')
@@ -425,39 +388,27 @@ def run_gdb_fault_injection(**kwargs):
     unique_id = kwargs.get('unique_id')
     valid_register = kwargs.get('valid_register')
     conf = kwargs.get('conf')
-    # max_wait_times = int(conf.get("DEFAULT", "maxWaitTimes"))
-    # init_signal = 0.0
-    end_signal = float(kwargs.get('max_time'))
-
+    max_time = float(kwargs.get('max_time'))
     kludge = kwargs.get('kludge')
+
+    # Parameters for thread selection
+    valid_block = kwargs.get('valid_block')
+    valid_thread = kwargs.get('valid_thread')
+    injection_address = kwargs.get('injection_address')
+    breakpoint_location = kwargs.get('breakpoint_location')
 
     # SDC check parameters
     current_path = kwargs.get('current_path')
 
     # Logging file
     flip_log_file = "/tmp/carolfi-flipvalue-{}.log".format(unique_id)
-    logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
-    logging.info("Starting GDB script")
 
+    # Starting FI process
     if cp.DEBUG:
         print("STARTING GDB SCRIPT")
-    # Parameters only for break mode
-    if inj_mode == 'break':
-        valid_block = kwargs.get('valid_block')
-        valid_thread = kwargs.get('valid_thread')
-        injection_address = kwargs.get('injection_address')
-        breakpoint_location = kwargs.get('breakpoint_location')
 
-    # elif inj_mode == 'signal':
-    #     signal_cmd = conf.get("DEFAULT", "signalCmd")
-    #     seq_signals = int(conf.get("DEFAULT", "seqSignals"))
-    #     max_thread_fi = int(conf.get("DEFAULT", "numThreadsFI"))
-    #     max_wait_time = end_signal * max_wait_times
-    #
-    #     for i in range(0, max_thread_fi):
-    #         thread_signal_list.append(SignalApp(signal_cmd=signal_cmd, max_wait_time=max_wait_time,
-    #                                             init=init_signal, end=end_signal, seq_signals=seq_signals,
-    #                                             logging=logging, threads_num=max_thread_fi))
+    logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
+    logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
@@ -473,7 +424,7 @@ def run_gdb_fault_injection(**kwargs):
                    kludge=kludge)
 
     if cp.DEBUG:
-        print("GEN ENV FINISHED")
+        print("ENV GENERATE FINISHED")
 
     # Run pre execution function
     pre_execution(conf=conf, section=section)
@@ -495,19 +446,17 @@ def run_gdb_fault_injection(**kwargs):
     # Start counting time
     timestamp_start = int(time.time())
 
-    # Start signal fault injection threads, if this mode was selected
-    # for t in thread_signal_list:
-    #     t.start()
-
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-                     end_time=end_signal, p=fi_process)
+                     end_time=max_time, p=fi_process)
     if cp.DEBUG:
         print("FINISH CHECK OK")
+
     # Make sure process finish before trying to execute again
     fi_process.join()
     if cp.DEBUG:
         print("PROCESS JOIN")
+
     # Run pos execution function
     pos_execution(conf=conf, section=section)
     sdc_check_script = current_path + '/' + conf.get('DEFAULT', 'goldenCheckScript')
@@ -516,12 +465,9 @@ def run_gdb_fault_injection(**kwargs):
     is_sdc, is_app_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
     if cp.DEBUG:
         print("CHECK SDCs OK")
+
     # remove thrash
     del fi_process
-    # Also signal ones
-    # for t in thread_signal_list:
-    #     t.join()
-    # del thread_signal_list
 
     # Search for set values for register
     # Must be done before save output
@@ -650,7 +596,7 @@ to inject a fault.
 """
 
 
-def gen_injection_location(kernel_info_dict, max_num_regs, injection_site):
+def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault_model):
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
@@ -658,61 +604,48 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site):
     # A injection site is a list of [registers, instruction, address, byte_location]
     registers, _, address, _, instrution_line = get_valid_address(kernel_info_dict["addresses"])
 
-    # Randomly select (a) bit(s) to flip
-    # Max double bit flip
-    bits_to_flip = [0] * 2
-    bits_to_flip[0] = random.randint(0, cp.MAX_SIZE_REGISTER - 1)
+    bits_to_flip = bit_flip_selection(fault_model=fault_model)
 
-    # Selects it it is in the instruction output
-    # or register file
+    # Select if it is in the
+    # instruction output
+    # instruction address
+    # register file
     valid_register = None
     if injection_site == 'INST_OUT':
-        for i in reversed(registers):
-            if 'R' in i:
-                valid_register = i
-                break
-        valid_register = valid_register.replace("[", "").replace("]", "").replace("-", "")
-        # Avoid cases like this: MOV R3, 0x2
-        if valid_register is None:
-            raise NotImplementedError("LINE COULD NOT BE PARSED")
-
+        raise NotImplementedError
+    elif injection_site == 'INST_ADD':
+        raise NotImplementedError
     # Register file
     elif injection_site == 'RF':
         valid_register = 'R' + str(random.randint(0, max_num_regs))
-
-    # Make sure that the same bit is not going to be selected
-    r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, cp.MAX_SIZE_REGISTER)
-    bits_to_flip[1] = random.choice(r)
 
     return valid_thread, valid_block, valid_register, bits_to_flip, address, instrution_line
 
 
 """
-This injector has two injection options
-this function performs fault injection
-by sending a OS signal to the application
+This function will select the bits that will be fliped
+if it is least significant bits it will reduce the starting bit range
 """
 
-#
-# def fault_injection_by_signal(conf, fault_models, inj_type, iterations, summary_file, max_time):
-#     for num_rounds in range(iterations):
-#         # Execute the fault injector for each one of the sections(apps) of the configuration file
-#         for fault_model in fault_models:
-#             unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
-#             r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(unique_id=unique_id,
-#                                                                                   inj_mode='signal',
-#                                                                                   fault_model=fault_model,
-#                                                                                   section="DEFAULT",
-#                                                                                   valid_register="R30", conf=conf,
-#                                                                                   bits_to_flip=[31, 2],
-#                                                                                   max_time=max_time)
-#             # Write a row to summary file
-#             row = [unique_id, num_rounds, fault_model]
-#             row.extend([None, None, None])
-#             row.extend([None, None, None])
-#             row.extend(
-#                 [r_old_val, r_new_val, 0, "", "", "", fault_succ])
-#             summary_file.write_row(row=row)
+
+def bit_flip_selection(fault_model):
+    # Randomly select (a) bit(s) to flip
+    # Max double bit flip
+    max_size_register_fault_model = cp.MAX_SIZE_REGISTER
+    # Least 16 bits
+    if fault_model == 4:
+        max_size_register_fault_model = 16
+
+    # Least 8 bits
+    elif fault_model == 5:
+        max_size_register_fault_model = 8
+
+    bits_to_flip = [0] * 2
+    bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
+    # Make sure that the same bit is not going to be selected
+    r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register_fault_model)
+    bits_to_flip[1] = random.choice(r)
+    return bits_to_flip
 
 
 """
@@ -723,7 +656,13 @@ by creating a breakpoint and steeping into it
 
 
 def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file,
-                                     max_time, current_path, kludge):
+                                     max_time, current_path):
+    # kludge
+    try:
+        kludge = conf.get("DEFAULT", "kludge")
+    except:
+        kludge = None
+
     for num_rounds in range(iterations):
         # Execute the fault injector for each one of the sections(apps) of the configuration file
         for fault_model in fault_models:
@@ -735,7 +674,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                 # try:
                 valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_location(
                     kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
-                    injection_site=conf.get("DEFAULT", "injectionSite"))
+                    injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
 
                 kernel_begin = kernel_info_dict["kernel_line"]
                 kernel_end = kernel_info_dict["kernel_end_line"]
@@ -775,21 +714,26 @@ Function that calls the profiler based on the injection mode
 """
 
 
-def profiler_caller(conf, kludge):
+def profiler_caller(conf):
     acc_time = 0
+
+    # kludge
+    try:
+        kludge = conf.get("DEFAULT", "kludge")
+    except:
+        kludge = None
 
     # First MAX_TIMES_TO_PROFILE is necessary to measure the application running time
     os.environ['CAROL_FI_INFO'] = conf.get(
         "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
                                                       "kernelBreaks") + "|" + "True" + "|" + str(kludge)
 
-    for i in range(0, cp.MAX_TIMES_TO_PROFILE + 1):
+    for i in range(0, cp.MAX_TIMES_TO_PROFILE):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
-        out, err = run_command([profiler_cmd])
+        run_command([profiler_cmd])
         end = time.time()
         acc_time += end - start
-        # print(out, err)
 
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
@@ -826,20 +770,14 @@ def main():
     current_path = os.path.dirname(os.path.realpath(__file__))
     os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path
 
-    # kludge
-    try:
-        kludge = conf.get("DEFAULT", "kludge")
-    except:
-        kludge = None
-
-        ########################################################################
+    ########################################################################
     # Profiler step
     # Max time will be obtained by running
     # it will also get app output for golden copy
     # that is,
     print("###################################################\n1 - Profiling application")
     inj_type = conf.get("DEFAULT", "injType")
-    max_time_app, gold_out_app, gold_err_app = profiler_caller(conf, kludge)
+    max_time_app, gold_out_app, gold_err_app = profiler_caller(conf)
 
     # save gold file
     with open(cp.GOLD_OUTPUT_PATH, "w") as gold_file:
@@ -872,18 +810,11 @@ def main():
     # Creating a summary csv file
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
 
-    # break mode is default option
-    # if 'break' in inj_type:
     # Load information file generated in profiler step
     kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
     fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
                                      kernel_info_list=kernel_info_list, summary_file=summary_file,
-                                     max_time=max_time_app, current_path=current_path, kludge=kludge)
-    # elif 'signal' in inj_type:
-    #     # The hard mode
-    #     fault_injection_by_signal(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
-    #                               summary_file=summary_file, max_time=max_time_app)
-
+                                     max_time=max_time_app, current_path=current_path)
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")
