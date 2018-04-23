@@ -361,12 +361,12 @@ The default parameters are necessary for break and signal mode differentiations
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, inj_type, kludge):
+                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, kludge):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
-    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + inj_type + "|" + str(kludge)
+    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + str(kludge)
 
     if cp.DEBUG:
         print("ENV STRING:", env_string)
@@ -381,7 +381,6 @@ return old register value, new register value
 
 def run_gdb_fault_injection(**kwargs):
     # These are the mandatory parameters
-    inj_mode = kwargs.get('inj_mode')
     bits_to_flip = kwargs.get('bits_to_flip')
     fault_model = kwargs.get('fault_model')
     section = kwargs.get('section')
@@ -420,7 +419,7 @@ def run_gdb_fault_injection(**kwargs):
                    fault_model=fault_model,
                    injection_site=injection_address,
                    breakpoint_location=breakpoint_location,
-                   flip_log_file=flip_log_file, inj_type=inj_mode,
+                   flip_log_file=flip_log_file,
                    kludge=kludge)
 
     if cp.DEBUG:
@@ -655,7 +654,7 @@ by creating a breakpoint and steeping into it
 """
 
 
-def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, kernel_info_list, summary_file,
+def fault_injection_by_breakpointing(conf, fault_models, iterations, kernel_info_list, summary_file,
                                      max_time, current_path):
     # kludge
     try:
@@ -670,7 +669,7 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
             # For each kernel
             for kernel_info_dict in kernel_info_list:
                 # Generate an unique id for this fault injection
-                unique_id = str(num_rounds) + "_" + str(inj_type) + "_" + str(fault_model)
+                unique_id = str(num_rounds) + "_" + str(fault_model)
                 # try:
                 valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_location(
                     kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
@@ -692,7 +691,6 @@ def fault_injection_by_breakpointing(conf, fault_models, inj_type, iterations, k
                                                                                       fault_model=fault_model,
                                                                                       breakpoint_location=breakpoint_location,
                                                                                       max_time=max_time,
-                                                                                      inj_mode=inj_type,
                                                                                       current_path=current_path,
                                                                                       kludge=kludge)
                 # Write a row to summary file
@@ -779,7 +777,6 @@ def main():
     # it will also get app output for golden copy
     # that is,
     print("###################################################\n1 - Profiling application")
-    inj_type = conf.get("DEFAULT", "injType")
     max_time_app, gold_out_app, gold_err_app = profiler_caller(conf)
 
     # save gold file
@@ -815,7 +812,7 @@ def main():
 
     # Load information file generated in profiler step
     kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
-    fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, inj_type=inj_type, iterations=iterations,
+    fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, iterations=iterations,
                                      kernel_info_list=kernel_info_list, summary_file=summary_file,
                                      max_time=max_time_app, current_path=current_path)
     print("###################################################")

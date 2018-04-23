@@ -151,7 +151,7 @@ def main():
     # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
     [block, thread, register, bits_to_flip, fault_model, injection_site, breakpoint_location,
-     flip_log_file, debug, gdb_init_strings, inj_type, kludge] = str(os.environ['CAROL_FI_INFO']).split('|')
+     flip_log_file, debug, gdb_init_strings, kludge] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Logging
     global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
