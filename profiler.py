@@ -91,10 +91,11 @@ def main():
         del kludge_breakpoint
         gdb.execute("c")
 
-    gdb.execute("c")
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
     if time_profiler == 'False':
+        gdb.execute("c")
+
         for kernel_info in kernel_info_list:
             del kernel_info["breakpoint"]
             kernel_info["breakpoint"] = None
