@@ -142,7 +142,7 @@ def main():
     global global_logging
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
-
+    gdb.execute("set pagination off")
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
 
