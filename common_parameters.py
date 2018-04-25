@@ -18,7 +18,7 @@ DIFF_LOG = '/tmp/diff.log'
 DIFF_ERR_LOG = '/tmp/diff_err.log'
 
 # Debug env var
-DEBUG = True
+DEBUG = False
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
