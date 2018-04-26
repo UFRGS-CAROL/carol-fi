@@ -87,10 +87,12 @@ def main():
     kludge_breakpoint = None
     kernel_info_list = None
     if time_profiler == 'False':
-        if kludge != 'None':
-            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True, kludge=True)
-
         kernel_info_list = set_breakpoints(kernel_conf_string)
+
+        if kludge != 'None':
+            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True,
+                                                   kernel_info_list=kernel_info_list, kludge=True)
+
 
     gdb.execute("r")
 
