@@ -62,6 +62,8 @@ class RunGDB(Process):
         self.__current_dir = current_dir
 
     def run(self):
+        os.system("stty tostop")
+
         if cp.DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
