@@ -90,7 +90,8 @@ def main():
     kernel_info_list = None
     if time_profiler == 'False':
         kernel_info_list = set_breakpoints(kernel_conf_string)
-
+        for kernel_info in kernel_info_list:
+            kernel_info.set_kernel_info_list(kernel_info_list=kernel_info_list)
         if kludge != 'None':
             kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True, kludge=True)
 
