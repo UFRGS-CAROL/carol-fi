@@ -22,8 +22,21 @@ Run some command and return the output
 
 
 def run_command(command):
-    proc = Popen(command, stdout=PIPE, shell=True)
-    (out, err) = proc.communicate()
+    # proc = Popen(command, stdout=PIPE, shell=True)
+    # (out, err) = proc.communicate()
+    temp_out = "/tmp/carol_temp_out.txt"
+    temp_err = "/tmp/carol_temp_err.txt"
+    os.system(command + " >{} 2>{}".format(temp_out, temp_err))
+
+    try:
+        with open(temp_out, 'r') as fin:
+            out = fin.read()
+
+        with open(temp_err, 'r') as ferr:
+            err = ferr.read()
+    except Exception as err:
+        out, err = '', str(err)
+
     return out, err
 
 
@@ -49,24 +62,23 @@ class RunGDB(Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n -batch -x ' + self.__flip_script
         try:
-            stdout, stderr = run_command([start_cmd])
-        except Exception as err:
-            with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
-                fout.write(stdout)
-            with open(cp.INJ_ERR_PATH, 'w') as ferr:
-                ferr.write(str(stderr))
-
-        try:
-            with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
-                fout.write(stdout)
-            with open(cp.INJ_ERR_PATH, 'w') as ferr:
-                if stderr:
-                    ferr.write(stderr)
-                else:
-                    ferr.write("")
+            os.system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH)
         except Exception as err:
             with open(cp.INJ_ERR_PATH, 'w') as ferr:
-                ferr.write(str(stderr))
+                ferr.write(str(err))
+            #     with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
+            #         fout.write(stdout)
+        # try:
+        #     with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
+        #         fout.write(stdout)
+        #     with open(cp.INJ_ERR_PATH, 'w') as ferr:
+        #         if stderr:
+        #             ferr.write(stderr)
+        #         else:
+        #             ferr.write("")
+        # except Exception as err:
+        #     with open(cp.INJ_ERR_PATH, 'w') as ferr:
+        #         ferr.write(str(stderr))
 
 """
 Class SummaryFile: this class will write the information
@@ -741,7 +753,7 @@ def profiler_caller(conf):
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + str(kludge)
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    out, err = run_command([profiler_cmd])
+    out, err = run_command(profiler_cmd)
     return acc_time / cp.MAX_TIMES_TO_PROFILE, out, err
 
 
