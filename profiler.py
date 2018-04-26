@@ -1,10 +1,12 @@
 import gdb
 import os
 import common_functions as cf  # All common functions will be at common_functions module
-import common_parameters as cp # All common parameters
+import common_parameters as cp  # All common parameters
 
 # This list will contains all kernel info
 kernel_info_list = []
+
+DEBUG_PROFILER = True
 
 """
 ProfilerBreakpoint class
@@ -102,6 +104,9 @@ def main():
             del kernel_info["breakpoint"]
             kernel_info["breakpoint"] = None
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
+
+    if DEBUG_PROFILER:
+        print("FINISH PRFOILER")
 
 
 main()
