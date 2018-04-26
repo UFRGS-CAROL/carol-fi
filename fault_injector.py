@@ -26,22 +26,23 @@ Run some command and return the output
 def run_command(command):
     # proc = Popen(command, stdout=PIPE, shell=True)
     # (out, err) = proc.communicate()
-    temp_out = "/tmp/carol_temp_out.txt"
-    temp_err = "/tmp/carol_temp_err.txt"
-    os.system(command + " >{} 2>{}".format(temp_out, temp_err))
-    sys.stdout.flush()
-    sys.stderr.flush()
-    sys.stdin.flush()
+    # temp_out = "/tmp/carol_temp_out.txt"
+    # temp_err = "/tmp/carol_temp_err.txt"
+    # os.system(command + " >{} 2>{}".format(temp_out, temp_err))
+    os.system(command)
+    # sys.stdout.flush()
+    # sys.stderr.flush()
+    # sys.stdin.flush()
 
-    try:
-        with open(temp_out, 'r') as fin:
-            out = fin.read()
-
-        with open(temp_err, 'r') as ferr:
-            err = ferr.read()
-    except Exception as err:
-        out, err = '', str(err)
-
+    # try:
+    #     with open(temp_out, 'r') as fin:
+    #         out = fin.read()
+    #
+    #     with open(temp_err, 'r') as ferr:
+    #         err = ferr.read()
+    # except Exception as err:
+    #     out, err = '', str(err)
+    out, err = '', ''
     return out, err
 
 
