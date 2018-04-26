@@ -3,8 +3,6 @@ import os
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters
 
-
-
 DEBUG_PROFILER = True
 
 """
@@ -19,9 +17,12 @@ class ProfilerBreakpoint(gdb.Breakpoint):
             print("IT IS IN __INIT__ METHOD")
         self.__kludge = kwargs.pop('kludge') if 'kludge' in kwargs else False
         self.__kernel_line = kwargs.get('spec')
-        # This list will contains all kernel info
-        self.__kernel_info_list = kwargs.pop('kernel_info_list')
+        self.__kernel_info_list = None
         super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
+
+    def set_kernel_info_list(self, kernel_info_list):
+        # This list will contains all kernel info
+        self.__kernel_info_list = kernel_info_list
 
     def stop(self):
         if DEBUG_PROFILER:
@@ -63,6 +64,7 @@ def set_breakpoints(kernel_conf_string):
             kernel_info_list.append(kernel_info)
     return kernel_info_list
 
+
 """
 Main function
 """
@@ -90,9 +92,7 @@ def main():
         kernel_info_list = set_breakpoints(kernel_conf_string)
 
         if kludge != 'None':
-            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True,
-                                                   kernel_info_list=kernel_info_list, kludge=True)
-
+            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True, kludge=True)
 
     gdb.execute("r")
 
