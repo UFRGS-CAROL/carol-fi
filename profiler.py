@@ -21,6 +21,8 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
     def stop(self):
+        if DEBUG_PROFILER:
+            print("IT IS IN STOP METHOD")
         if self.__kludge:
             return True
 
