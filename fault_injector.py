@@ -587,16 +587,14 @@ def get_valid_thread(threads):
     block = re.match(".*\((\d+),(\d+),(\d+)\).*", splited[0])
     thread = re.match(".*\((\d+),(\d+),(\d+)\).*", splited[1])
 
-    try:
-        block_x = block.group(1)
-        block_y = block.group(2)
-        block_z = block.group(3)
+    block_x = block.group(1)
+    block_y = block.group(2)
+    block_z = block.group(3)
 
-        thread_x = thread.group(1)
-        thread_y = thread.group(2)
-        thread_z = thread.group(3)
-    except:
-        raise ValueError
+    thread_x = thread.group(1)
+    thread_y = thread.group(2)
+    thread_z = thread.group(3)
+
 
     return [block_x, block_y, block_z], [thread_x, thread_y, thread_z]
 
