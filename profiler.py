@@ -20,15 +20,12 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         self.__kernel_line = kwargs.get('spec')
         super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
-    def get_kernel_line(self):
-        return self.__kernel_line
-
     def stop(self):
         if self.__kludge:
             return True
 
         for kernel_info in kernel_info_list:
-            if kernel_info["breakpoint"].get_kernel_line() == self.__kernel_line:
+            if kernel_info["breakpoint"].__kernel_line == self.__kernel_line:
                 kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
                 kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
         return True
@@ -69,7 +66,7 @@ Main function
 def main():
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
-    gdb.execute("set pagination off")
+    #gdb.execute("set pagination off")
 
     gdb_init_strings, kernel_conf_string, time_profiler, kludge = str(os.environ["CAROL_FI_INFO"]).split("|")
 
