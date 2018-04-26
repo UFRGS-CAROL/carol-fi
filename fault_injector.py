@@ -6,12 +6,14 @@ import os
 import time
 import datetime
 import random
-from subprocess import Popen, PIPE
+# from subprocess import Popen, PIPE
 from multiprocessing import Process
 import re
 import shutil
 import argparse
 import csv
+
+import sys
 
 import common_functions as cf
 import common_parameters as cp
@@ -27,6 +29,9 @@ def run_command(command):
     temp_out = "/tmp/carol_temp_out.txt"
     temp_err = "/tmp/carol_temp_err.txt"
     os.system(command + " >{} 2>{}".format(temp_out, temp_err))
+    sys.stdout.flush()
+    sys.stderr.flush()
+    sys.stdin.flush()
 
     try:
         with open(temp_out, 'r') as fin:
@@ -449,7 +454,6 @@ def run_gdb_fault_injection(**kwargs):
 
     if cp.DEBUG:
         print("STARTING PROCESS")
-    fi_process.daemon = True
     fi_process.start()
 
     if cp.DEBUG:

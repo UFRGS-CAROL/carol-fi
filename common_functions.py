@@ -74,40 +74,40 @@ class Logging:
         self.unique_id = unique_id
 
     def info(self, msg):
-        fp = open(self.log_file, "a")
-        d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        fp.write("[INFO -- " + d + "]\n" + msg + "\n")
-        fp.close()
+        with open(self.log_file, "a") as fp:
+            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+            fp.write("[INFO -- " + d + "]\n" + msg + "\n")
+        # fp.close()
 
     def exception(self, msg):
-        fp = open(self.log_file, "a")
-        d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        fp.write("[EXCEPTION -- " + d + "]\n" + msg + "\n")
-        fp.close()
+        with open(self.log_file, "a") as fp:
+            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+            fp.write("[EXCEPTION -- " + d + "]\n" + msg + "\n")
+        # fp.close()
 
     def error(self, msg):
-        fp = open(self.log_file, "a")
-        d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        fp.write("[ERROR -- " + d + "]\n" + msg + "\n")
-        fp.close()
+        with open(self.log_file, "a") as fp:
+            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+            fp.write("[ERROR -- " + d + "]\n" + msg + "\n")
+        # fp.close()
 
     def debug(self, msg):
         if self.debug_var:
-            fp = open(self.log_file, "a")
-            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-            fp.write("[DEBUG -- " + d + "]\n" + msg + "\n")
-            fp.close()
+            with open(self.log_file, "a") as fp:
+                d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+                fp.write("[DEBUG -- " + d + "]\n" + msg + "\n")
+            # fp.close()
 
     def summary(self, msg):
-        fp = open(self.log_file, "a")
-        d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-        fp.write("[SUMMARY -- " + d + "]\nFI-uniqueID=" + str(self.unique_id) + "\n" + msg + "\n")
-        fp.close()
+        with open(self.log_file, "a") as fp:
+            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+            fp.write("[SUMMARY -- " + d + "]\nFI-uniqueID=" + str(self.unique_id) + "\n" + msg + "\n")
+        # fp.close()
 
     def search(self, find):
-        fp = open(self.log_file, "r")
-        lines = fp.readlines()
-        fp.close()
+        with open(self.log_file, "r") as fp:
+            lines = fp.readlines()
+            # fp.close()
         for l in lines:
             if find in l:
                 return l
