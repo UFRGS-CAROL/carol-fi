@@ -327,7 +327,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="configFile", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations", help='How many times to repeat the programs in the configuration file', required=True, type=int)
-    parser.add_argument('-d', '--detect', dest="detectLog", help='Detection Log File. If this file exists after execution, a successful SDC detection will be assumed', required=True)
+    parser.add_argument('-d', '--detect', dest="detectLog", help='Detection Log File. If this file exists after execution, a successful SDC detection will be assumed', required=False, default='')
     #parser.add_argument('-m', '--model', dest="model", help='Fault injection model; all will randomly choose one fault model', required=False, choices=('single', 'double', 'random', 'zeros', 'lsb', 'all'), default='all')
     
     args = parser.parse_args()
