@@ -7,31 +7,31 @@
 
 
 
-void qsort_parallel(unsigned *a,int l,int r){
-	if(r>l){
+void qsort_parallel(unsigned *a,int l,int r) {
+    if(r>l) {
 
-		int pivot=a[r],tmp;
-		int less=l-1,more;
-		for(more=l;more<=r;more++){
-			if(a[more]<=pivot){
-				less++;
-				tmp=a[less];
-				a[less]=a[more];
-				a[more]=tmp;
-			}
-		}
-			#pragma omp task
-			qsort_parallel(a, l,less-1);
-			#pragma omp task
-			qsort_parallel(a, less+1,r);
-			#pragma omp taskwait
-	}
+        int pivot=a[r],tmp;
+        int less=l-1,more;
+        for(more=l; more<=r; more++) {
+            if(a[more]<=pivot) {
+                less++;
+                tmp=a[less];
+                a[less]=a[more];
+                a[more]=tmp;
+            }
+        }
+        #pragma omp task
+        qsort_parallel(a, l,less-1);
+        #pragma omp task
+        qsort_parallel(a, less+1,r);
+        #pragma omp taskwait
+    }
 }
 
 void readFileUnsigned(unsigned *input, char *filename, int size) {
     FILE *finput;
     if (finput = fopen(filename, "rb")) {
-        fread(input, size * sizeof(unsigned), 1 , finput);
+        fread(input, size * sizeof(unsigned), 1, finput);
     } else {
         printf("Error reading input file");
         exit(1);
@@ -59,13 +59,13 @@ int main(int argc, char** argv)
 
     readFileUnsigned(data, inputFile, size);
 
-    #pragma omp parallel	
+    #pragma omp parallel
     #pragma omp single
     qsort_parallel(data, 0,size-1);
 
     FILE *fp;
     if (fp = fopen(outputFile, "wb")) {
-        fwrite(data, size * sizeof(unsigned), 1 , fp);
+        fwrite(data, size * sizeof(unsigned), 1, fp);
     } else {
         printf("Error writing output file");
         exit(1);

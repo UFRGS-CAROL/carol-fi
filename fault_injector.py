@@ -24,6 +24,7 @@ else:
 VERSION = "1.0"
 
 ### Global variables
+detectLogFile = ''
 uniqueID = str(uuid.uuid4())
 gdbFIlogFile = "/tmp/carolfi-"+uniqueID+".log"
 summFIlogFile = "summary-carolfi.log"
@@ -157,6 +158,10 @@ def saveOutput(section, isSDC, isHang):
             fiSucc = True
         fp.close()
 
+    if os.path.isfile(detectLogFile):
+        isDetected = True
+    else:
+        isDetected = False
     
     dt = datetime.datetime.fromtimestamp(time.time())
     ymd = dt.strftime('%Y_%m_%d')
@@ -170,6 +175,9 @@ def saveOutput(section, isSDC, isHang):
     elif isHang:
         cpDir = os.path.join('logs',section,'hangs',dirDT)
         logging.summary(section+" - Hang")
+    elif isDetected:
+        cpDir = os.path.join('logs',section,'sdcs-detected',dirDT)
+        logging.summary(section+" - SDC Detected")
     elif isSDC:
         cpDir = os.path.join('logs',section,'sdcs',dirDT)
         logging.summary(section+" - SDC")
@@ -186,6 +194,8 @@ def saveOutput(section, isSDC, isHang):
 
     shutil.move(flipLogFile, cpDir)
     shutil.move(gdbFIlogFile, cpDir)
+    if os.path.isfile(detectLogFile):
+        shutil.move(detectLogFile, cpDir)
     if os.path.isfile(outputFile) and (not masked) and fiSucc and isSDC and (not isHang):
         shutil.move(outputFile, cpDir)
 
@@ -238,6 +248,9 @@ def runGDBFaultInjection(section):
 
     # Generate python script for GDB
     genFlipScript(section)
+
+    # Make sure there is not detection log left before execution
+    os.system("rm -f "+detectLogFile)
 
     # Run pre execution function
     preExecution(section)
@@ -314,6 +327,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="configFile", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations", help='How many times to repeat the programs in the configuration file', required=True, type=int)
+    parser.add_argument('-d', '--detect', dest="detectLog", help='Detection Log File. If this file exists after execution, a successful SDC detection will be assumed', required=True)
     #parser.add_argument('-m', '--model', dest="model", help='Fault injection model; all will randomly choose one fault model', required=False, choices=('single', 'double', 'random', 'zeros', 'lsb', 'all'), default='all')
     
     args = parser.parse_args()
@@ -329,6 +343,9 @@ def main():
     # Read the configuration file with data for all the apps that will be executed
     conf.read(args.configFile)
     
+    # Set the duplication detection log
+    global detectLogFile
+    detectLogFile = args.detectLog
     
     numRounds = 0
     while numRounds < args.iterations:
