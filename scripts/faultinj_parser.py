@@ -201,14 +201,14 @@ fp.write("\n\n")
 
 flips = Counter(flipList)
 
-fp.write("FaultModels SDCs:")
+fp.write("FaultModels Undetected SDCs:")
 fp.write("\nFaultModel ;#SDCs; percentage")
 for k,v in Counter(faultModelSDC).most_common():
     per = float(v)/float(sdcCount) * 100
     fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
 fp.write("\n\n")
-fp.write("FaultModels SDCs Detected:")
+fp.write("FaultModels Detected SDCs:")
 fp.write("\nFaultModel ;#SDCs Detected; percentage")
 for k,v in Counter(faultModelSDCDetect).most_common():
     per = float(v)/float(sdcCount) * 100
@@ -222,7 +222,7 @@ for k,v in Counter(faultModelCrash).most_common():
     fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
 fp.write("\n\n")
-fp.write("Variables that caused SDCs:")
+fp.write("Variables that caused Undetected SDCs:")
 fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
 for k,v in Counter(varSDCList).most_common():
     pvf = float(v)/float(flips[k]) * 100
