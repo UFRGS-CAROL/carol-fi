@@ -687,11 +687,12 @@ def fault_injection_by_breakpointing(conf, fault_models, iterations, kernel_info
             for kernel_info_dict in kernel_info_list:
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(fault_model)
-                # try:
-                valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_location(
+                try:
+                    valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_location(
                     kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
                     injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
-
+                except:
+                    continue
                 kernel_begin = kernel_info_dict["kernel_line"]
                 kernel_end = kernel_info_dict["kernel_end_line"]
                 rand_line = random.randint(int(kernel_begin), int(kernel_end))
