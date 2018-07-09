@@ -4,11 +4,11 @@ import copy
 import os
 import sys
 
-sys.path.insert(0, '../../include')
+sys.path.insert(0, '../include')
 from common_config import discover_board, execute_and_write_json_to_file
 
 
-BOXES = [16, 20, 25]
+BOXES = [16] #, 20, 25]
 ITERATIONS = 10000
 BENCHMARK_BIN = "dlava"
 DATA_PATH_BASE = "dlava"
@@ -38,7 +38,7 @@ def config(board, debug):
         os.chmod(data_path, 0777)
 
     # change it for lava
-    generate = ["sudo mkdir -p " + bin_path, "cd " + src_lava, "make clean", "make -C ../../include ", "make",
+    generate = [" mkdir -p " + bin_path, "cd " + src_lava, "make clean", "make -C ../include ", "make",
                 "mkdir -p " + data_path,
                 "mv ./" + benchmark_bin + " " + bin_path + "/"]
     execute = []
@@ -49,7 +49,7 @@ def config(board, debug):
     for i in BOXES:
         input_file = data_path + "/"
         gen = [None] * 8
-        gen[0] = ['sudo ', bin_path + "/" + benchmark_bin + " "]
+        gen[0] = ['', bin_path + "/" + benchmark_bin + " "]
         gen[1] = ['-boxes=' + str(i)]
         gen[2] = ['-generate ']
         gen[3] = ['-output_gold=' + input_file + "gold_" + str(i) + ""]

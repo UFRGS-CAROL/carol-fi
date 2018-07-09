@@ -2,7 +2,8 @@ CXX=g++
 NVCC=/usr/local/cuda/bin/nvcc
 LOGS?=1
 USE_OMP?=1
-SAFE_MALLOC?=1
+SAFE_MALLOC?=0
+DEBUG?=1
 
 ARCH=  -gencode arch=compute_35,code=[sm_35,compute_35] # K40
 ARCH+= -gencode arch=compute_53,code=[sm_53,compute_53] # Tegra X1
@@ -12,15 +13,15 @@ ARCH+= -gencode arch=compute_62,code=[sm_62,compute_62] # Tegra X2
 ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70] # Titan V | Tesla V100
 
 
-NVCC_FLAGS= $(ARCH) -O3  -lcublas -std=c++11  -lSafeMemory
+NVCC_FLAGS= $(ARCH) -O3  -lcublas -std=c++11 -Xptxas -v
 INCLUDE= -I/usr/local/cuda/include #/ -I/usr/local/cuda/samples/common/inc/
 LIBRARY= -L/usr/local/cuda/lib64/ -L../../include/safe_memory
 CXXFLAGS= -I/usr/local/cuda/include -L/usr/local/cuda/lib64/ -lcudart  -std=c++11
 
 NVIDIA_INC=/usr/local/cuda/include/,./
 NVIDIA_LIB=/usr/local/cuda/lib64/
-LOGHELPER_INC=../../include/
-LOGHELPER_LIB=../../include/
+LOGHELPER_INC=../include/
+LOGHELPER_LIB=../include/
 
 ifeq ($(LOGS), 1)
 INCLUDE+= -I$(LOGHELPER_INC)
@@ -34,7 +35,12 @@ NVCC_FLAGS+= -DUSE_OMP -Xcompiler " -fopenmp -O3"
 endif
 
 ifeq ($(SAFE_MALLOC), 1)
+NVCC_FLAGS+= -lSafeMemory
 NVCC_FLAGS+= -DSAFE_MALLOC
+endif
+
+ifeq ($(DEBUG), 1)
+NVCC_FLAGS+= -g -G
 endif
 
 RUN_SOURCES=./dlava.cu
@@ -74,4 +80,4 @@ generate: $(RUN_EXEC)
 	$(RUN_EXEC) -boxes=$(DEF_SIZE) -generate -streams=1 -iterations=1 -verbose -input_distances=$(DEF_DISTANCES_INPUT) -input_charges=$(DEF_CHARGES_INPUT) -output_gold=$(DEF_GOLD)
 
 test: $(RUN_EXEC) generate
-	$(RUN_EXEC) -boxes=$(DEF_SIZE) -streams=1 -iterations=10 -verbose -input_distances=$(DEF_DISTANCES_INPUT) -input_charges=$(DEF_CHARGES_INPUT) -output_gold=$(DEF_GOLD)
+	$(RUN_EXEC) -boxes=$(DEF_SIZE) -streams=1 -iterations=10000 -input_distances=$(DEF_DISTANCES_INPUT) -input_charges=$(DEF_CHARGES_INPUT) -output_gold=$(DEF_GOLD)

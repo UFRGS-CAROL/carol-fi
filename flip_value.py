@@ -129,7 +129,9 @@ def exit_handler(event):
     global_logging.info(str("event type: exit"))
     try:
         global_logging.info("exit code: {}".format(str(event.exit_code)))
-    except:
+    except Exception as err:
+        if common_parameters.DEBUG:
+            print("ERROR ON EXIT HANDLER {}".format(str(err)))
         global_logging.exception(str("exit code: no exit code available "))
 
 
@@ -150,7 +152,7 @@ def main():
     # First parse line
     # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
-    [block, thread, register, bits_to_flip, fault_model, injection_site, breakpoint_location,
+    [block, thread, register, bits_to_flip, fault_model, breakpoint_location,
      flip_log_file, debug, gdb_init_strings, kludge] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Logging
@@ -173,7 +175,6 @@ def main():
 
     # Place the first breakpoint, it is only to avoid
     # address memory error
-    # breakpoint_kernel_line = gdb.Breakpoint(spec=breakpoint_location, type=gdb.BP_BREAKPOINT)
     breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
                                                       bits_to_flip=bits_to_flip, fault_model=fault_model,
                                                       logging=global_logging, spec=breakpoint_location,

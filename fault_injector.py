@@ -6,15 +6,11 @@ import os
 import time
 import datetime
 import random
-# from subprocess import Popen, PIPE
 from multiprocessing import Process
 import re
 import shutil
 import argparse
 import csv
-
-import sys
-
 import common_functions as cf
 import common_parameters as cp
 
@@ -24,26 +20,7 @@ Run some command and return the output
 
 
 def run_command(command):
-    # proc = Popen(command, stdout=PIPE, shell=True)
-    # (out, err) = proc.communicate()
-    # temp_out = "/tmp/carol_temp_out.txt"
-    # temp_err = "/tmp/carol_temp_err.txt"
-    # os.system(command + " >{} 2>{}".format(temp_out, temp_err))
     os.system(command)
-    # sys.stdout.flush()
-    # sys.stderr.flush()
-    # sys.stdin.flush()
-
-    # try:
-    #     with open(temp_out, 'r') as fin:
-    #         out = fin.read()
-    #
-    #     with open(temp_err, 'r') as ferr:
-    #         err = ferr.read()
-    # except Exception as err:
-    #     out, err = '', str(err)
-    out, err = '', ''
-    return out, err
 
 
 """
@@ -72,21 +49,9 @@ class RunGDB(Process):
         try:
             os.system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH)
         except Exception as err:
-            with open(cp.INJ_ERR_PATH, 'w') as ferr:
-                ferr.write(str(err))
-            #     with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
-            #         fout.write(stdout)
-        # try:
-        #     with open(cp.INJ_OUTPUT_PATH, 'w') as fout:
-        #         fout.write(stdout)
-        #     with open(cp.INJ_ERR_PATH, 'w') as ferr:
-        #         if stderr:
-        #             ferr.write(stderr)
-        #         else:
-        #             ferr.write("")
-        # except Exception as err:
-        #     with open(cp.INJ_ERR_PATH, 'w') as ferr:
-        #         ferr.write(str(stderr))
+            with open(cp.INJ_ERR_PATH, 'w') as file_err:
+                file_err.write(str(err))
+
 
 """
 Class SummaryFile: this class will write the information
@@ -213,12 +178,8 @@ def finish(section, conf, logging, timestamp_start, end_time, p):
 
     # Kill all the processes to make sure the machine is clean for another test
     for k in kill_strs.split(";"):
-        out, err = run_command(k)
+        run_command(k)
         logging.debug("kill cmd: " + k)
-        if out is not None:
-            logging.debug("kill cmd, shell stdout: " + str(out))
-        if err is not None:
-            logging.error("kill cmd, shell stderr: " + str(err))
 
     return is_hang
 
@@ -230,12 +191,12 @@ Copy the logs and output(if fault not masked) to a selected folder
 
 def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, output_file):
     # FI successful
-    fi_succ = False
+    fi_injected = False
     if os.path.isfile(flip_log_file):
         fp = open(flip_log_file, "r")
         content = fp.read()
         if re.search("Fault Injection Successful", content):
-            fi_succ = True
+            fi_injected = True
         fp.close()
 
     dt = datetime.datetime.fromtimestamp(time.time())
@@ -243,8 +204,8 @@ def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, out
     ymdhms = dt.strftime('%Y_%m_%d_%H_%M_%S')
     ymdhms = unique_id + "-" + ymdhms
     dir_d_t = os.path.join(ymd, ymdhms)
-    masked = False
-    if not fi_succ:
+
+    if not fi_injected:
         cp_dir = os.path.join('logs', section, 'failed-injection', dir_d_t)
         logging.summary(section + " - Fault Injection Failed")
     elif is_hang:
@@ -259,29 +220,32 @@ def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, out
     else:
         cp_dir = os.path.join('logs', section, 'masked', dir_d_t)
         logging.summary(section + " - Masked")
-        masked = True
 
     if not os.path.isdir(cp_dir):
         os.makedirs(cp_dir)
 
     try:
         shutil.move(flip_log_file, cp_dir)
-    except:
-        pass
-    # if os.path.isfile(output_file) and (not masked) and fi_succ:
+    except Exception as err:
+        if cp.DEBUG:
+            print("ERROR ON MOVING {} -- {}".format(flip_log_file, str(err)))
+
     try:
         shutil.move(cp.INJ_OUTPUT_PATH, cp_dir)
-    except:
-        pass
+    except Exception as err:
+        if cp.DEBUG:
+            print("ERROR ON MOVING {} -- {}".format(cp.INJ_OUTPUT_PATH, str(err)))
 
     try:
         shutil.move(cp.INJ_ERR_PATH, cp_dir)
-    except:
-        pass
+    except Exception as err:
+        if cp.DEBUG:
+            print("ERROR ON MOVING {} -- {}".format(cp.INJ_ERR_PATH, str(err)))
     try:
         shutil.move(cp.DIFF_LOG, cp_dir)
-    except:
-        pass
+    except Exception as err:
+        if cp.DEBUG:
+            print("ERROR ON MOVING {} -- {}".format(cp.DIFF_LOG, str(err)))
 
 
 """
@@ -290,13 +254,14 @@ Pre execution commands
 
 
 def pre_execution(conf, section):
+    script = ""
     try:
         script = conf.get(section, "preExecScript")
         if script != "":
             os.system(script)
-        return
-    except:
-        return
+    except Exception as err:
+        if cp.DEBUG:
+            print("ERROR ON PRE EXECUTION SCRIPT {} -- {}".format(script, str(err)))
 
 
 """
@@ -305,13 +270,14 @@ Pos execution commands
 
 
 def pos_execution(conf, section):
+    script = ""
     try:
         script = conf.get(section, "posExecScript")
         if script != "":
             os.system(script)
-        return
-    except:
-        return
+    except Exception as err:
+        if cp.DEBUG:
+            print("ERROR ON POS EXECUTION SCRIPT {} -- {}".format(script, str(err)))
 
 
 """
@@ -353,7 +319,7 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
             with open(cp.DIFF_LOG, 'r') as fi:
                 out_lines = fi.readlines()
                 if len(out_lines) != 0:
-                    # Check if nvidia signals on output
+                    # Check if NVIDIA signals on output
                     for signal in cp.SIGNALS:
                         for line in out_lines:
                             if signal in line:
@@ -366,7 +332,9 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
                 err_lines = fi_err.readlines()
                 if len(err_lines) != 0:
                     is_app_crash = True
-        except:
+        except Exception as err:
+            if cp.DEBUG:
+                print("ERROR ON TEST FILES OK {}".format(str(err)))
             is_app_crash = True
             is_sdc = True
     return is_sdc, is_app_crash
@@ -381,11 +349,11 @@ The default parameters are necessary for break and signal mode differentiations
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   injection_site, breakpoint_location, flip_log_file, debug, gdb_init_strings, kludge):
+                   breakpoint_location, flip_log_file, debug, gdb_init_strings, kludge):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
-    env_string += "|" + str(fault_model) + "|" + injection_site + "|" + breakpoint_location
+    env_string += "|" + str(fault_model) + "|" + breakpoint_location
     env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + str(kludge)
 
     if cp.DEBUG:
@@ -413,7 +381,6 @@ def run_gdb_fault_injection(**kwargs):
     # Parameters for thread selection
     valid_block = kwargs.get('valid_block')
     valid_thread = kwargs.get('valid_thread')
-    injection_address = kwargs.get('injection_address')
     breakpoint_location = kwargs.get('breakpoint_location')
 
     # SDC check parameters
@@ -437,7 +404,6 @@ def run_gdb_fault_injection(**kwargs):
                    valid_register=valid_register,
                    bits_to_flip=bits_to_flip,
                    fault_model=fault_model,
-                   injection_site=injection_address,
                    breakpoint_location=breakpoint_location,
                    flip_log_file=flip_log_file,
                    kludge=kludge)
@@ -460,7 +426,7 @@ def run_gdb_fault_injection(**kwargs):
     fi_process.start()
 
     if cp.DEBUG:
-        print("PROCESS SPAWED")
+        print("PROCESS SPAWNED")
     # Start counting time
     timestamp_start = int(time.time())
 
@@ -499,6 +465,8 @@ def run_gdb_fault_injection(**kwargs):
     except Exception as e:
         reg_new_value = reg_old_value = ''
         fault_successful = False
+        if cp.DEBUG:
+            print(str(e))
 
     # Copy output files to a folder
     save_output(
@@ -602,7 +570,6 @@ def get_valid_thread(threads):
     thread_y = thread.group(2)
     thread_z = thread.group(3)
 
-
     return [block_x, block_y, block_z], [thread_x, thread_y, thread_z]
 
 
@@ -618,7 +585,7 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
     # A injection site is a list of [registers, instruction, address, byte_location]
-    registers, _, address, _, instrution_line = get_valid_address(kernel_info_dict["addresses"])
+    registers, _, _, _, instrution_line = get_valid_address(kernel_info_dict["addresses"])
 
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
 
@@ -635,7 +602,7 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     elif injection_site == 'RF':
         valid_register = 'R' + str(random.randint(0, max_num_regs))
 
-    return valid_thread, valid_block, valid_register, bits_to_flip, address, instrution_line
+    return valid_thread, valid_block, valid_register, bits_to_flip, instrution_line
 
 
 """
@@ -648,13 +615,14 @@ def bit_flip_selection(fault_model):
     # Randomly select (a) bit(s) to flip
     # Max double bit flip
     max_size_register_fault_model = cp.MAX_SIZE_REGISTER
-    # Least 16 bits
-    if fault_model == 4:
-        max_size_register_fault_model = 16
 
-    # Least 8 bits
-    elif fault_model == 5:
-        max_size_register_fault_model = 8
+    # # Least 16 bits
+    # if fault_model == 4:
+    #     max_size_register_fault_model = 16
+    #
+    # # Least 8 bits
+    # elif fault_model == 5:
+    #     max_size_register_fault_model = 8
 
     bits_to_flip = [0] * 2
     bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
@@ -671,12 +639,12 @@ by creating a breakpoint and steeping into it
 """
 
 
-def fault_injection_by_breakpointing(conf, fault_models, iterations, kernel_info_list, summary_file,
-                                     max_time, current_path):
+def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_list, summary_file,
+                                  max_time, current_path):
     # kludge
-    try:
+    if "kludge" in conf:
         kludge = conf.get("DEFAULT", "kludge")
-    except:
+    else:
         kludge = None
 
     for num_rounds in range(iterations):
@@ -688,41 +656,42 @@ def fault_injection_by_breakpointing(conf, fault_models, iterations, kernel_info
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(fault_model)
                 try:
-                    valid_thread, valid_block, valid_register, bits_to_flip, injection_address, instruction_line = gen_injection_location(
-                    kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
-                    injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
-                except:
-                    continue
-                kernel_begin = kernel_info_dict["kernel_line"]
-                kernel_end = kernel_info_dict["kernel_end_line"]
-                rand_line = random.randint(int(kernel_begin), int(kernel_end))
-                breakpoint_location = str(kernel_info_dict["kernel_name"] + ":"
-                                          + str(rand_line))
+                    thread, block, register, bits_to_flip, instruction_line = gen_injection_location(
+                        kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
+                        injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
 
-                r_old_val, r_new_val, fault_succ, hang, sdc = run_gdb_fault_injection(section="DEFAULT", conf=conf,
-                                                                                      unique_id=unique_id,
-                                                                                      valid_block=valid_block,
-                                                                                      valid_thread=valid_thread,
-                                                                                      valid_register=valid_register,
-                                                                                      bits_to_flip=bits_to_flip,
-                                                                                      injection_address=injection_address,
-                                                                                      fault_model=fault_model,
-                                                                                      breakpoint_location=breakpoint_location,
-                                                                                      max_time=max_time,
-                                                                                      current_path=current_path,
-                                                                                      kludge=kludge)
-                # Write a row to summary file
-                row = [unique_id, num_rounds, fault_model]
-                row.extend(valid_thread)
-                row.extend(valid_block)
-                row.extend(
-                    [r_old_val, r_new_val, 0, injection_address, valid_register, breakpoint_location, fault_succ, hang,
-                     sdc, instruction_line])
-                print(row)
-                summary_file.write_row(row=row)
-                # except Exception as err:
-                #     print("\nERROR ON BREAK POINT MODE: Fault was not injected\n", str(err))
-                time.sleep(2)
+                    kernel_begin = kernel_info_dict["kernel_line"]
+                    kernel_end = kernel_info_dict["kernel_end_line"]
+                    rand_line = random.randint(int(kernel_begin), int(kernel_end))
+                    break_line = str(kernel_info_dict["kernel_name"] + ":"
+                                     + str(rand_line))
+
+                    r_old_val, r_new_val, fault_injected, hang, sdc = run_gdb_fault_injection(section="DEFAULT",
+                                                                                              conf=conf,
+                                                                                              unique_id=unique_id,
+                                                                                              valid_block=block,
+                                                                                              valid_thread=thread,
+                                                                                              valid_register=register,
+                                                                                              bits_to_flip=bits_to_flip,
+                                                                                              fault_model=fault_model,
+                                                                                              break_line=break_line,
+                                                                                              max_time=max_time,
+                                                                                              current_path=current_path,
+                                                                                              kludge=kludge)
+                    # Write a row to summary file
+                    row = [unique_id, num_rounds, fault_model]
+                    row.extend(thread)
+                    row.extend(block)
+                    row.extend(
+                        [r_old_val, r_new_val, 0, register, break_line, fault_injected,
+                         hang,
+                         sdc, instruction_line])
+                    print(row)
+                    summary_file.write_row(row=row)
+                    time.sleep(2)
+                except Exception as err:
+                    if cp.DEBUG:
+                        print("\nERROR ON BREAK POINT MODE: Fault was not injected, {}".format(str(err)))
 
 
 """
@@ -734,9 +703,9 @@ def profiler_caller(conf):
     acc_time = 0
 
     # kludge
-    try:
+    if "kludge" in conf:
         kludge = conf.get("DEFAULT", "kludge")
-    except:
+    else:
         kludge = None
 
     # First MAX_TIMES_TO_PROFILE is necessary to measure the application running time
@@ -747,20 +716,16 @@ def profiler_caller(conf):
     for i in range(0, cp.MAX_TIMES_TO_PROFILE):
         profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
         start = time.time()
-        # out, err = run_command([profiler_cmd])
         os.system(profiler_cmd)
         end = time.time()
         acc_time += end - start
-        # if cp.DEBUG:
-        #     print(out)
-        #     print(err)
 
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + str(kludge)
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    out, err = run_command(profiler_cmd)
-    return acc_time / cp.MAX_TIMES_TO_PROFILE, out, err
+    run_command(profiler_cmd)
+    return acc_time / cp.MAX_TIMES_TO_PROFILE
 
 
 """
@@ -772,7 +737,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
-                        help='How many times to repeat the programs in the configuration file', required=True, type=int)
+                        help='How many times to repeat the programs in the configuration file', required=True)
 
     args = parser.parse_args()
     if args.iterations < 1:
@@ -818,7 +783,7 @@ def main():
     # Csv log
     fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
-                  'injection_address', 'register', 'breakpoint_location', 'fault_successful',
+                  'register', 'breakpoint_location', 'fault_successful',
                   'crash', 'sdc', 'instruction_line']
 
     ########################################################################
@@ -831,9 +796,9 @@ def main():
 
     # Load information file generated in profiler step
     kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
-    fault_injection_by_breakpointing(conf=conf, fault_models=fault_models, iterations=iterations,
-                                     kernel_info_list=kernel_info_list, summary_file=summary_file,
-                                     max_time=max_time_app, current_path=current_path)
+    fault_injection_by_breakpoint(conf=conf, fault_models=fault_models, iterations=int(iterations),
+                                  kernel_info_list=kernel_info_list, summary_file=summary_file,
+                                  max_time=max_time_app, current_path=current_path)
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")

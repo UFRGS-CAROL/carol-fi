@@ -1,7 +1,9 @@
 GOLD_OUTPUT_PATH = "/tmp/carol_fi_golden_bench_output.txt"
 
 # Max size of register
-MAX_SIZE_REGISTER = 32
+HALF_MAX_SIZE_REGISTER = 16
+SINGLE_MAX_SIZE_REGISTER = 32
+DOUBLE_MAX_SIZE_REGISTER = 64
 
 # Times to profile
 # this will be the max number of executions
