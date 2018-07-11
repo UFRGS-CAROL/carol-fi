@@ -23,6 +23,17 @@ def run_command(command):
     os.system(command)
 
 
+
+"""
+Kill all remaining processes
+"""
+
+
+def kill_all(conf):
+    for cmd in str(conf.get("DEFAULT", "killStrs")).split(";"):
+        os.system(cmd)
+
+
 """
 Class RunGdb: necessary to run gdb while
 the main thread register the time
@@ -254,14 +265,9 @@ Pre execution commands
 
 
 def pre_execution(conf, section):
-    script = ""
-    try:
+    if conf.has_option(section, "preExecScript"):
         script = conf.get(section, "preExecScript")
-        if script != "":
-            os.system(script)
-    except Exception as err:
-        if cp.DEBUG:
-            print("ERROR ON PRE EXECUTION SCRIPT {} -- {}".format(script, str(err)))
+        os.system(script)
 
 
 """
@@ -270,14 +276,9 @@ Pos execution commands
 
 
 def pos_execution(conf, section):
-    script = ""
-    try:
+    if conf.has_option(section, "posExecScript"):
         script = conf.get(section, "posExecScript")
-        if script != "":
-            os.system(script)
-    except Exception as err:
-        if cp.DEBUG:
-            print("ERROR ON POS EXECUTION SCRIPT {} -- {}".format(script, str(err)))
+        os.system(script)
 
 
 """
@@ -381,7 +382,7 @@ def run_gdb_fault_injection(**kwargs):
     # Parameters for thread selection
     valid_block = kwargs.get('valid_block')
     valid_thread = kwargs.get('valid_thread')
-    breakpoint_location = kwargs.get('breakpoint_location')
+    breakpoint_location = kwargs.get('break_line')
 
     # SDC check parameters
     current_path = kwargs.get('current_path')
@@ -473,8 +474,10 @@ def run_gdb_fault_injection(**kwargs):
         section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
         flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
+    kill_all(conf=conf)
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
+
     return reg_old_value, reg_new_value, fault_successful, is_hang or is_app_crash, is_sdc
 
 
@@ -585,7 +588,7 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
     # A injection site is a list of [registers, instruction, address, byte_location]
-    registers, _, _, _, instrution_line = get_valid_address(kernel_info_dict["addresses"])
+    registers, _, _, _, instruction_line = get_valid_address(kernel_info_dict["addresses"])
 
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
 
@@ -602,7 +605,7 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     elif injection_site == 'RF':
         valid_register = 'R' + str(random.randint(0, max_num_regs))
 
-    return valid_thread, valid_block, valid_register, bits_to_flip, instrution_line
+    return valid_thread, valid_block, valid_register, bits_to_flip, instruction_line
 
 
 """
@@ -614,15 +617,15 @@ if it is least significant bits it will reduce the starting bit range
 def bit_flip_selection(fault_model):
     # Randomly select (a) bit(s) to flip
     # Max double bit flip
-    max_size_register_fault_model = cp.MAX_SIZE_REGISTER
+    max_size_register_fault_model = cp.SINGLE_MAX_SIZE_REGISTER
 
-    # # Least 16 bits
-    # if fault_model == 4:
-    #     max_size_register_fault_model = 16
-    #
-    # # Least 8 bits
-    # elif fault_model == 5:
-    #     max_size_register_fault_model = 8
+    # Least 16 bits
+    if fault_model == 4:
+        max_size_register_fault_model = 16
+
+    # Least 8 bits
+    elif fault_model == 5:
+        max_size_register_fault_model = 8
 
     bits_to_flip = [0] * 2
     bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
@@ -642,7 +645,7 @@ by creating a breakpoint and steeping into it
 def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_list, summary_file,
                                   max_time, current_path):
     # kludge
-    if "kludge" in conf:
+    if conf.has_option("DEFAULT", "kludge"):
         kludge = conf.get("DEFAULT", "kludge")
     else:
         kludge = None
@@ -694,6 +697,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                         print("\nERROR ON BREAK POINT MODE: Fault was not injected, {}".format(str(err)))
 
 
+
 """
 Function that calls the profiler based on the injection mode
 """
@@ -703,7 +707,7 @@ def profiler_caller(conf):
     acc_time = 0
 
     # kludge
-    if "kludge" in conf:
+    if conf.has_option("DEFAULT", "kludge"):
         kludge = conf.get("DEFAULT", "kludge")
     else:
         kludge = None
@@ -719,13 +723,29 @@ def profiler_caller(conf):
         os.system(profiler_cmd)
         end = time.time()
         acc_time += end - start
+        kill_all(conf=conf)
+
+    return acc_time / cp.MAX_TIMES_TO_PROFILE
+
+
+"""
+Function to generate the gold execution
+"""
+
+
+def generate_gold(conf):
+    # kludge
+    if conf.has_option("DEFAULT", "kludge"):
+        kludge = conf.get("DEFAULT", "kludge")
+    else:
+        kludge = None
 
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + str(kludge)
     profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
     run_command(profiler_cmd)
-    return acc_time / cp.MAX_TIMES_TO_PROFILE
+    return "", ""
 
 
 """
@@ -761,16 +781,17 @@ def main():
     # it will also get app output for golden copy
     # that is,
     print("###################################################\n1 - Profiling application")
-    max_time_app, gold_out_app, gold_err_app = profiler_caller(conf)
+    max_time_app = profiler_caller(conf=conf)
 
+    # saving gold
+    gold_out_app, gold_err_app = generate_gold(conf=conf)
     # save gold file
     with open(cp.GOLD_OUTPUT_PATH, "w") as gold_file:
         gold_file.write(gold_out_app)
     with open(cp.GOLD_ERR_PATH, "w") as gold_err_file:
         if gold_err_app:
             gold_err_file.write(gold_err_app)
-        else:
-            gold_err_file.write("")
+
     print("1 - Profile finished\n###################################################")
     print("2 - Starting fault injection\n###################################################")
     print("2 - {} faults will be injected".format(args.iterations))
