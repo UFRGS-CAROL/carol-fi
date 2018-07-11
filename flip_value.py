@@ -578,3 +578,4 @@ timestampStart = int(time.time())
 
 # Start app execution
 gdb.execute("r")
+

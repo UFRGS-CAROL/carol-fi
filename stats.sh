@@ -1,6 +1,8 @@
 #!/bin/bash
 echo "SDCs: "
 grep -r -i SDC summary-carolfi.log |wc -l
+echo "Crashes: "
+grep -r -i CRASH summary-carolfi.log |wc -l
 echo "Hangs: "
 grep -r -i HANG summary-carolfi.log |wc -l
 echo "Masked: "

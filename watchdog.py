@@ -10,15 +10,15 @@ timestampFile = "summary-carolfi.log"
 timestampMaxDiff=60*5 # in seconds
 
 def killall():
-    os.system("killall -9 fault_injector.py")
-    os.system("killall -9 gdb")
+    os.system("killall -q -9 fault_injector.py")
+    os.system("killall -q -9 gdb")
 
 def run():
     killall()
     os.system("./fault_injector.py -c "+confFile+" -i 9000 &")
 
 try:
-    print "running ..."
+    #print "starting ..."
     run()
     time.sleep(timestampMaxDiff)
     while True:
@@ -26,10 +26,11 @@ try:
         now = int(time.time())
         timestampDiff = now - timestamp
         if timestampDiff > timestampMaxDiff:
-            print "timestamp > than expected"
+            print "\nError: (timestamp > than expected); Restarting Fault Injector"
+            killall()
             run()
-        else:
-            print "timestamp OK"
+        #else:
+        #    print "timestamp OK"
         
         time.sleep(timestampMaxDiff)
 

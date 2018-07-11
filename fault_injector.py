@@ -21,7 +21,7 @@ else:
     import ConfigParser # python 2
 
 ### Script version
-VERSION = "1.0"
+VERSION = "1.1"
 
 ### Global variables
 uniqueID = str(uuid.uuid4())
@@ -33,6 +33,8 @@ else:
     conf = ConfigParser.ConfigParser()
 
 
+# Counters to keep track of fault effects so we can show them to the user
+faults = {"masked": 0, "sdc": 0, "crash": 0, "hang": 0, "noOutput": 0, "failed": 0}
 
 class logging:
     @staticmethod
@@ -100,9 +102,9 @@ class runGDB (threading.Thread):
         threading.Thread.__init__(self)
         self.section = section
     def run(self):
-        startCmd = conf.get(self.section,"gdbExecName")+" -n -q -batch -x "+"/tmp/flip-"+uniqueID+".py"
-        os.system(startCmd)
-
+        startCmd = conf.get(self.section,"gdbExecName")+" --nh --nx -q -batch-silent --return-child-result -x "+"/tmp/flip-"+uniqueID+".py > /dev/null 2> /dev/null"
+        status = os.system(startCmd)
+        logging.summary("return status: "+str(status))
 
 # Check if app stops execution (otherwise kill it after a time) 
 def finish(section):
@@ -150,11 +152,14 @@ def saveOutput(section, isSDC, isHang):
 
 
     fiSucc = False
+    isCrash = False
     if os.path.isfile(flipLogFile):
         fp = open(flipLogFile, "r")
         content = fp.read()
         if re.search("Fault Injection Successful",content):
             fiSucc = True
+        if not re.search("exit code: 0",content):
+            isCrash = True
         fp.close()
 
     
@@ -167,26 +172,46 @@ def saveOutput(section, isSDC, isHang):
     if not fiSucc:
         cpDir = os.path.join('logs',section,'failed-injection',dirDT)
         logging.summary(section+" - Fault Injection Failed")
+        isSDC = False
+        faults["failed"] += 1
+        #print("Fault Injection Failed")
     elif isHang:
         cpDir = os.path.join('logs',section,'hangs',dirDT)
         logging.summary(section+" - Hang")
+        isSDC = False
+        faults["hang"] += 1
+        #print("Hang")
+    elif isCrash:
+        cpDir = os.path.join('logs',section,'crashes',dirDT)
+        logging.summary(section+" - Crash")
+        isSDC = False
+        faults["crash"] += 1
+        #print("Crash")
     elif isSDC:
         cpDir = os.path.join('logs',section,'sdcs',dirDT)
         logging.summary(section+" - SDC")
+        faults["sdc"] += 1
+        #print("SDC")
     elif not os.path.isfile(outputFile):
         cpDir = os.path.join('logs',section,'noOutputGenerated',dirDT)
         logging.summary(section+" - NoOutputGenerated")
+        isSDC = False
+        faults["noOutput"] += 1
+        #print("No Output Generated")
     else:
         cpDir = os.path.join('logs',section,'masked',dirDT)
         logging.summary(section+" - Masked")
         masked = True
+        isSDC = False
+        faults["masked"] += 1
+        #print("Masked")
 
     if not os.path.isdir(cpDir):
         os.makedirs(cpDir)
 
     shutil.move(flipLogFile, cpDir)
     shutil.move(gdbFIlogFile, cpDir)
-    if os.path.isfile(outputFile) and (not masked) and fiSucc and isSDC and (not isHang):
+    if isSDC:
         shutil.move(outputFile, cpDir)
 
 
@@ -304,7 +329,7 @@ def genFlipScript(section):
 ######################## Main ########################
 def checkmd5():
     md5 = hashlib.md5(open("flip_value.py", 'rb').read()).hexdigest()
-    if str(md5) != "260a2ce0736f2132a82053246e3272e7":
+    if str(md5) != "32c4fa3b8b8a30b7a9fe4781c38819d4":
         print("Error: Checksum of flip_value.py does not match, please use the correct file",file=sys.stderr)
         print("It seems you are using a different version of the flip_value.py script")
         sys.exit(0)
@@ -314,14 +339,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="configFile", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations", help='How many times to repeat the programs in the configuration file', required=True, type=int)
-    #parser.add_argument('-m', '--model', dest="model", help='Fault injection model; all will randomly choose one fault model', required=False, choices=('single', 'double', 'random', 'zeros', 'lsb', 'all'), default='all')
     
     args = parser.parse_args()
     if args.iterations < 1:
         parser.error('Iterations must be greater than zero')
-    #print ("args:",args)
+    
     checkmd5()
-    #sys.exit(0)
     
     # Start with a different seed every time to vary the random numbers generated
     random.seed() # the seed will be the current number of second since 01/01/70
@@ -330,14 +353,37 @@ def main():
     conf.read(args.configFile)
     
     
-    numRounds = 0
-    while numRounds < args.iterations:
-        # Execute the fault injector for each one of the sections(apps) of the configuration file
+    try:
+
+        print("Starting ...")
+        numRounds = 0
+        secTotal = len(conf.sections())
+        header = "Iteration #"+str(numRounds+1)+"/"+str(args.iterations)
+        sys.stdout.write(header+" Fault Effects: "+str(faults))
+        sys.stdout.flush()
+        while numRounds < args.iterations:
+            # Execute the fault injector for each one of the sections(apps) of the configuration file
+            for sec in conf.sections():
+                # Execute one fault injection for a specific app
+                runGDBFaultInjection(sec)
+                # Print status information
+                sys.stdout.write("\r"+header+" Fault Effects: "+str(faults))
+                sys.stdout.flush()
+            numRounds += 1
+            header = "Iteration #"+str(numRounds+1)+"/"+str(args.iterations)
+        os.system("rm -f /tmp/*"+uniqueID+"*")
+
+    except KeyboardInterrupt:  # Ctrl+c
+        print ("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
+        # Get all kill commands from all sections from the config file to make sure there is no spawn process running
         for sec in conf.sections():
-            # Execute one fault injection for a specific app
-            runGDBFaultInjection(sec)
-        numRounds += 1
-    os.system("rm -f /tmp/*"+uniqueID+"*")
+            killStrs = conf.get(sec,"killStrs")
+            for k in killStrs.split(";"):
+                os.system(k)
+        # Clean tmp files
+        os.system("rm -f /tmp/*"+uniqueID+"*")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
+
