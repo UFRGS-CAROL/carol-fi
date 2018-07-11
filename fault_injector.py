@@ -182,7 +182,10 @@ def finish(section, conf, logging, timestamp_start, end_time, p):
     else:
         logging.info("Execution did not finish before waitTime")
         is_hang = True
-    p.terminate()
+
+    while p.is_alive():
+        p.join()
+        p.terminate()
 
     logging.debug("now: " + str(now))
     logging.debug("timestampStart: " + str(timestamp_start))
