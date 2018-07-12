@@ -43,11 +43,18 @@ else:
 # Counters to keep track of fault effects so we can show them to the user
 faults = {"masked": 0, "sdc": 0, "crash": 0, "hang": 0, "noOutput": 0, "failed": 0}
 
+# The number of threads that will stop the target program at a random time (each stop is a fault injection tentative)
+# Fault injections tentatives are not always successful, that is why we need to do it more than once. 
+# However, only one fault can be injected
+numThreadsFI=3
+
+# How many times each thread (numTHreadsFI) will try to stop (interrupt) the target program
+seqSignals=5
+
 class logging:
     @staticmethod
     def info(msg):
         fp = open(gdbFIlogFile, "a")
-        #fp = open(conf.get("DEFAULT","gdbFIlogFile"), "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         fp.write("[INFO -- "+d+"]\n"+msg+"\n")
         fp.close()
@@ -55,7 +62,6 @@ class logging:
     @staticmethod
     def error(msg):
         fp = open(gdbFIlogFile, "a")
-        #fp = open(conf.get("DEFAULT","gdbFIlogFile"), "a")
         d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
         fp.write("[ERROR -- "+d+"]\n"+msg+"\n")
         fp.close()
@@ -64,7 +70,6 @@ class logging:
     def debug(msg):
         if conf.getboolean("DEFAULT","debug"):
             fp = open(gdbFIlogFile, "a")
-            #fp = open(conf.get(section,"gdbFIlogFile"), "a")
             d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
             fp.write("[DEBUG -- "+d+"]\n"+msg+"\n")
             fp.close()
@@ -88,7 +93,6 @@ class signalApp (threading.Thread):
         maxWaitTime = conf.getfloat(self.section,"maxWaitTime")
         init = conf.getfloat(self.section,"initSignal")
         end = conf.getfloat(self.section,"endSignal")
-        seqSignals = conf.getint(self.section,"seqSignals")
         # Sleep for a random time
         waitTime = random.uniform(init,end)
         time.sleep(waitTime)
@@ -254,10 +258,8 @@ def runGDBFaultInjection(section):
     logging.info("Starting GDB script")
     init = conf.getfloat(section,"initSignal")
     end = conf.getfloat(section,"endSignal")
-    seqSignals = conf.getint(section,"seqSignals")
     logging.info("initSignal:"+str(init))
     logging.info("endSignal:"+str(end))
-    logging.info("seqSignal:"+str(seqSignals))
     timestampStart = int(time.time())
 
     # Generate configuration file for specific test
@@ -272,7 +274,6 @@ def runGDBFaultInjection(section):
     # Create one thread to start gdb script
     th = runGDB(section)
     # Create numThreadsFI threads to signal app at a random time
-    numThreadsFI = conf.getint(section,"numThreadsFI")
     sigThs = list()
     for i in range(0,numThreadsFI):
         sigThs.append(signalApp(section))
@@ -308,7 +309,6 @@ def genConfFile(section):
     fconf.set("DEFAULT", "gdbInitStrings", conf.get(section,"gdbInitStrings"))
     fconf.set("DEFAULT", "initSignal", conf.get(section,"initSignal"))
     fconf.set("DEFAULT", "endSignal", conf.get(section,"endSignal"))
-    fconf.set("DEFAULT", "seqSignals", conf.get(section,"seqSignals"))
     fconf.set("DEFAULT", "faultModel", conf.get(section,"faultModel"))
 
     fp = open("/tmp/flip-"+uniqueID+".conf","w")
