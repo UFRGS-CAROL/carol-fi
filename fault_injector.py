@@ -317,7 +317,7 @@ def genFlipScript(section):
 ######################## Main ########################
 def checkmd5():
     md5 = hashlib.md5(open("flip_value.py", 'rb').read()).hexdigest()
-    if str(md5) != "32c4fa3b8b8a30b7a9fe4781c38819d4":
+    if str(md5) != "9b9557b511ff36d53666c3cd062c6f52":
         print("Error: Checksum of flip_value.py does not match, please use the correct file",file=sys.stderr)
         print("It seems you are using a different version of the flip_value.py script")
         sys.exit(0)
