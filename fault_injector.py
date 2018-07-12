@@ -14,11 +14,18 @@ import argparse
 import hashlib
 import uuid
 #import logging
+from curses import wrapper
 
 if sys.version_info >= (3,0):
     import configparser # python 3
 else:
     import ConfigParser # python 2
+
+try:
+    from subprocess import DEVNULL # py3k
+except ImportError:
+    import os
+    DEVNULL = open(os.devnull, 'wb')
 
 ### Script version
 VERSION = "1.1"
@@ -88,12 +95,7 @@ class signalApp (threading.Thread):
         # Send a series of signal to make sure gdb will flip a value in one of the interupt signals
         logging.info("sending "+str(seqSignals)+" signals using command: '"+signalCmd+"' after "+str(waitTime)+"s")
         for i in range(0,seqSignals):
-            proc = subprocess.Popen(signalCmd, stdout=subprocess.PIPE, shell=True)
-            (out, err) = proc.communicate()
-            if out is not None:
-                logging.info("shell stdout: "+str(out))
-            if err is not None:
-                logging.error("shell stderr: "+str(err))
+            subprocess.call(signalCmd, shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
             time.sleep(0.01)
 
 # Start the gdb script
@@ -102,9 +104,8 @@ class runGDB (threading.Thread):
         threading.Thread.__init__(self)
         self.section = section
     def run(self):
-        startCmd = conf.get(self.section,"gdbExecName")+" --nh --nx -q -batch-silent --return-child-result -x "+"/tmp/flip-"+uniqueID+".py > /dev/null 2> /dev/null"
-        status = os.system(startCmd)
-        logging.summary("return status: "+str(status))
+        startCmd = conf.get(self.section,"gdbExecName")+" --nh --nx -q -batch-silent --return-child-result -x "+"/tmp/flip-"+uniqueID+".py > /dev/null 2> /dev/null &"
+        os.system(startCmd)
 
 # Check if app stops execution (otherwise kill it after a time) 
 def finish(section):
@@ -135,24 +136,24 @@ def finish(section):
 
     # Kill all the processes to make sure the machine is clean for another test
     for k in killStrs.split(";"):
-        proc = subprocess.Popen(k, stdout=subprocess.PIPE, shell=True)
-        (out, err) = proc.communicate()
-        logging.debug("kill cmd: "+k)
-        if out is not None:
-            logging.debug("kill cmd, shell stdout: "+str(out))
-        if err is not None:
-            logging.error("kill cmd, shell stderr: "+str(err))
+        subprocess.call(k, shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
+
 
     return isHang
 
-# Copy the logs and output(if fault not masked) to a selected folder
-def saveOutput(section, isSDC, isHang):
+def checkIsOutput(section):
+    outputFile = conf.get(section,"outputFile")
+    return os.path.isfile(outputFile)
+
+# Copy the logs and output(if sdc occured) to a selected folder
+def saveOutput(section, isHang):
     outputFile = conf.get(section,"outputFile")
     flipLogFile = "/tmp/carolfi-flipvalue-"+uniqueID+".log"
 
 
     fiSucc = False
     isCrash = False
+    isSDC = False
     if os.path.isfile(flipLogFile):
         fp = open(flipLogFile, "r")
         content = fp.read()
@@ -162,49 +163,40 @@ def saveOutput(section, isSDC, isHang):
             isCrash = True
         fp.close()
 
-    
+    isOutput = checkIsOutput(section)
+
     dt = datetime.datetime.fromtimestamp(time.time())
     ymd = dt.strftime('%Y_%m_%d')
     ymdhms = dt.strftime('%Y_%m_%d_%H_%M_%S')
     ymdhms = uniqueID+"-"+ymdhms
     dirDT = os.path.join(ymd,ymdhms)
-    masked = False
     if not fiSucc:
         cpDir = os.path.join('logs',section,'failed-injection',dirDT)
         logging.summary(section+" - Fault Injection Failed")
-        isSDC = False
         faults["failed"] += 1
-        #print("Fault Injection Failed")
     elif isHang:
         cpDir = os.path.join('logs',section,'hangs',dirDT)
         logging.summary(section+" - Hang")
-        isSDC = False
         faults["hang"] += 1
-        #print("Hang")
     elif isCrash:
         cpDir = os.path.join('logs',section,'crashes',dirDT)
         logging.summary(section+" - Crash")
-        isSDC = False
         faults["crash"] += 1
-        #print("Crash")
-    elif isSDC:
-        cpDir = os.path.join('logs',section,'sdcs',dirDT)
-        logging.summary(section+" - SDC")
-        faults["sdc"] += 1
-        #print("SDC")
-    elif not os.path.isfile(outputFile):
+    elif not isOutput:
         cpDir = os.path.join('logs',section,'noOutputGenerated',dirDT)
         logging.summary(section+" - NoOutputGenerated")
-        isSDC = False
         faults["noOutput"] += 1
-        #print("No Output Generated")
     else:
-        cpDir = os.path.join('logs',section,'masked',dirDT)
-        logging.summary(section+" - Masked")
-        masked = True
-        isSDC = False
-        faults["masked"] += 1
-        #print("Masked")
+        # Check output files for SDCs
+        isSDC = checkSDCs(section)
+        if isSDC:
+            cpDir = os.path.join('logs',section,'sdcs',dirDT)
+            logging.summary(section+" - SDC")
+            faults["sdc"] += 1
+        else:
+            cpDir = os.path.join('logs',section,'masked',dirDT)
+            logging.summary(section+" - Masked")
+            faults["masked"] += 1
 
     if not os.path.isdir(cpDir):
         os.makedirs(cpDir)
@@ -219,7 +211,7 @@ def preExecution(section):
     try:
         script = conf.get(section,"preExecScript")
         if script != "":
-            os.system(script)
+            subprocess.call(script, shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
         return
     except:
         return
@@ -228,7 +220,7 @@ def posExecution(section):
     try:
         script = conf.get(section,"posExecScript")
         if script != "":
-            os.system(script)
+            subprocess.call(script, shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
         return
     except:
         return
@@ -246,7 +238,6 @@ def checkSDCs(section):
 
 # Main function to run one execution of the fault injector
 def runGDBFaultInjection(section):
-    isSDC = False
     isHang = False
 
     logging.info("Starting GDB script")
@@ -285,11 +276,8 @@ def runGDBFaultInjection(section):
     # Run pos execution function
     posExecution(section)
 
-    # Check output files for SDCs
-    isSDC = checkSDCs(section)
-
     # Copy output files to a folder
-    saveOutput(section, isSDC, isHang)
+    saveOutput(section, isHang)
 
     # Make sure threads finish before trying to execute again
     th.join()
@@ -334,8 +322,22 @@ def checkmd5():
         print("It seems you are using a different version of the flip_value.py script")
         sys.exit(0)
 
+def printStatusCurses(stdscr, args, numRounds, avgRoundTime, sec, faults):
+    try:
+        stdscr.clear()
+        stdscr.addstr(0, 0, "\tIteration "+str(numRounds)+"/"+str(args.iterations)+"\n\n")
+        stdscr.addstr("\tIteration average time: "+str(avgRoundTime)+"s\n\n")
+        stdscr.addstr("\tExecuting section: "+str(sec)+"\n\n")
+        stdscr.addstr("\tFault Effects: \n")
+        for k, v in faults.items():
+            stdscr.addstr("\t\t"+str(k)+": "+str(v)+"\n")
+        stdscr.refresh()
+    except:
+        stdscr.clear()
+        stdscr.addstr(0, 0, "Screen too small, resize!")
+        stdscr.refresh()
 
-def main():
+def main(stdscr):
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="configFile", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations", help='How many times to repeat the programs in the configuration file', required=True, type=int)
@@ -355,23 +357,21 @@ def main():
     
     try:
 
-        print("Starting ...")
+        avgRoundTime = 0
+        sumRoundTime = 0
         numRounds = 0
-        secTotal = len(conf.sections())
-        header = "Iteration #"+str(numRounds+1)+"/"+str(args.iterations)
-        sys.stdout.write(header+" Fault Effects: "+str(faults))
-        sys.stdout.flush()
         while numRounds < args.iterations:
+            start = int(time.time())
             # Execute the fault injector for each one of the sections(apps) of the configuration file
             for sec in conf.sections():
+                # Print status information
+                printStatusCurses(stdscr, args, numRounds, avgRoundTime, sec, faults)
                 # Execute one fault injection for a specific app
                 runGDBFaultInjection(sec)
-                # Print status information
-                sys.stdout.write("\r"+header+" Fault Effects: "+str(faults))
-                sys.stdout.flush()
+            sumRoundTime += (int(time.time()) - start) # in seconds
             numRounds += 1
-            header = "Iteration #"+str(numRounds+1)+"/"+str(args.iterations)
-        os.system("rm -f /tmp/*"+uniqueID+"*")
+            avgRoundTime = sumRoundTime / numRounds
+        subprocess.call("rm -f /tmp/*"+uniqueID+"*", shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
 
     except KeyboardInterrupt:  # Ctrl+c
         print ("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
@@ -379,11 +379,13 @@ def main():
         for sec in conf.sections():
             killStrs = conf.get(sec,"killStrs")
             for k in killStrs.split(";"):
-                os.system(k)
+                subprocess.call(k, shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
         # Clean tmp files
-        os.system("rm -f /tmp/*"+uniqueID+"*")
+        subprocess.call("rm -f /tmp/*"+uniqueID+"*", shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
         sys.exit(1)
 
+
 if __name__ == "__main__":
-    main()
+    #main()
+    wrapper(main) # ncurses
 
