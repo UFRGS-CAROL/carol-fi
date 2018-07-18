@@ -23,7 +23,6 @@ def run_command(command):
     os.system(command)
 
 
-
 """
 Kill all remaining processes
 """
@@ -56,7 +55,7 @@ class RunGDB(Process):
         if cp.DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
-        start_cmd += ' -n -batch -x ' + self.__flip_script
+        start_cmd += ' -n --nh --nx -q -batch-silent --return-child-result -x ' + self.__flip_script
         try:
             os.system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH)
         except Exception as err:
@@ -158,13 +157,13 @@ Check if app stops execution (otherwise kill it after a time)
 """
 
 
-def finish(section, conf, logging, timestamp_start, end_time, p):
+def check_finish(section, conf, logging, timestamp_start, end_time, p):
     is_hang = False
     now = int(time.time())
 
     # Wait maxWaitTimes the normal duration of the program before killing it
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
-    kill_strs = conf.get(section, "killStrs")  # + ";" + "kill -9 " + str(pid)
+    kill_strings = conf.get(section, "killStrs")  # + ";" + "kill -9 " + str(pid)
 
     p_is_alive = p.is_alive()
     while (now - timestamp_start) < max_wait_time and p_is_alive:
@@ -180,20 +179,24 @@ def finish(section, conf, logging, timestamp_start, end_time, p):
     if (now - timestamp_start) < max_wait_time:
         logging.info("Execution finished before waitTime")
     else:
-        logging.info("Execution did not finish before waitTime")
+        logging.info("Execution did not check_finish before waitTime")
         is_hang = True
-
-    while p.is_alive():
-        p.join()
-        p.terminate()
 
     logging.debug("now: " + str(now))
     logging.debug("timestampStart: " + str(timestamp_start))
 
     # Kill all the processes to make sure the machine is clean for another test
-    for k in kill_strs.split(";"):
+    for k in kill_strings.split(";"):
         run_command(k)
         logging.debug("kill cmd: " + k)
+
+    # Make sure process check_finish before trying to execute
+    if p.is_alive():
+        p.join()
+        p.terminate()
+
+        if cp.DEBUG:
+            print("PROCESS JOINED")
 
     return is_hang
 
@@ -435,15 +438,10 @@ def run_gdb_fault_injection(**kwargs):
     timestamp_start = int(time.time())
 
     # Check if app stops execution (otherwise kill it after a time)
-    is_hang = finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-                     end_time=max_time, p=fi_process)
+    is_hang = check_finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
+                           end_time=max_time, p=fi_process)
     if cp.DEBUG:
         print("FINISH CHECK OK")
-
-    # Make sure process finish before trying to execute again
-    fi_process.join()
-    if cp.DEBUG:
-        print("PROCESS JOIN")
 
     # Run pos execution function
     pos_execution(conf=conf, section=section)
@@ -464,7 +462,7 @@ def run_gdb_fault_injection(**kwargs):
         reg_old_value = logging.search("reg_old_value")
         reg_new_value = logging.search("reg_new_value")
         reg_old_value = re.findall("reg_old_value: (\S+)", reg_old_value)[0]
-        reg_new_value = re.findall('reg_new_value: (\S+)', reg_new_value)[0]
+        reg_new_value = re.findall("reg_new_value: (\S+)", reg_new_value)[0]
         fault_successful = True
     except Exception as e:
         reg_new_value = reg_old_value = ''
@@ -526,32 +524,6 @@ def parse_line(instruction_line):
 
 
 """
-Select a valid stop address
-from the file created in the profiler
-step
-"""
-
-
-def get_valid_address(addresses):
-    m = registers = instruction = address = byte_location = instruction_line = None
-
-    # search for a valid instruction
-    while not m:
-        element = random.randrange(2, len(addresses) - 1)
-        instruction_line = addresses[element]
-
-        registers, address, byte_location, instruction, m = parse_line(instruction_line)
-
-        if cp.DEBUG:
-            if not m:
-                print("it is stopped here:", instruction_line)
-            else:
-                print("it choose something:", instruction_line)
-
-    return registers, instruction, address, byte_location, instruction_line
-
-
-"""
 Selects a valid thread for a specific
 kernel
 return the coordinates for the block
@@ -562,11 +534,11 @@ and the thread
 def get_valid_thread(threads):
     element = random.randrange(2, len(threads) - 4)
     #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
-    splited = threads[element].replace("\n", "").split()
+    split = threads[element].replace("\n", "").split()
 
     # randomly chosen first block and thread
-    block = re.match(".*\((\d+),(\d+),(\d+)\).*", splited[0])
-    thread = re.match(".*\((\d+),(\d+),(\d+)\).*", splited[1])
+    block = re.match(".*\((\d+),(\d+),(\d+)\).*", split[0])
+    thread = re.match(".*\((\d+),(\d+),(\d+)\).*", split[1])
 
     block_x = block.group(1)
     block_y = block.group(2)
@@ -590,29 +562,25 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
-    # A injection site is a list of [registers, instruction, address, byte_location]
-    registers, _, _, _, instruction_line = get_valid_address(kernel_info_dict["addresses"])
-
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
-
-    # Select if it is in the
-    # instruction output
-    # instruction address
-    # register file
     valid_register = None
+
+    # Select INST_OUT, INST_ADD, and RF
+    # instruction output
     if injection_site == 'INST_OUT':
         raise NotImplementedError
+    # instruction address
     elif injection_site == 'INST_ADD':
         raise NotImplementedError
     # Register file
     elif injection_site == 'RF':
         valid_register = 'R' + str(random.randint(0, max_num_regs))
 
-    return valid_thread, valid_block, valid_register, bits_to_flip, instruction_line
+    return valid_thread, valid_block, valid_register, bits_to_flip
 
 
 """
-This function will select the bits that will be fliped
+This function will select the bits that will be flipped
 if it is least significant bits it will reduce the starting bit range
 """
 
@@ -662,10 +630,11 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(fault_model)
                 try:
-                    thread, block, register, bits_to_flip, instruction_line = gen_injection_location(
+                    thread, block, register, bits_to_flip = gen_injection_location(
                         kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
                         injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
 
+                    # Selects the random line to inject
                     kernel_begin = kernel_info_dict["kernel_line"]
                     kernel_end = kernel_info_dict["kernel_end_line"]
                     rand_line = random.randint(int(kernel_begin), int(kernel_end))
@@ -691,14 +660,13 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                     row.extend(
                         [r_old_val, r_new_val, 0, register, break_line, fault_injected,
                          hang,
-                         sdc, instruction_line])
+                         sdc])
                     print(row)
                     summary_file.write_row(row=row)
                     time.sleep(2)
                 except Exception as err:
                     if cp.DEBUG:
                         print("\nERROR ON BREAK POINT MODE: Fault was not injected, {}".format(str(err)))
-
 
 
 """
@@ -842,3 +810,29 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# DEPRECATED
+# """
+# Select a valid stop address
+# from the file created in the profiler
+# step
+# """
+#
+#
+# def get_valid_address(addresses):
+#     m = registers = instruction = address = byte_location = instruction_line = None
+#
+#     # search for a valid instruction
+#     while not m:
+#         element = random.randrange(2, len(addresses) - 1)
+#         instruction_line = addresses[element]
+#
+#         registers, address, byte_location, instruction, m = parse_line(instruction_line)
+#
+#         if cp.DEBUG:
+#             if not m:
+#                 print("it is stopped here:", instruction_line)
+#             else:
+#                 print("it choose something:", instruction_line)
+#
+#     return registers, instruction, address, byte_location, instruction_line

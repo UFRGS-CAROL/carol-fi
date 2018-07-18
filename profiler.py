@@ -91,7 +91,7 @@ def main():
     if time_profiler == 'False':
         kernel_info_list = set_breakpoints(kernel_conf_string)
         for kernel_info in kernel_info_list:
-            kernel_info["breakpoint"].set_kernel_info_list(kernel_info_list=kernel_info_list)
+            kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
         if kludge != 'None':
             kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True, kludge=True)
 
@@ -107,13 +107,13 @@ def main():
         gdb.execute("c")
 
         for kernel_info in kernel_info_list:
-            del kernel_info["breakpoint"]
-            kernel_info["breakpoint"] = None
+            del kernel_info['breakpoint']
+            kernel_info['breakpoint'] = None
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
         del kernel_info_list
 
     if DEBUG_PROFILER:
-        print("FINISH PRFOILER")
+        print('FINISH PROFILER')
 
 
 main()
