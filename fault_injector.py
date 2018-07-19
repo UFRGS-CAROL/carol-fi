@@ -35,6 +35,18 @@ def kill_all(conf):
 
 
 """
+check if gdb is running
+"""
+
+
+def check_gdb_is_alive(gdb_exe_name):
+    check_running = "pgrep -x " + os.path.basename(gdb_exe_name)
+    process = subprocess.Popen(check_running, stdout=subprocess.PIPE, shell=True)
+    while ("", "") != process.communicate():
+        time.sleep(cp.MAX_TIME_TO_CHECK_PROCESS)
+
+
+"""
 Class RunGdb: necessary to run gdb while
 the main thread register the time
 If RunGdb execution time > max timeout allowed
@@ -59,16 +71,11 @@ class RunGDB(Process):
         start_cmd += ' -n --nh --nx -q -batch-silent --return-child-result -x ' + self.__flip_script
         try:
             os.system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &")
-            self.__check_gdb_is_alive()
+            check_gdb_is_alive(self.__gdb_exe_name)
         except Exception as err:
             with open(cp.INJ_ERR_PATH, 'w') as file_err:
                 file_err.write(str(err))
 
-    def __check_gdb_is_alive(self):
-        check_running = "pgrep -x " + os.path.basename(self.__gdb_exe_name)
-        process = subprocess.Popen(check_running, stdout=subprocess.PIPE, shell=True)
-        while ("", "") != process.communicate():
-            time.sleep(cp.MAX_TIME_TO_CHECK_PROCESS)
 
 """
 Class SummaryFile: this class will write the information
@@ -662,7 +669,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                                                                                               current_path=current_path,
                                                                                               kludge=kludge)
                     # Write a row to summary file
-                    row = [unique_id, num_rounds, fault_model]
+                    row = [num_rounds, fault_model]
                     row.extend(thread)
                     row.extend(block)
                     row.extend(
@@ -697,9 +704,10 @@ def profiler_caller(conf):
                                                       "kernelBreaks") + "|" + "True" + "|" + str(kludge)
 
     for i in range(0, cp.MAX_TIMES_TO_PROFILE):
-        profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
+        profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py &"
         start = time.time()
         os.system(profiler_cmd)
+        check_gdb_is_alive(conf.get("DEFAULT", "gdbExecName"))
         end = time.time()
         acc_time += end - start
         kill_all(conf=conf)
@@ -781,7 +789,7 @@ def main():
     fault_models = [int(i) for i in str(conf.get('DEFAULT', 'faultModel')).split(',')]
 
     # Csv log
-    fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
+    fieldnames = ['iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                   'register', 'breakpoint_location', 'fault_successful',
                   'crash', 'sdc']
