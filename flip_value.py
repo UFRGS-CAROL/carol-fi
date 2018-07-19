@@ -94,7 +94,9 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # send the new value to gdb
             reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(self.__register) + " = " + reg_content_fliped)
 
-            self.__logging.info("reg_new_value: " + str(cf.execute_command(gdb, "p/t $" + str(self.__register))))
+            # ['$2 = 100000000111111111111111']
+            to_log_new_value = str(cf.execute_command(gdb, "p/t $" + str(self.__register))[0]).split("=")[1].strip()
+            self.__logging.info("reg_new_value: " + to_log_new_value)
 
             # Log command return only something was printed
             if len(reg_cmd_flipped) > 0:

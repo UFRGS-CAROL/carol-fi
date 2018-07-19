@@ -463,6 +463,7 @@ def run_gdb_fault_injection(**kwargs):
         reg_new_value = logging.search("reg_new_value")
         reg_old_value = re.findall("reg_old_value: (\S+)", reg_old_value)[0]
         reg_new_value = re.findall("reg_new_value: (\S+)", reg_new_value)[0]
+
         fault_successful = True
     except Exception as e:
         reg_new_value = reg_old_value = ''
@@ -776,7 +777,7 @@ def main():
     fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                   'register', 'breakpoint_location', 'fault_successful',
-                  'crash', 'sdc', 'instruction_line']
+                  'crash', 'sdc']
 
     ########################################################################
     # Fault injection
