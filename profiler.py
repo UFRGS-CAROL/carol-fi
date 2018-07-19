@@ -74,8 +74,8 @@ def main():
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
-    gdb.execute("set target-async 1")
-    gdb.execute("set non-stop on")
+    gdb.execute("set target-async off")
+    gdb.execute("set non-stop off")
 
     gdb_init_strings, kernel_conf_string, time_profiler, kludge = str(os.environ["CAROL_FI_INFO"]).split("|")
 
