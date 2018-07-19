@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import os
+import subprocess
 import time
 import datetime
 import random
@@ -57,11 +58,17 @@ class RunGDB(Process):
         start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
         start_cmd += ' -n --nh --nx -q -batch-silent --return-child-result -x ' + self.__flip_script
         try:
-            os.system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH)
+            os.system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &")
+            self.__check_gdb_is_alive()
         except Exception as err:
             with open(cp.INJ_ERR_PATH, 'w') as file_err:
                 file_err.write(str(err))
 
+    def __check_gdb_is_alive(self):
+        check_running = "pgrep -x " + os.path.basename(self.__gdb_exe_name)
+        process = subprocess.Popen(check_running, stdout=subprocess.PIPE, shell=True)
+        while ("", "") != process.communicate():
+            time.sleep(cp.MAX_TIME_TO_CHECK_PROCESS)
 
 """
 Class SummaryFile: this class will write the information

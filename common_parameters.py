@@ -10,6 +10,9 @@ DOUBLE_MAX_SIZE_REGISTER = 64
 # to profiler application
 MAX_TIMES_TO_PROFILE = 2
 
+# Max seconds to check process again
+MAX_TIME_TO_CHECK_PROCESS = 0.01
+
 KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
 INJ_OUTPUT_PATH = "/tmp/carol_fi_inj_bench_output.txt"
 GOLD_ERR_PATH = "/tmp/carol_fi_inj_bench_err.txt"
