@@ -147,6 +147,9 @@ def main():
     # Initialize GDB to run the app
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
+    gdb.execute("set target-async 1")
+    gdb.execute("set non-stop on")
+    
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
 
