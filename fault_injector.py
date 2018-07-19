@@ -42,9 +42,10 @@ check if gdb is running
 def check_gdb_is_alive(gdb_exe_name):
     check_running = "pgrep -x " + os.path.basename(gdb_exe_name)
     process = subprocess.Popen(check_running, stdout=subprocess.PIPE, shell=True)
-    while ("", "") != process.communicate():
+    process.stdin.write(check_running)
+    while "" != process.stdout:
         time.sleep(cp.MAX_TIME_TO_CHECK_PROCESS)
-
+        process.stdin.write(check_running)
 
 """
 Class RunGdb: necessary to run gdb while
