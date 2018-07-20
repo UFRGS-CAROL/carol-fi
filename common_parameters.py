@@ -1,5 +1,3 @@
-GOLD_OUTPUT_PATH = "/tmp/carol_fi_golden_bench_output.txt"
-
 # Max size of register
 HALF_MAX_SIZE_REGISTER = 16
 SINGLE_MAX_SIZE_REGISTER = 32
@@ -13,12 +11,22 @@ MAX_TIMES_TO_PROFILE = 2
 # Max seconds to check process again
 MAX_TIME_TO_CHECK_PROCESS = 0.01
 
+# Temporary file to store kernel information
 KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
+
+# For golden generation
+GOLD_ERR_PATH = "/tmp/carol_fi_golden_bench_err.txt"
+GOLD_OUTPUT_PATH = "/tmp/carol_fi_golden_bench_output.txt"
+
+# Files that will be compared to golden ones
 INJ_OUTPUT_PATH = "/tmp/carol_fi_inj_bench_output.txt"
-GOLD_ERR_PATH = "/tmp/carol_fi_inj_bench_err.txt"
 INJ_ERR_PATH = "/tmp/carol_fi_inj_bench_err.txt"
-CAROL_FI_RUN_SH = "carol_fi_run.sh"
+
+# Internal python scripts
 FLIP_SCRIPT = 'flip_value.py'
+PROFILER_SCRIPT = 'profiler.py'
+
+# Temporary difference logs
 DIFF_LOG = '/tmp/diff.log'
 DIFF_ERR_LOG = '/tmp/diff_err.log'
 
