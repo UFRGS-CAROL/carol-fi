@@ -16,13 +16,15 @@ import common_functions as cf
 import common_parameters as cp
 
 """
-Run some command and return the output
+Run gdb python script with specific parameters
+It makes standart gdb script calls
 """
 
 
-def run_command(command):
-    os.system(command)
-
+def run_gdb_python(gdb_name, script):
+    cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
+    cmd += ' -n --nh --nx -q -batch-silent --return-child-result -x ' + script
+    return cmd
 
 """
 Kill all remaining processes
@@ -55,8 +57,8 @@ class RunGDB(Process):
 
         if cp.DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
-        start_cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + self.__gdb_exe_name
-        start_cmd += ' -n --nh --nx -q -batch-silent --return-child-result -x ' + self.__flip_script
+
+        start_cmd = run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
         try:
             os.system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH)
         except Exception as err:
@@ -164,7 +166,7 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
 
     # Wait maxWaitTimes the normal duration of the program before killing it
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
-    kill_strings = conf.get(section, "killStrs")  # + ";" + "kill -9 " + str(pid)
+    kill_strings = conf.get(section, "killStrs")
 
     p_is_alive = p.is_alive()
     while (now - timestamp_start) < max_wait_time and p_is_alive:
@@ -188,16 +190,15 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
 
     # Kill all the processes to make sure the machine is clean for another test
     for k in kill_strings.split(";"):
-        run_command(k)
+        os.system(k)
         logging.debug("kill cmd: " + k)
 
     # Make sure process check_finish before trying to execute
-    if p.is_alive():
-        p.join()
-        p.terminate()
+    p.join()
+    p.terminate()
 
-        if cp.DEBUG:
-            print("PROCESS JOINED")
+    if cp.DEBUG:
+        print("PROCESS JOINED")
 
     return is_hang
 
@@ -323,28 +324,28 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
         os.system("sh " + sdc_check_script)
 
         # Test if files are ok
-        try:
-            with open(cp.DIFF_LOG, 'r') as fi:
-                out_lines = fi.readlines()
-                if len(out_lines) != 0:
-                    # Check if NVIDIA signals on output
-                    for signal in cp.SIGNALS:
-                        for line in out_lines:
-                            if signal in line:
-                                is_app_crash = True
-                                break
-                    if not is_app_crash:
-                        is_sdc = True
+        # try:
+        with open(cp.DIFF_LOG, 'r') as fi:
+            out_lines = fi.readlines()
+            if len(out_lines) != 0:
+                # Check if NVIDIA signals on output
+                for signal in cp.SIGNALS:
+                    for line in out_lines:
+                        if signal in line:
+                            is_app_crash = True
+                            break
+                if not is_app_crash:
+                    is_sdc = True
 
-            with open(cp.DIFF_ERR_LOG, 'r') as fi_err:
-                err_lines = fi_err.readlines()
-                if len(err_lines) != 0:
-                    is_app_crash = True
-        except Exception as err:
-            if cp.DEBUG:
-                print("ERROR ON TEST FILES OK {}".format(str(err)))
-            is_app_crash = True
-            is_sdc = True
+        with open(cp.DIFF_ERR_LOG, 'r') as fi_err:
+            err_lines = fi_err.readlines()
+            if len(err_lines) != 0:
+                is_app_crash = True
+        # except Exception as err:
+        #     if cp.DEBUG:
+        #         print("ERROR ON TEST FILES OK {}".format(str(err)))
+        #     is_app_crash = True
+        #     is_sdc = True
     return is_sdc, is_app_crash
 
 
@@ -691,7 +692,7 @@ def profiler_caller(conf):
                                                       "kernelBreaks") + "|" + "True" + "|" + str(kludge)
 
     for i in range(0, cp.MAX_TIMES_TO_PROFILE):
-        profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
+        profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script="profiler.py")
         start = time.time()
         os.system(profiler_cmd)
         end = time.time()
@@ -716,9 +717,9 @@ def generate_gold(conf):
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + str(kludge)
-    profiler_cmd = conf.get("DEFAULT", "gdbExecName") + " -n -q -batch -x profiler.py"
-    run_command(profiler_cmd)
-    return "", ""
+    profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script="profiler.py")
+    # Execute and save gold file
+    os.system(profiler_cmd + " > " + cp.GOLD_OUTPUT_PATH + " 2> " + cp.GOLD_ERR_PATH)
 
 
 """
@@ -757,13 +758,7 @@ def main():
     max_time_app = profiler_caller(conf=conf)
 
     # saving gold
-    gold_out_app, gold_err_app = generate_gold(conf=conf)
-    # save gold file
-    with open(cp.GOLD_OUTPUT_PATH, "w") as gold_file:
-        gold_file.write(gold_out_app)
-    with open(cp.GOLD_ERR_PATH, "w") as gold_err_file:
-        if gold_err_app:
-            gold_err_file.write(gold_err_app)
+    generate_gold(conf=conf)
 
     print("1 - Profile finished\n###################################################")
     print("2 - Starting fault injection\n###################################################")

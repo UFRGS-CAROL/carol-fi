@@ -44,9 +44,11 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
         try:
             # Do the fault injection magic
-            self.__generic_injector()
+            if self.__generic_injector():
+                self.__logging.info("Fault Injection Successful")
+            else:
+                self.__logging.info("Fault Injection Went Wrong, reg_old and reg_new are the same")
 
-            self.__logging.info("Fault Injection Successful")
         except Exception as err:
             self.__logging.exception("fault_injection_python_exception: " + str(err))
             self.__logging.exception("Fault Injection Went Wrong")
@@ -90,13 +92,13 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             elif self.__fault_model == 3:
                 reg_content_new = '0'
 
-            reg_content_fliped = str(int(reg_content_new, 2))
+            reg_content_flipped = str(int(reg_content_new, 2))
             # send the new value to gdb
-            reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(self.__register) + " = " + reg_content_fliped)
+            reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(self.__register) + " = " + reg_content_flipped)
 
             # ['$2 = 100000000111111111111111']
-            to_log_new_value = str(cf.execute_command(gdb, "p/t $" + str(self.__register))[0]).split("=")[1].strip()
-            self.__logging.info("reg_new_value: " + to_log_new_value)
+            reg_modified = str(cf.execute_command(gdb, "p/t $" + str(self.__register))[0]).split("=")[1].strip()
+            self.__logging.info("reg_new_value: " + reg_modified)
 
             # Log command return only something was printed
             if len(reg_cmd_flipped) > 0:
