@@ -656,7 +656,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                                                                                               current_path=current_path,
                                                                                               kludge=kludge)
                     # Write a row to summary file
-                    row = [unique_id, num_rounds, fault_model]
+                    row = [num_rounds, fault_model]
                     row.extend(thread)
                     row.extend(block)
                     row.extend(
@@ -775,7 +775,7 @@ def main():
     fault_models = [int(i) for i in str(conf.get('DEFAULT', 'faultModel')).split(',')]
 
     # Csv log
-    fieldnames = ['unique_id', 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
+    fieldnames = ['iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                   'register', 'breakpoint_location', 'fault_successful',
                   'crash', 'sdc']
