@@ -243,28 +243,13 @@ def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, out
     if not os.path.isdir(cp_dir):
         os.makedirs(cp_dir)
 
-    try:
-        shutil.move(flip_log_file, cp_dir)
-    except Exception as err:
-        if cp.DEBUG:
-            print("ERROR ON MOVING {} -- {}".format(flip_log_file, str(err)))
-
-    try:
-        shutil.move(cp.INJ_OUTPUT_PATH, cp_dir)
-    except Exception as err:
-        if cp.DEBUG:
-            print("ERROR ON MOVING {} -- {}".format(cp.INJ_OUTPUT_PATH, str(err)))
-
-    try:
-        shutil.move(cp.INJ_ERR_PATH, cp_dir)
-    except Exception as err:
-        if cp.DEBUG:
-            print("ERROR ON MOVING {} -- {}".format(cp.INJ_ERR_PATH, str(err)))
-    try:
-        shutil.move(cp.DIFF_LOG, cp_dir)
-    except Exception as err:
-        if cp.DEBUG:
-            print("ERROR ON MOVING {} -- {}".format(cp.DIFF_LOG, str(err)))
+    # Moving all necessary files
+    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG]:
+        try:
+            shutil.move(file_to_move, cp_dir)
+        except Exception as err:
+            if cp.DEBUG:
+                print("ERROR ON MOVING {} -- {}".format(file_to_move, str(err)))
 
 
 """
