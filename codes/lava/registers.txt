@@ -1,0 +1,166 @@
+./cuda_lava.cu(1052): warning: variable "d_fv_gold_gpu" is used before its value is set
+
+./cuda_lava.cu(1052): warning: variable "d_fv_gold_gpu" is used before its value is set
+
+ptxas info    : 0 bytes gmem
+ptxas info    : Function properties for _ZN6__halfC2Ed
+    8 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for cudaFuncGetAttributes
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hsubE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a212__float2halfEf
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaGetDevice
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN4dim3C1Ejjj
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN6__halfC1Ed
+    32 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hnegE6__half
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZN6__halfaSEd
+    40 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for cudaDeviceGetAttribute
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hmulE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Compiling entry function '_Z15kernel_gpu_cuda7par_str7dim_strP7box_strP11FOUR_VECTORP6__halfS4_' for 'sm_60'
+ptxas info    : Function properties for _Z15kernel_gpu_cuda7par_str7dim_strP7box_strP11FOUR_VECTORP6__halfS4_
+    360 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 53 registers, 400 bytes cumulative stack size, 3600 bytes smem, 416 bytes cmem[0], 24 bytes cmem[2]
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__haddE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaOccupancyMaxActiveBlocksPerMultiprocessor
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN4dim3C2Ejjj
+    16 bytes stack frame, 16 bytes spill stores, 16 bytes spill loads
+ptxas info    : Function properties for cudaMalloc
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a24hexpE6__half
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+./cuda_lava.cu(1052): warning: variable "d_fv_gold_gpu" is used before its value is set
+
+ptxas info    : 0 bytes gmem
+ptxas info    : Function properties for _ZN6__halfC2Ed
+    8 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for cudaFuncGetAttributes
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hsubE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a212__float2halfEf
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaGetDevice
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN4dim3C1Ejjj
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN6__halfC1Ed
+    32 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hnegE6__half
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZN6__halfaSEd
+    40 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for cudaDeviceGetAttribute
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hmulE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Compiling entry function '_Z15kernel_gpu_cuda7par_str7dim_strP7box_strP11FOUR_VECTORP6__halfS4_' for 'sm_61'
+ptxas info    : Function properties for _Z15kernel_gpu_cuda7par_str7dim_strP7box_strP11FOUR_VECTORP6__halfS4_
+    360 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 53 registers, 400 bytes cumulative stack size, 3600 bytes smem, 416 bytes cmem[0]
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__haddE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaOccupancyMaxActiveBlocksPerMultiprocessor
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN4dim3C2Ejjj
+    16 bytes stack frame, 16 bytes spill stores, 16 bytes spill loads
+ptxas info    : Function properties for cudaMalloc
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a24hexpE6__half
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+./cuda_lava.cu(1052): warning: variable "d_fv_gold_gpu" is used before its value is set
+
+ptxas info    : 0 bytes gmem
+ptxas info    : Function properties for _ZN6__halfC2Ed
+    8 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for cudaFuncGetAttributes
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hsubE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a212__float2halfEf
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaGetDevice
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN4dim3C1Ejjj
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN6__halfC1Ed
+    32 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hnegE6__half
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZN6__halfaSEd
+    40 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for cudaDeviceGetAttribute
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hmulE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Compiling entry function '_Z15kernel_gpu_cuda7par_str7dim_strP7box_strP11FOUR_VECTORP6__halfS4_' for 'sm_62'
+ptxas info    : Function properties for _Z15kernel_gpu_cuda7par_str7dim_strP7box_strP11FOUR_VECTORP6__halfS4_
+    360 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 53 registers, 400 bytes cumulative stack size, 3600 bytes smem, 416 bytes cmem[0], 24 bytes cmem[2]
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__haddE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaOccupancyMaxActiveBlocksPerMultiprocessor
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN4dim3C2Ejjj
+    16 bytes stack frame, 16 bytes spill stores, 16 bytes spill loads
+ptxas info    : Function properties for cudaMalloc
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a24hexpE6__half
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : 0 bytes gmem
+ptxas info    : Function properties for _ZN6__halfC2Ed
+    16 bytes stack frame, 16 bytes spill stores, 16 bytes spill loads
+ptxas info    : Function properties for cudaFuncGetAttributes
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hsubE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a212__float2halfEf
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaGetDevice
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN4dim3C1Ejjj
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN6__halfC1Ed
+    40 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hnegE6__half
+    24 bytes stack frame, 16 bytes spill stores, 16 bytes spill loads
+ptxas info    : Function properties for _ZN6__halfaSEd
+    48 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for cudaDeviceGetAttribute
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__hmulE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Compiling entry function '_Z15kernel_gpu_cuda7par_str7dim_strP7box_strP11FOUR_VECTORP6__halfS4_' for 'sm_70'
+ptxas info    : Function properties for _Z15kernel_gpu_cuda7par_str7dim_strP7box_strP11FOUR_VECTORP6__halfS4_
+    360 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 57 registers, 408 bytes cumulative stack size, 3600 bytes smem, 448 bytes cmem[0], 24 bytes cmem[2]
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a26__haddE6__halfS0_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cudaOccupancyMaxActiveBlocksPerMultiprocessor
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN4dim3C2Ejjj
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for cudaMalloc
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZN78_INTERNAL_56_tmpxft_00004d7d_00000000_11_cuda_lava_compute_70_cpp1_ii_bb1c45a24hexpE6__half
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+./cuda_lava.cu(1052): warning: variable "d_fv_gold_gpu" is used before its value is set
+
