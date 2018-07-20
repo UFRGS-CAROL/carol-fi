@@ -148,7 +148,7 @@ def main():
     gdb.execute("set confirm off")
     gdb.execute("set pagination off")
     gdb.execute("set target-async off")
-    gdb.execute("set non-stop off")
+    gdb.execute("set non-stop on")
 
     # Connecting to a exit handler event
     gdb.events.exited.connect(exit_handler)
