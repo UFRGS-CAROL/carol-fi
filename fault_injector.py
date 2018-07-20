@@ -326,7 +326,6 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
         # Test if files are ok
         with open(cp.DIFF_LOG, 'r') as fi:
             out_lines = fi.readlines()
-            print(out_lines)
             if len(out_lines) != 0:
                 # Check if NVIDIA signals on output
                 for signal in cp.SIGNALS:
@@ -341,7 +340,6 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
 
         with open(cp.DIFF_ERR_LOG, 'r') as fi_err:
             err_lines = fi_err.readlines()
-            print(err_lines)
             if len(err_lines) != 0:
                 is_app_crash = True
 
@@ -792,11 +790,11 @@ def main():
     print("###################################################")
     # Clear /tmp files generated
     os.system("rm -f /tmp/carol-fi-kernel-info.txt")
-    os.system("rm -f " + cp.GOLD_OUTPUT_PATH)
-    os.system("rm -f " + cp.INJ_OUTPUT_PATH)
-    os.system("rm -f " + cp.GOLD_ERR_PATH)
-    os.system("rm -f " + cp.INJ_ERR_PATH)
-    os.system("rm -f " + cp.DIFF_ERR_LOG + " " + cp.DIFF_LOG)
+    # os.system("rm -f " + cp.GOLD_OUTPUT_PATH)
+    # os.system("rm -f " + cp.INJ_OUTPUT_PATH)
+    # os.system("rm -f " + cp.GOLD_ERR_PATH)
+    # os.system("rm -f " + cp.INJ_ERR_PATH)
+    # os.system("rm -f " + cp.DIFF_ERR_LOG + " " + cp.DIFF_LOG)
     ########################################################################
 
 
@@ -806,29 +804,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# DEPRECATED
-# """
-# Select a valid stop address
-# from the file created in the profiler
-# step
-# """
-#
-#
-# def get_valid_address(addresses):
-#     m = registers = instruction = address = byte_location = instruction_line = None
-#
-#     # search for a valid instruction
-#     while not m:
-#         element = random.randrange(2, len(addresses) - 1)
-#         instruction_line = addresses[element]
-#
-#         registers, address, byte_location, instruction, m = parse_line(instruction_line)
-#
-#         if cp.DEBUG:
-#             if not m:
-#                 print("it is stopped here:", instruction_line)
-#             else:
-#                 print("it choose something:", instruction_line)
-#
-#     return registers, instruction, address, byte_location, instruction_line
