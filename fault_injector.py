@@ -689,7 +689,7 @@ def profiler_caller(conf):
                                                       "kernelBreaks") + "|" + "True" + "|" + str(kludge)
 
     for i in range(0, cp.MAX_TIMES_TO_PROFILE):
-        profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script="profiler.py")
+        profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
         start = time.time()
         os.system(profiler_cmd)
         end = time.time()
@@ -714,7 +714,7 @@ def generate_gold(conf):
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + str(kludge)
-    profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script="profiler.py")
+    profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
     # Execute and save gold file
     os.system(profiler_cmd + " > " + cp.GOLD_OUTPUT_PATH + " 2> " + cp.GOLD_ERR_PATH)
 
