@@ -324,9 +324,9 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
         os.system("sh " + sdc_check_script)
 
         # Test if files are ok
-        # try:
         with open(cp.DIFF_LOG, 'r') as fi:
             out_lines = fi.readlines()
+            print(out_lines)
             if len(out_lines) != 0:
                 # Check if NVIDIA signals on output
                 for signal in cp.SIGNALS:
@@ -334,18 +334,17 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
                         if signal in line:
                             is_app_crash = True
                             break
+                    if is_app_crash:
+                        break
                 if not is_app_crash:
                     is_sdc = True
 
         with open(cp.DIFF_ERR_LOG, 'r') as fi_err:
             err_lines = fi_err.readlines()
+            print(err_lines)
             if len(err_lines) != 0:
                 is_app_crash = True
-        # except Exception as err:
-        #     if cp.DEBUG:
-        #         print("ERROR ON TEST FILES OK {}".format(str(err)))
-        #     is_app_crash = True
-        #     is_sdc = True
+
     return is_sdc, is_app_crash
 
 
