@@ -519,6 +519,7 @@ and the thread
 def get_valid_thread(threads):
     element = random.randrange(2, len(threads))
     #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
+    print(threads[element])
     split = threads[element].replace("\n", "").split()
 
     # randomly chosen first block and thread
