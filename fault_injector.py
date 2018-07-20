@@ -517,6 +517,7 @@ and the thread
 
 
 def get_valid_thread(threads):
+    print(threads)
     element = random.randrange(2, len(threads) - 4)
     #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
     split = threads[element].replace("\n", "").split()
