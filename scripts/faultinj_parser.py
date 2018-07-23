@@ -6,17 +6,20 @@ from collections import Counter
 
 varSDCList = list()
 varCrashList = list()
+varHangList = list()
 flipList = list()
 faultModelCrash = list()
+faultModelHang = list()
 faultModelSDC = list()
 
 flipCount = 0
 sdcCount = 0
 crashCount = 0
-sdcCrashCount = 0
+hangCount = 0
 
 sdcFilename = "sdc.csv"
 crashFilename = "crash.csv"
+hangFilename = "hang.csv"
 summFilename = "summary.csv"
 
 def processDirectory(dirName, fileList):
@@ -25,6 +28,7 @@ def processDirectory(dirName, fileList):
     flip=False
     sdc=0
     crash=0
+    hang=0
     var = ""
     varFile = ""
     varLine = ""
@@ -40,7 +44,11 @@ def processDirectory(dirName, fileList):
                 sdc = 1
             else:
                 sdc = 0
-            if re.search("hangs",dirName) or re.search("noOutputGenerated",dirName):
+            if re.search("hangs",dirName):
+                hang = 1
+            else:
+                hang = 0
+            if re.search("crashes",dirName) or re.search("noOutputGenerated",dirName):
                 crash = 1
             else:
                 crash = 0
@@ -48,7 +56,7 @@ def processDirectory(dirName, fileList):
         global flipCount
         global sdcCount
         global crashCount
-        global sdcCrashCount
+        global hangCount
         if var != "":
             flipCount += 1
             varInfo = var+";"+varFile+";"+str(varLine)
@@ -61,7 +69,7 @@ def processDirectory(dirName, fileList):
                 writer = csv.writer(csvWFP, delimiter=';')
                 writer.writerow([var,varFile,str(varLine),str(faultTime),str(signalTime),str(faultModel)])
                 csvWFP.close()
-            if crash == 1:
+            elif crash == 1:
                 crashCount += 1
                 varCrashList.append(varInfo)
                 faultModelCrash.append(faultModel)
@@ -69,8 +77,14 @@ def processDirectory(dirName, fileList):
                 writer = csv.writer(csvWFP, delimiter=';')
                 writer.writerow([var,varFile,str(varLine),str(faultTime),str(signalTime),str(faultModel)])
                 csvWFP.close()
-            if sdc == 1 and crash == 1:
-                sdcCrashCount += 1
+            elif hang == 1:
+                hangCount += 1
+                varHangList.append(varInfo)
+                faultModelHang.append(faultModel)
+                csvWFP = open(current_folder_name+"_"+hangFilename, "a")
+                writer = csv.writer(csvWFP, delimiter=';')
+                writer.writerow([var,varFile,str(varLine),str(faultTime),str(signalTime),str(faultModel)])
+                csvWFP.close()
 
 
 def getSDCCrashInfo(dirName, fname):
@@ -168,6 +182,10 @@ csvWFP = open(current_folder_name+"_"+crashFilename, "w")
 writer = csv.writer(csvWFP, delimiter=';')
 writer.writerow(["Variable Name","Variable File","Variable Line","Fault Injection Time(s)","Injection Time Interval","Fault Model"])
 csvWFP.close()
+csvWFP = open(current_folder_name+"_"+hangFilename, "w")
+writer = csv.writer(csvWFP, delimiter=';')
+writer.writerow(["Variable Name","Variable File","Variable Line","Fault Injection Time(s)","Injection Time Interval","Fault Model"])
+csvWFP.close()
 
 # Set the directory you want to start from
 rootDir = '.'
@@ -180,7 +198,7 @@ fp = open(current_folder_name+"_"+summFilename, "w")
 fp.write("bitflips:;"+str(flipCount))
 fp.write("\nSDCs:;"+str(sdcCount))
 fp.write("\nCrashes:;"+str(crashCount))
-fp.write("\nSimultaneous SDCs and Crashes:;"+str(sdcCrashCount))
+fp.write("\nHangs:;"+str(hangCount))
 fp.write("\n\n")
 
 flips = Counter(flipList)
@@ -199,6 +217,13 @@ for k,v in Counter(faultModelCrash).most_common():
     fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
 fp.write("\n\n")
+fp.write("FaultModels Hangs:")
+fp.write("\nFaultModel ;#Hangs; percentage")
+for k,v in Counter(faultModelHang).most_common():
+    per = float(v)/float(sdcCount) * 100
+    fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
+
+fp.write("\n\n")
 fp.write("Variables that caused SDCs:")
 fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
 for k,v in Counter(varSDCList).most_common():
@@ -209,6 +234,13 @@ fp.write("\n")
 fp.write("\nVariables that caused Crash:")
 fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
 for k,v in Counter(varCrashList).most_common():
+    pvf = float(v)/float(flips[k]) * 100
+    fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
+
+fp.write("\n")
+fp.write("\nVariables that caused Hang:")
+fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
+for k,v in Counter(varHangList).most_common():
     pvf = float(v)/float(flips[k]) * 100
     fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
 
