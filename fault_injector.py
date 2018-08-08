@@ -670,6 +670,9 @@ def profiler_caller(conf):
         "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
                                                       "kernelBreaks") + "|" + "True" + "|" + str(kludge)
 
+    if cp.DEBUG:
+        print(os.environ['CAROL_FI_INFO'])
+
     for i in range(0, cp.MAX_TIMES_TO_PROFILE):
         profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
         start = time.time()
