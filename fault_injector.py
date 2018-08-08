@@ -699,6 +699,10 @@ def generate_gold(conf):
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
         "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + str(kludge)
+
+    if cp.DEBUG:
+        print(os.environ['CAROL_FI_INFO'])
+
     profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
     # Execute and save gold file
     os.system(profiler_cmd + " > " + cp.GOLD_OUTPUT_PATH + " 2> " + cp.GOLD_ERR_PATH)
