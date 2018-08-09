@@ -109,14 +109,16 @@ def main():
 
         try:
             while "The program is not being run" not in gdb.execute("c", to_string=True):
-                for kernel_info in kernel_info_list:
-                    print(kernel_info['breakpoint'].hit_count)
-        except:
-            pass
-        
+                pass
+        except gdb.error as err:
+            print str(err)
+
         for kernel_info in kernel_info_list:
+            kernel_info['breakpoint_hit_count'] = kernel_info['breakpoint'].hit_count
+            kernel_info['breakpoint'].delete()
             del kernel_info['breakpoint']
             kernel_info['breakpoint'] = None
+
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
         del kernel_info_list
 
