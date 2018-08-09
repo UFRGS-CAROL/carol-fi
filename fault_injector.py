@@ -717,7 +717,7 @@ def generate_gold(conf):
 
     profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
     # Execute and save gold file
-    os.system(profiler_cmd + " > " + cp.GOLD_OUTPUT_PATH + " 2> " + cp.GOLD_ERR_PATH)
+    os.system(profiler_cmd) # + " > " + cp.GOLD_OUTPUT_PATH + " 2> " + cp.GOLD_ERR_PATH)
 
 
 """
