@@ -122,9 +122,6 @@ def main():
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
         del kernel_info_list
 
-    else:
-        gdb.execute("c")
-
     if DEBUG_PROFILER:
         print('FINISH PROFILER')
 
