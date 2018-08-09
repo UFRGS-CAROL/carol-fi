@@ -100,6 +100,7 @@ def main():
     gdb.execute("r")
 
     if kludge_breakpoint:
+        kludge_breakpoint.delete()
         del kludge_breakpoint
 
     # Second: save the retrieved information on a txt file
@@ -110,7 +111,7 @@ def main():
         try:
             gdb_return = gdb.execute("c", to_string=True)
             while "The program is not being run" not in gdb_return:
-                print(gdb_return)
+                #print(gdb_return)
                 pass
         except gdb.error as err:
             print str(err)
