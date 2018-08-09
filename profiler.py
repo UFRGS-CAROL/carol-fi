@@ -58,7 +58,7 @@ def set_breakpoints(kernel_conf_string):
             kernel_places = kernel_line.split("-")
             k_l = kernel_places[0]
             kernel_info = {
-                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True),
+                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT),  # , temporary=True
                 'kernel_name': kernel_places[0].split(":")[0],
                 'kernel_line': kernel_places[0].split(":")[1],
                 'kernel_end_line': kernel_places[1].split(":")[1]
