@@ -26,6 +26,7 @@ def run_gdb_python(gdb_name, script):
     cmd += ' -n --nh --nx -q -batch-silent --return-child-result -x ' + script
     return cmd
 
+
 """
 Kill all remaining processes
 """
@@ -340,12 +341,13 @@ The default parameters are necessary for break and signal mode differentiations
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   breakpoint_location, flip_log_file, debug, gdb_init_strings, kludge):
+                   breakpoint_location, flip_log_file, debug, gdb_init_strings, kludge, breaks_to_ignore):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + breakpoint_location
     env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + str(kludge)
+    env_string += "|" + str(breaks_to_ignore)
 
     if cp.DEBUG:
         print("ENV STRING:", env_string)
@@ -377,6 +379,9 @@ def run_gdb_fault_injection(**kwargs):
     # SDC check parameters
     current_path = kwargs.get('current_path')
 
+    # Breaks to ignore
+    injection_place = kwargs.get('breaks_to_ignore')
+
     # Logging file
     flip_log_file = "/tmp/carolfi-flipvalue-{}.log".format(unique_id)
 
@@ -397,7 +402,8 @@ def run_gdb_fault_injection(**kwargs):
                    fault_model=fault_model,
                    breakpoint_location=breakpoint_location,
                    flip_log_file=flip_log_file,
-                   kludge=kludge)
+                   kludge=kludge,
+                   breaks_to_ignore=injection_place)
 
     if cp.DEBUG:
         print("ENV GENERATE FINISHED")
@@ -544,6 +550,9 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
+    # Randomly choose a place to inject a fault
+    injection_place = random.randint(0, kernel_info_dict["breakpoint_hit_count"])
+
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
     valid_register = None
 
@@ -558,7 +567,7 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     elif injection_site == 'RF':
         valid_register = 'R' + str(random.randint(0, max_num_regs))
 
-    return valid_thread, valid_block, valid_register, bits_to_flip
+    return valid_thread, valid_block, valid_register, bits_to_flip, injection_place
 
 
 """
@@ -612,7 +621,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(fault_model)
                 try:
-                    thread, block, register, bits_to_flip = gen_injection_location(
+                    thread, block, register, bits_to_flip, injection_place = gen_injection_location(
                         kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
                         injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
 
@@ -634,7 +643,9 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                                                                                               break_line=break_line,
                                                                                               max_time=max_time,
                                                                                               current_path=current_path,
-                                                                                              kludge=kludge)
+                                                                                              kludge=kludge,
+                                                                                              breaks_to_ignore=
+                                                                                              injection_place)
                     # Write a row to summary file
                     row = [num_rounds, fault_model]
                     row.extend(thread)

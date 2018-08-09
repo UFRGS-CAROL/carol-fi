@@ -15,6 +15,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         self.__bits_to_flip = kwargs.pop('bits_to_flip') if 'bits_to_flip' in kwargs else None
         self.__fault_model = kwargs.pop('fault_model') if 'fault_model' in kwargs else None
         self.__logging = kwargs.pop('logging') if 'logging' in kwargs else None
+        self.ignore_count = int(kwargs.pop('breaks_to_ignore')) if 'breaks_to_ignore' in kwargs else 0
 
         super(FaultInjectionBreakpoint, self).__init__(*args, **kwargs)
 
@@ -160,7 +161,7 @@ def main():
     # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
     # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
     [block, thread, register, bits_to_flip, fault_model, breakpoint_location,
-     flip_log_file, debug, gdb_init_strings, kludge] = str(os.environ['CAROL_FI_INFO']).split('|')
+     flip_log_file, debug, gdb_init_strings, kludge, ignore_breaks] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Logging
     global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
@@ -185,7 +186,8 @@ def main():
     breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
                                                       bits_to_flip=bits_to_flip, fault_model=fault_model,
                                                       logging=global_logging, spec=breakpoint_location,
-                                                      type=gdb.BP_BREAKPOINT, temporary=True)
+                                                      type=gdb.BP_BREAKPOINT, breaks_to_ignore=ignore_breaks)
+    # ,  temporary=True)
 
     kludge_breakpoint = None
     if kludge != 'None':
