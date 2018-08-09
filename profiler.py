@@ -18,6 +18,7 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         self.__kludge = kwargs.pop('kludge') if 'kludge' in kwargs else False
         self.__kernel_line = kwargs.get('spec')
         self.__kernel_info_list = None
+        self.hit_count = 0
         super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
     def set_kernel_info_list(self, kernel_info_list):
@@ -34,6 +35,7 @@ class ProfilerBreakpoint(gdb.Breakpoint):
             if kernel_info["breakpoint"].__kernel_line == self.__kernel_line:
                 kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
                 kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
+        self.hit_count += 1
         return True
 
 
@@ -95,18 +97,21 @@ def main():
         for kernel_info in kernel_info_list:
             kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
         if kludge != 'None':
-            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, temporary=True, kludge=True)
+            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, kludge=True)  # temporary=True,
 
     gdb.execute("r")
 
     if kludge_breakpoint:
         del kludge_breakpoint
-        gdb.execute("c")
 
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
     if time_profiler == 'False':
-        gdb.execute("c")
+        # gdb.execute("c")
+
+        while "The program is not being run" not in gdb.execute("c", to_string=True):
+            for kernel_info in kernel_info_list:
+                print(kernel_info['breakpoint'].hit_count)
 
         for kernel_info in kernel_info_list:
             del kernel_info['breakpoint']
