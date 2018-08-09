@@ -18,6 +18,7 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         self.__kludge = kwargs.pop('kludge') if 'kludge' in kwargs else False
         self.__kernel_line = kwargs.get('spec')
         self.__kernel_info_list = None
+        self.__first_pass = True
         super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
     def set_kernel_info_list(self, kernel_info_list):
@@ -28,6 +29,10 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         if DEBUG_PROFILER:
             print("IT IS IN STOP METHOD")
         if self.__kludge:
+            return True
+
+        if self.__first_pass:
+            self.__first_pass = False
             return True
 
         for kernel_info in self.__kernel_info_list:
@@ -100,7 +105,7 @@ def main():
     gdb.execute("r")
 
     if kludge_breakpoint:
-        kludge_breakpoint.delete()
+        # kludge_breakpoint.delete()
         del kludge_breakpoint
 
     # Second: save the retrieved information on a txt file
