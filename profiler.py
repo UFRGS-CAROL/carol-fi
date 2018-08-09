@@ -108,7 +108,9 @@ def main():
         # gdb.execute("c")
 
         try:
-            while "The program is not being run" not in gdb.execute("c", to_string=True):
+            gdb_return = gdb.execute("c", to_string=True)
+            while "The program is not being run" not in gdb_return:
+                print(gdb_return)
                 pass
         except gdb.error as err:
             print str(err)
