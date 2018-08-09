@@ -95,11 +95,12 @@ def main():
         for kernel_info in kernel_info_list:
             kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
         if kludge != 'None':
-            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, kludge=True)  # temporary=True,
+            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT,  temporary=True, kludge=True) 
 
     gdb.execute("r")
 
     if kludge_breakpoint:
+
         del kludge_breakpoint
 
     # Second: save the retrieved information on a txt file
