@@ -95,7 +95,7 @@ def main():
         for kernel_info in kernel_info_list:
             kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
         if kludge != 'None':
-            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT,  kludge=True) # temporary=True,
+            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT,  kludge=True, temporary=True)
 
     gdb.execute("r")
 
