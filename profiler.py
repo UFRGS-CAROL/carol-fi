@@ -107,11 +107,13 @@ def main():
     if time_profiler == 'False':
         # gdb.execute("c")
 
-        while "The program is not being run" != gdb.error:
-            gdb.execute("c")
-            for kernel_info in kernel_info_list:
-                print(kernel_info['breakpoint'].hit_count)
-
+        try:
+            while "The program is not being run" not in gdb.execute("c", to_string=True):
+                for kernel_info in kernel_info_list:
+                    print(kernel_info['breakpoint'].hit_count)
+        except:
+            pass
+        
         for kernel_info in kernel_info_list:
             del kernel_info['breakpoint']
             kernel_info['breakpoint'] = None
