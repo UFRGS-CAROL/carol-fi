@@ -2,7 +2,7 @@
 import argparse
 import os
 
-from datetime import time
+import time
 
 import common_functions as cf
 import common_parameters as cp
@@ -95,7 +95,7 @@ def main():
     # saving gold
     generate_gold(conf=conf)
 
-    print("Profile finished, \n###################################################")
+    print("1 - Profile finished, \n###################################################")
 
 
 if __name__ == '__main__':

@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 import os
-import subprocess
 import time
 import datetime
 import random
