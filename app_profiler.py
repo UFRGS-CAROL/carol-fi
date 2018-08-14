@@ -61,7 +61,7 @@ def generate_gold(conf):
 
     profiler_cmd = cf.run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
     # Execute and save gold file
-    os.system(profiler_cmd)  # + " > " + cp.GOLD_OUTPUT_PATH + " 2> " + cp.GOLD_ERR_PATH)
+    os.system(profiler_cmd)
 
 
 def main():
@@ -88,14 +88,12 @@ def main():
 
     # saving gold
     generate_gold(conf=conf)
-    
+
     # Load and re-save the kernel configuration txt file
     kernel_list = cf.load_file(file_path=cp.KERNEL_INFO_DIR)
     for kernel_dict in kernel_list:
         kernel_dict['max_time'] = max_time_app
     cf.save_file(file_path=cp.KERNEL_INFO_DIR, data=kernel_list)
-
-
 
     print("1 - Profile finished, \n###################################################")
 
