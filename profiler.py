@@ -112,11 +112,9 @@ def main():
     # Save the information on file to the output
     if time_profiler == 'False':
         # gdb.execute("c")
-        print("PASSSOU AQUI")
         try:
             gdb_return = gdb.execute("c", to_string=True)
             while "The program is not being run" not in gdb_return:
-                #print(gdb_return)
                 pass
         except gdb.error as err:
             print str(err)

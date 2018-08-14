@@ -16,29 +16,6 @@ import common_functions as cf
 import common_parameters as cp
 
 """
-Run gdb python script with specific parameters
-It makes standart gdb script calls
-"""
-
-
-def run_gdb_python(gdb_name, script):
-    cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
-    cmd += ' -n -batch -x ' + script  # -batch-silent
-    #-n --nh --nx -q --return-child-result -x
-    return cmd
-
-
-"""
-Kill all remaining processes
-"""
-
-
-def kill_all(conf):
-    for cmd in str(conf.get("DEFAULT", "killStrs")).split(";"):
-        os.system(cmd)
-
-
-"""
 Class RunGdb: necessary to run gdb while
 the main thread register the time
 If RunGdb execution time > max timeout allowed
@@ -60,7 +37,7 @@ class RunGDB(Process):
         if cp.DEBUG:
             print("GDB Thread run, section and id: ", self.__unique_id)
 
-        start_cmd = run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
+        start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
         try:
             os.system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH)
         except Exception as err:
@@ -467,7 +444,7 @@ def run_gdb_fault_injection(**kwargs):
         section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
         flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
-    kill_all(conf=conf)
+    cf.kill_all(conf=conf)
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
 
@@ -605,8 +582,7 @@ by creating a breakpoint and steeping into it
 """
 
 
-def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_list, summary_file,
-                                  max_time, current_path):
+def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_list, summary_file, current_path):
     # kludge
     if conf.has_option("DEFAULT", "kludge"):
         kludge = conf.get("DEFAULT", "kludge")
@@ -632,6 +608,9 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                     rand_line = random.randint(int(kernel_begin), int(kernel_end))
                     break_line = str(kernel_info_dict["kernel_name"] + ":"
                                      + str(rand_line))
+
+                    # max time that app can run
+                    max_time = kernel_info_dict["max_time"]
 
                     r_old_val, r_new_val, fault_injected, hang, sdc = run_gdb_fault_injection(section="DEFAULT",
                                                                                               conf=conf,
@@ -664,63 +643,6 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
 
 
 """
-Function that calls the profiler based on the injection mode
-"""
-
-
-def profiler_caller(conf):
-    acc_time = 0
-
-    # kludge
-    if conf.has_option("DEFAULT", "kludge"):
-        kludge = conf.get("DEFAULT", "kludge")
-    else:
-        kludge = None
-
-    # First MAX_TIMES_TO_PROFILE is necessary to measure the application running time
-    os.environ['CAROL_FI_INFO'] = conf.get(
-        "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                      "kernelBreaks") + "|" + "True" + "|" + str(kludge)
-
-    if cp.DEBUG:
-        print(os.environ['CAROL_FI_INFO'])
-
-    for i in range(0, cp.MAX_TIMES_TO_PROFILE):
-        profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
-        start = time.time()
-        os.system(profiler_cmd)
-        end = time.time()
-        acc_time += end - start
-        kill_all(conf=conf)
-
-    return acc_time / cp.MAX_TIMES_TO_PROFILE
-
-
-"""
-Function to generate the gold execution
-"""
-
-
-def generate_gold(conf):
-    # kludge
-    if conf.has_option("DEFAULT", "kludge"):
-        kludge = conf.get("DEFAULT", "kludge")
-    else:
-        kludge = None
-
-    # This run is to get carol-fi-kernel-info.txt
-    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-        "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + str(kludge)
-
-    if cp.DEBUG:
-        print(os.environ['CAROL_FI_INFO'])
-
-    profiler_cmd = run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
-    # Execute and save gold file
-    os.system(profiler_cmd) # + " > " + cp.GOLD_OUTPUT_PATH + " 2> " + cp.GOLD_ERR_PATH)
-
-
-"""
 Main function
 """
 
@@ -747,18 +669,6 @@ def main():
     current_path = os.path.dirname(os.path.realpath(__file__))
     os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path
 
-    ########################################################################
-    # Profiler step
-    # Max time will be obtained by running
-    # it will also get app output for golden copy
-    # that is,
-    print("###################################################\n1 - Profiling application")
-    max_time_app = profiler_caller(conf=conf)
-
-    # saving gold
-    generate_gold(conf=conf)
-
-    print("1 - Profile finished\n###################################################")
     print("2 - Starting fault injection\n###################################################")
     print("2 - {} faults will be injected".format(args.iterations))
     print("###################################################")
@@ -785,12 +695,12 @@ def main():
     kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
     fault_injection_by_breakpoint(conf=conf, fault_models=fault_models, iterations=int(iterations),
                                   kernel_info_list=kernel_info_list, summary_file=summary_file,
-                                  max_time=max_time_app, current_path=current_path)
+                                  current_path=current_path)
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")
     # Clear /tmp files generated
-    os.system("rm -f /tmp/carol-fi-kernel-info.txt")
+    os.system("rm -f " + cf.KERNEL_INFO_DIR)
     os.system("rm -f " + cp.GOLD_OUTPUT_PATH)
     os.system("rm -f " + cp.GOLD_ERR_PATH)
     ########################################################################

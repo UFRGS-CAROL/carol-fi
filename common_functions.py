@@ -1,3 +1,4 @@
+import os
 import pickle
 import sys
 import time
@@ -63,6 +64,30 @@ def load_config_file(flip_config_file):
     return conf
 
 
+"""
+Kill all remaining processes
+"""
+
+
+def kill_all(conf):
+    for cmd in str(conf.get("DEFAULT", "killStrs")).split(";"):
+        os.system(cmd)
+
+"""
+Run gdb python script with specific parameters
+It makes standart gdb script calls
+"""
+
+
+def run_gdb_python(gdb_name, script):
+    cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
+    cmd += ' -n -batch -x ' + script  # -batch-silent
+    #-n --nh --nx -q --return-child-result -x
+    return cmd
+
+"""
+Logging class
+"""
 class Logging:
     log_file = None
     debug_var = None
