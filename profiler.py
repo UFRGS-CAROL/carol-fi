@@ -68,6 +68,7 @@ def main():
 
     if kludge_breakpoint:
         del kludge_breakpoint
+        gdb.execute("c")
 
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
