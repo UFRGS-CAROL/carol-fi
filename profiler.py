@@ -92,7 +92,7 @@ def main():
     else:
         gdb.execute("quit")
 
-    if DEBUG_PROFILER:
+    if cp.DEBUG_PROFILER:
         print('FINISH PROFILER')
 
 
