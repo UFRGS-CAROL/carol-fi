@@ -3,6 +3,10 @@ import re
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 
+"""
+Fault injection breakpoint class, will do a flip of the bit(s) when breakpoint is hit
+"""
+
 
 class FaultInjectionBreakpoint(gdb.Breakpoint):
     def __init__(self, *args, **kwargs):
@@ -14,12 +18,12 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         self.__bits_to_flip = kwargs.pop('bits_to_flip') if 'bits_to_flip' in kwargs else None
         self.__fault_model = kwargs.pop('fault_model') if 'fault_model' in kwargs else None
         self.__logging = kwargs.pop('logging') if 'logging' in kwargs else None
-        self.ignore_count = int(kwargs.pop('breaks_to_ignore')) if 'breaks_to_ignore' in kwargs else 0
+        # self.ignore_count = int(kwargs.pop('breaks_to_ignore')) if 'breaks_to_ignore' in kwargs else 0
 
         super(FaultInjectionBreakpoint, self).__init__(*args, **kwargs)
 
     def stop(self):
-        if self.__kludge or self.ignore_count < self.hit_count:
+        if self.__kludge:
             return True
 
         # This if avoid the creation of another event connection

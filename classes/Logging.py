@@ -11,9 +11,8 @@ class Logging:
     debug_var = None
     unique_id = None
 
-    def __init__(self, log_file, debug, unique_id=''):
+    def __init__(self, log_file, unique_id=''):
         self.log_file = log_file
-        self.debug_var = debug
         self.unique_id = unique_id
 
     def info(self, msg):
@@ -35,11 +34,10 @@ class Logging:
             # fp.close()
 
     def debug(self, msg):
-        if self.debug_var:
-            with open(self.log_file, "a") as fp:
-                d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-                fp.write("[DEBUG -- " + d + "]\n" + msg + "\n")
-                # fp.close()
+        with open(self.log_file, "a") as fp:
+            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+            fp.write("[DEBUG -- " + d + "]\n" + msg + "\n")
+            # fp.close()
 
     def summary(self, msg):
         with open(self.log_file, "a") as fp:

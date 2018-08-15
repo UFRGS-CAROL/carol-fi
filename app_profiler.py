@@ -85,10 +85,10 @@ def main():
     # it will also get app output for golden copy
     # that is,
     print("###################################################\n1 - Profiling application")
-    # max_time_app = profiler_caller(conf=conf)
+    max_time_app = profiler_caller(conf=conf)
 
     # saving gold
-    max_time_app = generate_gold(conf=conf)
+    generate_gold(conf=conf)
 
     # Load and re-save the kernel configuration txt file
     kernel_list = cf.load_file(file_path=cp.KERNEL_INFO_DIR)

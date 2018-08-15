@@ -36,6 +36,9 @@ DEBUG = True
 # Debug profiler process
 DEBUG_PROFILER = True
 
+# Log file for SignalApp thread
+SIGNAL_APP_LOG = "/tmp/signal_app_thread.txt"
+
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
            'SIGFPE', 'SIGILL', 'SIGSEGV', 'SIGBUS', 'SIGABRT', 'SIGIOT', 'SIGTRAP', 'SIGEMT', 'SIGSYS',  # program codes

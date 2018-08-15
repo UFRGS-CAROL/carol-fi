@@ -15,6 +15,7 @@ import common_parameters as cp  # All common parameters will be at common_parame
 from classes.RunGDB import RunGDB
 from classes.SummaryFile import SummaryFile
 from classes.Logging import Logging
+from classes.SignalApp import SignalApp
 
 """
 Check if app stops execution (otherwise kill it after a time)
@@ -201,13 +202,12 @@ The default parameters are necessary for break and signal mode differentiations
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   breakpoint_location, flip_log_file, debug, gdb_init_strings, kludge, breaks_to_ignore):
+                   breakpoint_location, flip_log_file, gdb_init_strings, kludge):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + breakpoint_location
-    env_string += "|" + flip_log_file + "|" + str(debug) + "|" + gdb_init_strings + "|" + str(kludge)
-    env_string += "|" + str(breaks_to_ignore)
+    env_string += "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(kludge)
 
     if cp.DEBUG:
         print("ENV STRING:", env_string)
@@ -236,9 +236,6 @@ def run_gdb_fault_injection(**kwargs):
     valid_thread = kwargs.get('valid_thread')
     breakpoint_location = kwargs.get('break_line')
 
-    # Breaks to ignore
-    injection_place = kwargs.get('breaks_to_ignore')
-
     # Logging file
     flip_log_file = "/tmp/carolfi-flipvalue-{}.log".format(unique_id)
 
@@ -246,12 +243,11 @@ def run_gdb_fault_injection(**kwargs):
     if cp.DEBUG:
         print("STARTING GDB SCRIPT")
 
-    logging = Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
+    logging = Logging(log_file=flip_log_file, unique_id=unique_id)
     logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
-                   debug=conf.get(section, "debug"),
                    valid_block=valid_block,
                    valid_thread=valid_thread,
                    valid_register=valid_register,
@@ -259,8 +255,7 @@ def run_gdb_fault_injection(**kwargs):
                    fault_model=fault_model,
                    breakpoint_location=breakpoint_location,
                    flip_log_file=flip_log_file,
-                   kludge=kludge,
-                   breaks_to_ignore=injection_place)
+                   kludge=kludge)
 
     if cp.DEBUG:
         print("ENV GENERATE FINISHED")
@@ -270,6 +265,12 @@ def run_gdb_fault_injection(**kwargs):
 
     if cp.DEBUG:
         print("PRE EXECUTION")
+
+    # First we have to start the SignalApp thread
+    signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),
+                                  log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id,
+                                  seq_signals=conf.get("DEFAULT", "seqSignals"))
+
     # Create one thread to start gdb script
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
@@ -277,6 +278,9 @@ def run_gdb_fault_injection(**kwargs):
 
     if cp.DEBUG:
         print("STARTING PROCESS")
+
+    # Starting both threads
+    signal_app_thread.start()
     fi_process.start()
 
     if cp.DEBUG:
@@ -301,6 +305,8 @@ def run_gdb_fault_injection(**kwargs):
 
     # remove thrash
     del fi_process
+    signal_app_thread.join()
+    del signal_app_thread
 
     # Search for set values for register
     # Must be done before save output
@@ -502,9 +508,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                                                                                               break_line=break_line,
                                                                                               max_time=max_time,
                                                                                               current_path=current_path,
-                                                                                              kludge=kludge,
-                                                                                              breaks_to_ignore=
-                                                                                              injection_place)
+                                                                                              kludge=kludge)
                     # Write a row to summary file
                     row = [num_rounds, fault_model]
                     row.extend(thread)

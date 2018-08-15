@@ -1,7 +1,7 @@
 import os
 import gdb
 import common_functions as cf  # All common functions will be at common_functions module
-import common_parameters as cp  # All common parameters
+import common_parameters as cp  # All common parameters will bet at common_parameters module
 from classes.ProfilerBreakpoint import ProfilerBreakpoint
 
 """
@@ -23,7 +23,7 @@ def set_breakpoints(kernel_conf_string):
             kernel_places = kernel_line.split("-")
             k_l = kernel_places[0]
             kernel_info = {
-                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT),  # , temporary=True
+                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True),
                 'kernel_name': kernel_places[0].split(":")[0],
                 'kernel_line': kernel_places[0].split(":")[1],
                 'kernel_end_line': kernel_places[1].split(":")[1]
@@ -73,18 +73,18 @@ def main():
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
     if time_profiler == 'False':
-        # gdb.execute("c")
+        gdb.execute("c")
         try:
             while "The program is not being run" not in gdb.execute("c", to_string=True):
                 pass
         except gdb.error as err:
             print str(err)
 
-        for kernel_info in kernel_info_list:
-            kernel_info['breakpoint_hit_count'] = kernel_info['breakpoint'].hit_count
-            kernel_info['breakpoint'].delete()
-            del kernel_info['breakpoint']
-            kernel_info['breakpoint'] = None
+        # for kernel_info in kernel_info_list:
+        #     kernel_info['breakpoint_hit_count'] = kernel_info['breakpoint'].hit_count
+        #     kernel_info['breakpoint'].delete()
+        #     del kernel_info['breakpoint']
+        #     kernel_info['breakpoint'] = None
 
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
         del kernel_info_list
