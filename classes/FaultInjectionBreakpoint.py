@@ -120,3 +120,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         new_bit = '0' if reg_content[bit_to_flip] == '1' else '1'
         reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
         return reg_content
+
+    def __select_frame(self):
+        pass

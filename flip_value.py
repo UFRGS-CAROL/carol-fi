@@ -1,10 +1,9 @@
 import os
-
 import gdb
 
-import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 from classes.FaultInjectionBreakpoint import FaultInjectionBreakpoint
+from Logging import Logging
 
 """
 Handler attached to exit event
@@ -46,7 +45,7 @@ def main():
      flip_log_file, debug, gdb_init_strings, kludge, ignore_breaks] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Logging
-    global_logging = cf.Logging(log_file=flip_log_file, debug=debug)
+    global_logging = Logging(log_file=flip_log_file, debug=debug)
     global_logging.info("Starting flip_value script")
     try:
         for init_str in gdb_init_strings.split(";"):

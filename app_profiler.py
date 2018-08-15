@@ -56,10 +56,11 @@ def generate_gold(conf):
 
     if cp.DEBUG:
         print(os.environ['CAROL_FI_INFO'])
-    start = time.time()
+
     profiler_cmd = cf.run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
 
     # Execute and save gold file
+    start = time.time()
     os.system(profiler_cmd)
     end = time.time()
 
