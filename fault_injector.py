@@ -414,8 +414,6 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
 
     # Randomly choose a place to inject a fault
-    injection_place = random.randint(0, kernel_info_dict["breakpoint_hit_count"])
-
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
     valid_register = None
 
@@ -430,7 +428,7 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     elif injection_site == 'RF':
         valid_register = 'R' + str(random.randint(0, max_num_regs))
 
-    return valid_thread, valid_block, valid_register, bits_to_flip, injection_place
+    return valid_thread, valid_block, valid_register, bits_to_flip
 
 
 """
@@ -483,7 +481,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(fault_model)
                 try:
-                    thread, block, register, bits_to_flip, injection_place = gen_injection_location(
+                    thread, block, register, bits_to_flip = gen_injection_location(
                         kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
                         injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
 
