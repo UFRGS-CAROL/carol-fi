@@ -58,10 +58,12 @@ def generate_gold(conf):
 
     if cp.DEBUG:
         print(os.environ['CAROL_FI_INFO'])
-
+    start = time.time()
     profiler_cmd = cf.run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
+    end = time.time()
     # Execute and save gold file
     os.system(profiler_cmd)
+    return end - start
 
 
 def main():
@@ -84,10 +86,10 @@ def main():
     # it will also get app output for golden copy
     # that is,
     print("###################################################\n1 - Profiling application")
-    max_time_app = profiler_caller(conf=conf)
+    # max_time_app = profiler_caller(conf=conf)
 
     # saving gold
-    generate_gold(conf=conf)
+    max_time_app = generate_gold(conf=conf)
 
     # Load and re-save the kernel configuration txt file
     kernel_list = cf.load_file(file_path=cp.KERNEL_INFO_DIR)

@@ -698,10 +698,6 @@ def main():
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")
-    # Clear /tmp files generated
-    os.system("rm -f " + cf.KERNEL_INFO_DIR)
-    os.system("rm -f " + cp.GOLD_OUTPUT_PATH)
-    os.system("rm -f " + cp.GOLD_ERR_PATH)
     ########################################################################
 
 
