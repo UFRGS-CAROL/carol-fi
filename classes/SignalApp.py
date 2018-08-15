@@ -16,7 +16,7 @@ class SignalApp(Thread):
         super(SignalApp, self).__init__()
         self.__signal_cmd = signal_cmd
         self.__max_wait_time = float(max_wait_time)
-        self.__seq_signal = seq_signals
+        self.__seq_signal = int(seq_signals)
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
 
     def run(self):
