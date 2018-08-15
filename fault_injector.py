@@ -546,9 +546,7 @@ def main():
     conf = cf.load_config_file(args.config_file)
 
     # First set env vars
-    # GDB python cannot find common_functions.py, so I added this directory to PYTHONPATH
-    current_path = os.path.dirname(os.path.realpath(__file__))
-    os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path
+    cf.set_python_env()
 
     print("2 - Starting fault injection\n###################################################")
     print("2 - {} faults will be injected".format(args.iterations))

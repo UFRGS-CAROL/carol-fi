@@ -70,6 +70,7 @@ def kill_all(conf):
     for cmd in str(conf.get("DEFAULT", "killStrs")).split(";"):
         os.system(cmd)
 
+
 """
 Run gdb python script with specific parameters
 It makes standart gdb script calls
@@ -79,7 +80,15 @@ It makes standart gdb script calls
 def run_gdb_python(gdb_name, script):
     cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
     cmd += ' -n -batch -x ' + script  # -batch-silent
-    #-n --nh --nx -q --return-child-result -x
+    # -n --nh --nx -q --return-child-result -x
     return cmd
 
 
+"""
+GDB python cannot find common_functions.py, so I added this directory to PYTHONPATH
+"""
+
+
+def set_python_env():
+    current_path = os.path.dirname(os.path.realpath(__file__))
+    os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path + ":" + current_path + "/classes"
