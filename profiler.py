@@ -67,30 +67,19 @@ def main():
     gdb.execute("r")
 
     if kludge_breakpoint:
-        # kludge_breakpoint.delete()
         del kludge_breakpoint
 
     # Second: save the retrieved information on a txt file
     # Save the information on file to the output
     if time_profiler == 'False':
         gdb.execute("c")
-        try:
-            while "The program is not being run" not in gdb.execute("c", to_string=True):
-                pass
-        except gdb.error as err:
-            print str(err)
 
         for kernel_info in kernel_info_list:
-            # kernel_info['breakpoint_hit_count'] = kernel_info['breakpoint'].hit_count
-            # kernel_info['breakpoint'].delete()
             del kernel_info['breakpoint']
             kernel_info['breakpoint'] = None
 
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
         del kernel_info_list
-
-    else:
-        gdb.execute("quit")
 
     if cp.DEBUG_PROFILER:
         print('FINISH PROFILER')
