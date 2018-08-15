@@ -523,6 +523,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 except Exception as err:
                     if cp.DEBUG:
                         print("\nERROR ON BREAK POINT MODE: Fault was not injected, {}".format(str(err)))
+                    raise
 
 
 """
