@@ -3,7 +3,7 @@ import gdb
 
 import common_parameters as cp  # All common parameters will be at common_parameters module
 from classes.FaultInjectionBreakpoint import FaultInjectionBreakpoint
-from Logging import Logging
+from classes.Logging import Logging
 
 """
 Handler attached to exit event

@@ -12,7 +12,7 @@ import datetime
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 
-from RunGDB import RunGDB
+from classes.RunGDB import RunGDB
 from classes.SummaryFile import SummaryFile
 
 """
