@@ -20,7 +20,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         super(FaultInjectionBreakpoint, self).__init__(*args, **kwargs)
 
     def stop(self):
-        if self.__kludge:
+        if self.__kludge or self.ignore_count < self.hit_count:
             return True
 
         # This if avoid the creation of another event connection
