@@ -546,7 +546,7 @@ def main():
     conf = cf.load_config_file(args.config_file)
 
     # First set env vars
-    cf.set_python_env()
+    current_path = cf.set_python_env()
 
     print("2 - Starting fault injection\n###################################################")
     print("2 - {} faults will be injected".format(args.iterations))
