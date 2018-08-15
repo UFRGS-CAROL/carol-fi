@@ -78,7 +78,7 @@ def main():
     # First set env vars
     # GDB python cannot find common_functions.py, so I added this directory to PYTHONPATH
     current_path = os.path.dirname(os.path.realpath(__file__))
-    os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path
+    os.environ["PYTHONPATH"] = "$PYTHONPATH:" + current_path
 
     ########################################################################
     # Profiler step
