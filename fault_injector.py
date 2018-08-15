@@ -14,6 +14,7 @@ import common_parameters as cp  # All common parameters will be at common_parame
 
 from classes.RunGDB import RunGDB
 from classes.SummaryFile import SummaryFile
+from classes.Logging import Logging
 
 """
 Check if app stops execution (otherwise kill it after a time)
@@ -235,9 +236,6 @@ def run_gdb_fault_injection(**kwargs):
     valid_thread = kwargs.get('valid_thread')
     breakpoint_location = kwargs.get('break_line')
 
-    # SDC check parameters
-    current_path = kwargs.get('current_path')
-
     # Breaks to ignore
     injection_place = kwargs.get('breaks_to_ignore')
 
@@ -248,7 +246,7 @@ def run_gdb_fault_injection(**kwargs):
     if cp.DEBUG:
         print("STARTING GDB SCRIPT")
 
-    logging = cf.Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
+    logging = Logging(log_file=flip_log_file, debug=conf.get("DEFAULT", "debug"), unique_id=unique_id)
     logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
@@ -275,7 +273,7 @@ def run_gdb_fault_injection(**kwargs):
     # Create one thread to start gdb script
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
-                        flip_script=cp.FLIP_SCRIPT, current_dir=current_path)
+                        flip_script=cp.FLIP_SCRIPT)
 
     if cp.DEBUG:
         print("STARTING PROCESS")
@@ -294,7 +292,7 @@ def run_gdb_fault_injection(**kwargs):
 
     # Run pos execution function
     pos_execution(conf=conf, section=section)
-    sdc_check_script = current_path + '/' + conf.get('DEFAULT', 'goldenCheckScript')
+    sdc_check_script = conf.get('DEFAULT', 'goldenCheckScript')
 
     # Check output files for SDCs
     is_sdc, is_app_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)

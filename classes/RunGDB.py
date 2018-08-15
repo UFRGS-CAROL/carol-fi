@@ -12,12 +12,12 @@ this thread will be killed
 
 
 class RunGDB(Process):
-    def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir):
+    def __init__(self, unique_id, gdb_exec_name, flip_script):
         super(RunGDB, self).__init__()
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
-        self.__current_dir = current_dir
+        # self.__current_dir = current_dir
 
     def run(self):
         system("stty tostop")
