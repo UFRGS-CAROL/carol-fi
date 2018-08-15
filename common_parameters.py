@@ -30,8 +30,11 @@ PROFILER_SCRIPT = 'profiler.py'
 DIFF_LOG = '/tmp/diff.log'
 DIFF_ERR_LOG = '/tmp/diff_err.log'
 
-# Debug env var
+# Debug env vars
+# Debug FI process
 DEBUG = True
+# Debug profiler process
+DEBUG_PROFILER = True
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes

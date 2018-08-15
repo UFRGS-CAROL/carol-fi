@@ -2,136 +2,19 @@
 
 from __future__ import print_function
 
+import argparse
 import os
-import time
-import datetime
 import random
-from multiprocessing import Process
 import re
 import shutil
-import argparse
-import csv
-import common_functions as cf
-import common_parameters as cp
+import time
 
-"""
-Class RunGdb: necessary to run gdb while
-the main thread register the time
-If RunGdb execution time > max timeout allowed
-this thread will be killed
-"""
+import datetime
+from RunGDB import RunGDB
 
-
-class RunGDB(Process):
-    def __init__(self, unique_id, gdb_exec_name, flip_script, current_dir):
-        super(RunGDB, self).__init__()
-        self.__gdb_exe_name = gdb_exec_name
-        self.__flip_script = flip_script
-        self.__unique_id = unique_id
-        self.__current_dir = current_dir
-
-    def run(self):
-        os.system("stty tostop")
-
-        if cp.DEBUG:
-            print("GDB Thread run, section and id: ", self.__unique_id)
-
-        start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
-        try:
-            os.system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH)
-        except Exception as err:
-            with open(cp.INJ_ERR_PATH, 'w') as file_err:
-                file_err.write(str(err))
-
-
-"""
-Class SummaryFile: this class will write the information
-of each injection in a csv file to make easier data
-parsing after fault injection
-"""
-
-
-class SummaryFile:
-    # Filename
-    __filename = ""
-    # csv file
-    __csv_file = None
-    # Dict reader
-    __dict_buff = None
-
-    # Fieldnames
-    __fieldnames = None
-
-    # It will only open in a W mode for the first time
-    def __init__(self, **kwargs):
-        # Set arguments
-        self.__filename = kwargs.get("filename")
-        self.__fieldnames = kwargs.get("fieldnames")
-
-        # Open and start csv file
-        self.__open_csv(mode='w')
-        self.__dict_buff.writeheader()
-        self.__close_csv()
-
-    """
-    Open a file if it exists
-    mode can be r or w
-    default is r
-    """
-
-    def __open_csv(self, mode='a'):
-        if os.path.isfile(self.__filename):
-            self.__csv_file = open(self.__filename, mode)
-        elif mode == 'w':
-            self.__csv_file = open(self.__filename, mode)
-        else:
-            raise IOError(str(self.__filename) + " FILE NOT FOUND")
-
-        # If file exists it is append or read
-        if mode in ['w', 'a']:
-            self.__dict_buff = csv.DictWriter(self.__csv_file, self.__fieldnames)
-        elif mode == 'r':
-            self.__dict_buff = csv.DictReader(self.__csv_file)
-
-    """
-    To not use __del__ method, close csv file
-    """
-
-    def __close_csv(self):
-        if not self.__csv_file.closed:
-            self.__csv_file.close()
-        self.__dict_buff = None
-
-    """
-    Write a csv row, if __mode == w or a
-    row must be a dict
-    """
-
-    def write_row(self, row):
-        # If it is a list must convert first
-        row_ready = {}
-        if isinstance(row, list):
-            for fields, data in zip(self.__fieldnames, row):
-                row_ready[fields] = data
-        else:
-            row_ready = row
-
-        # Open file first
-        self.__open_csv()
-        self.__dict_buff.writerow(row_ready)
-        self.__close_csv()
-
-    """
-    Read rows
-    return read rows from file in a list
-    """
-
-    def read_rows(self):
-        self.__open_csv()
-        rows = [row for row in self.__dict_buff]
-        self.__close_csv()
-        return rows
-
+import common_functions as cf  # All common functions will be at common_functions module
+import common_parameters as cp  # All common parameters will be at common_parameters module
+from classes.SummaryFile import SummaryFile
 
 """
 Check if app stops execution (otherwise kill it after a time)

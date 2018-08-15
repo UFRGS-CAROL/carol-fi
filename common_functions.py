@@ -1,9 +1,6 @@
 import os
 import pickle
 import sys
-import time
-
-import datetime
 
 if sys.version_info >= (3, 0):
     import configparser  # python 3
@@ -85,55 +82,4 @@ def run_gdb_python(gdb_name, script):
     #-n --nh --nx -q --return-child-result -x
     return cmd
 
-"""
-Logging class
-"""
-class Logging:
-    log_file = None
-    debug_var = None
-    unique_id = None
 
-    def __init__(self, log_file, debug, unique_id=''):
-        self.log_file = log_file
-        self.debug_var = debug
-        self.unique_id = unique_id
-
-    def info(self, msg):
-        with open(self.log_file, "a") as fp:
-            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-            fp.write("[INFO -- " + d + "]\n" + msg + "\n")
-        # fp.close()
-
-    def exception(self, msg):
-        with open(self.log_file, "a") as fp:
-            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-            fp.write("[EXCEPTION -- " + d + "]\n" + msg + "\n")
-        # fp.close()
-
-    def error(self, msg):
-        with open(self.log_file, "a") as fp:
-            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-            fp.write("[ERROR -- " + d + "]\n" + msg + "\n")
-        # fp.close()
-
-    def debug(self, msg):
-        if self.debug_var:
-            with open(self.log_file, "a") as fp:
-                d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-                fp.write("[DEBUG -- " + d + "]\n" + msg + "\n")
-            # fp.close()
-
-    def summary(self, msg):
-        with open(self.log_file, "a") as fp:
-            d = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-            fp.write("[SUMMARY -- " + d + "]\nFI-uniqueID=" + str(self.unique_id) + "\n" + msg + "\n")
-        # fp.close()
-
-    def search(self, find):
-        with open(self.log_file, "r") as fp:
-            lines = fp.readlines()
-            # fp.close()
-        for l in lines:
-            if find in l:
-                return l
-        return None
