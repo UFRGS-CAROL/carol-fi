@@ -92,7 +92,7 @@ The sections contain the following keys:
 
 * faultModel - Which fault model to use: 0 -> Single; 1 -> Double; 2 -> Random; 3 -> Zero; 4 -> Least Significant Bits (LSB)
 
-The name of each second will be used to create a folder in the *logs* directory containing all the logs and outputs.
+The name of each section will be used to create a folder in the *logs* directory containing all the logs and outputs.
 
 Bellow you can find two sample sections defined:
 
