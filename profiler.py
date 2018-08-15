@@ -80,11 +80,11 @@ def main():
         except gdb.error as err:
             print str(err)
 
-        # for kernel_info in kernel_info_list:
-        #     kernel_info['breakpoint_hit_count'] = kernel_info['breakpoint'].hit_count
-        #     kernel_info['breakpoint'].delete()
-        #     del kernel_info['breakpoint']
-        #     kernel_info['breakpoint'] = None
+        for kernel_info in kernel_info_list:
+            # kernel_info['breakpoint_hit_count'] = kernel_info['breakpoint'].hit_count
+            # kernel_info['breakpoint'].delete()
+            del kernel_info['breakpoint']
+            kernel_info['breakpoint'] = None
 
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
         del kernel_info_list
