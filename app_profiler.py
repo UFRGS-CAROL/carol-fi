@@ -1,9 +1,7 @@
 #!/usr/bin/python
 import argparse
 import os
-
 import time
-
 import common_functions as cf
 import common_parameters as cp
 
@@ -60,9 +58,11 @@ def generate_gold(conf):
         print(os.environ['CAROL_FI_INFO'])
     start = time.time()
     profiler_cmd = cf.run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
-    end = time.time()
+
     # Execute and save gold file
     os.system(profiler_cmd)
+    end = time.time()
+
     return end - start
 
 
