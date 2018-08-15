@@ -113,8 +113,7 @@ def main():
     if time_profiler == 'False':
         # gdb.execute("c")
         try:
-            gdb_return = gdb.execute("c", to_string=True)
-            while "The program is not being run" not in gdb_return:
+            while "The program is not being run" not in gdb.execute("c", to_string=True):
                 pass
         except gdb.error as err:
             print str(err)
