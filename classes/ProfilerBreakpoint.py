@@ -28,12 +28,7 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         if self.__kludge:
             return True
 
-        if self.__first_pass:
-            self.__first_pass = False
-            return True
-
         for kernel_info in self.__kernel_info_list:
-            print(kernel_info["breakpoint"].__kernel_line)
             if kernel_info["breakpoint"].__kernel_line == self.__kernel_line:
                 if cp.DEBUG_PROFILER:
                     print("FOUND A KERNEL LINE {}".format(kernel_info["breakpoint"].__kernel_line))
