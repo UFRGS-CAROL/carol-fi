@@ -16,7 +16,7 @@ class SignalApp(Thread):
         super(SignalApp, self).__init__()
         self.__signal_cmd = signal_cmd
         self.__max_wait_time = float(max_wait_time)
-        self.__seq_signal = int(seq_signals)
+        self.__seq_signal = int(seq_signals) * 10
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
 
     def run(self):
@@ -26,7 +26,7 @@ class SignalApp(Thread):
         # Sleep for a random time
         init_wait_time = uniform(init, end)
 
-        time_interval = float(self.__max_wait_time) / self.__seq_signal
+        time_interval = float(self.__max_wait_time) / (self.__seq_signal * 10)
         time.sleep(init_wait_time)
 
         # Send a series of signal to make sure gdb will flip a value in one of the interrupt signals
