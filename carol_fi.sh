@@ -4,33 +4,36 @@
 # stop after first error
 set -e
 
-printf "Steps 1, 2 in \"Setting up and running CAROL-FI CUDA\" section in CAROL-FI git hub should be completed before
-        proceeding further. Are these steps completed? [y/n]: "
-read answer
+#printf "Steps 1, 2 in \"Setting up and running CAROL-FI CUDA\" section in CAROL-FI git hub should be completed before
+#        proceeding further. Are these steps completed? [y/n]: "
+#read answer
+#
+#if [ "$answer" != "y" ]; then
+#  printf "\nCannot proceed further\n"
+#	exit -1;
+#fi
+#
+#
+#printf "How many faults do you wish to inject?"
+#read inj_number
+#
+#if [ "$inj_number" \< "1" ];
+#then
+#    printf "\nNumber of injections less than 1. Cannot proceed further\n"
+#	exit -1;
+#fi
+#
+#printf "Where is config file?"
+#read config_file
+#
+#if [ "$config_file" == "" ];
+#then
+#    printf "\nConfig file cannot be null\n"
+#	exit -1;
+#fi
 
-if [ "$answer" != "y" ]; then
-  printf "\nCannot proceed further\n"
-	exit -1;
-fi
-
-
-printf "How many faults do you wish to inject?"
-read inj_number
-
-if [ "$inj_number" \< "1" ];
-then
-    printf "\nNumber of injections less than 1. Cannot proceed further\n"
-	exit -1;
-fi
-
-printf "Where is config file?"
-read config_file
-
-if [ "$config_file" == "" ];
-then
-    printf "\nConfig file cannot be null\n"
-	exit -1;
-fi
+config_file=codes/lava/single_lava.conf
+inj_number=2
 
 printf "\nProfiling the application\n"
 ./app_profiler.py -c ${config_file}
