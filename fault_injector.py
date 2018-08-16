@@ -282,7 +282,7 @@ def run_gdb_fault_injection(**kwargs):
         print("STARTING PROCESS")
 
     # Starting both threads
-    # fi_process.start()
+    fi_process.start()
     signal_app_thread.start()
 
     if cp.DEBUG:
@@ -307,7 +307,7 @@ def run_gdb_fault_injection(**kwargs):
 
     # remove thrash
     signal_app_thread.join()
-    # fi_process.join()
+    fi_process.join()
     if cp.DEBUG:
         print("PROCESSES JOINED")
 
