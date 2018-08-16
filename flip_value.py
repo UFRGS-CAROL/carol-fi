@@ -16,9 +16,10 @@ def exit_handler(event):
     try:
         global_logging.info("exit code: {}".format(str(event.exit_code)))
     except Exception as err:
+        err_str = "ERROR: {}".format(str(err))
         if cp.DEBUG:
-            print("ERROR ON EXIT HANDLER {}".format(str(err)))
-        global_logging.exception("exit code: no exit code available, error {}".format(str(err)))
+            print(err_str)
+        global_logging.exception(err_str)
 
 
 """
