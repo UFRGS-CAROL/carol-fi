@@ -18,7 +18,7 @@ def exit_handler(event):
     except Exception as err:
         if cp.DEBUG:
             print("ERROR ON EXIT HANDLER {}".format(str(err)))
-        global_logging.exception(str("exit code: no exit code available "))
+        global_logging.exception(str("exit code: no exit code available, error{}".format(str(err))))
 
 
 """
@@ -29,7 +29,9 @@ signal
 
 def place_breakpoint(event):
     global breakpoint_kernel_line, kludge_breakpoint
-
+    if cp.DEBUG:
+        print("PLACE_BREAKPOINT hit, event {}".format(str(event)))
+    global_logging.info("PLACE_BREAKPOINT hit, event {}".format(str(event)))
     try:
         # Place the first breakpoint, it is only to avoid
         # address memory error
