@@ -286,7 +286,7 @@ def run_gdb_fault_injection(**kwargs):
     signal_app_thread.start()
 
     if cp.DEBUG:
-        print("PROCESS SPAWNED")
+        print("PROCESSES SPAWNED")
     # Start counting time
     # timestamp_start = int(time.time())
 
@@ -308,6 +308,9 @@ def run_gdb_fault_injection(**kwargs):
     # remove thrash
     signal_app_thread.join()
     fi_process.join()
+    if cp.DEBUG:
+        print("PROCESSES JOINED")
+
     del fi_process, signal_app_thread
 
     # Search for set values for register
