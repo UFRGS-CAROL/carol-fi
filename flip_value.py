@@ -28,7 +28,12 @@ signal
 
 
 def place_breakpoint(event):
-    global breakpoint_kernel_line, kludge_breakpoint
+    global breakpoint_kernel_line, kludge_breakpoint, was_hit
+
+    # Check if many breakpoints are going to be set
+    if not was_hit:
+        was_hit = True
+
     if cp.DEBUG:
         print("PLACE_BREAKPOINT hit, event {}".format(str(event)))
     global_logging.info("PLACE_BREAKPOINT hit, event {}".format(str(event)))
@@ -120,5 +125,6 @@ breakpoint_location = None
 breakpoint_kernel_line = None
 kludge = None
 kludge_breakpoint = None
+was_hit = False
 
 main()
