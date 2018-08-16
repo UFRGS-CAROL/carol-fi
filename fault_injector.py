@@ -287,14 +287,15 @@ def run_gdb_fault_injection(**kwargs):
 
     if cp.DEBUG:
         print("PROCESSES SPAWNED")
+
     # Start counting time
-    # timestamp_start = int(time.time())
+    timestamp_start = int(time.time())
 
     # Check if app stops execution (otherwise kill it after a time)
-    # is_hang = check_finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-    #                        end_time=max_time, p=fi_process)
-    # if cp.DEBUG:
-    #     print("FINISH CHECK OK")
+    is_hang = check_finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
+                           end_time=max_time, p=fi_process)
+    if cp.DEBUG:
+        print("FINISH CHECK OK")
     #
     # # Run pos execution function
     # pos_execution(conf=conf, section=section)
