@@ -275,6 +275,9 @@ def run_gdb_fault_injection(**kwargs):
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
                         flip_script=cp.FLIP_SCRIPT)
 
+    # sdc, crash or hang
+    is_sdc, is_hang, is_crash = False, False, False
+
     if cp.DEBUG:
         print("STARTING PROCESS")
 
@@ -285,27 +288,27 @@ def run_gdb_fault_injection(**kwargs):
     if cp.DEBUG:
         print("PROCESS SPAWNED")
     # Start counting time
-    timestamp_start = int(time.time())
+    # timestamp_start = int(time.time())
 
     # Check if app stops execution (otherwise kill it after a time)
-    is_hang = check_finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-                           end_time=max_time, p=fi_process)
-    if cp.DEBUG:
-        print("FINISH CHECK OK")
-
-    # Run pos execution function
-    pos_execution(conf=conf, section=section)
-    sdc_check_script = conf.get('DEFAULT', 'goldenCheckScript')
-
-    # Check output files for SDCs
-    is_sdc, is_app_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
-    if cp.DEBUG:
-        print("CHECK SDCs OK")
+    # is_hang = check_finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
+    #                        end_time=max_time, p=fi_process)
+    # if cp.DEBUG:
+    #     print("FINISH CHECK OK")
+    #
+    # # Run pos execution function
+    # pos_execution(conf=conf, section=section)
+    # sdc_check_script = conf.get('DEFAULT', 'goldenCheckScript')
+    #
+    # # Check output files for SDCs
+    # is_sdc, is_app_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
+    # if cp.DEBUG:
+    #     print("CHECK SDCs OK")
 
     # remove thrash
-    del fi_process
+    del fi_process, signal_app_thread
     signal_app_thread.join()
-    del signal_app_thread
+    fi_process.join()
 
     # Search for set values for register
     # Must be done before save output
@@ -324,15 +327,15 @@ def run_gdb_fault_injection(**kwargs):
             print(str(e))
 
     # Copy output files to a folder
-    save_output(
-        section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
-        flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
+    # save_output(
+    #     section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
+    #     flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
     cf.kill_all(conf=conf)
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
 
-    return reg_old_value, reg_new_value, fault_successful, is_hang or is_app_crash, is_sdc
+    return reg_old_value, reg_new_value, fault_successful, is_hang, is_crash, is_sdc
 
 
 """
@@ -494,7 +497,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                     # max time that app can run
                     max_time = kernel_info_dict["max_time"]
 
-                    r_old_val, r_new_val, fault_injected, hang, sdc = run_gdb_fault_injection(section="DEFAULT",
+                    r_old_val, r_new_val, fault_injected, hang, crash, sdc = run_gdb_fault_injection(section="DEFAULT",
                                                                                               conf=conf,
                                                                                               unique_id=unique_id,
                                                                                               valid_block=block,
