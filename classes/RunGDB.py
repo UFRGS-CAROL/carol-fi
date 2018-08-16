@@ -17,17 +17,12 @@ class RunGDB(Process):
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
-        # self.__current_dir = current_dir
 
     def run(self):
-        system("stty tostop")
+        # system("stty tostop")
 
         if cp.DEBUG:
             print("GDB Thread run, section and id: {}".format(self.__unique_id))
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
-        try:
-            system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH)
-        except Exception as err:
-            with open(cp.INJ_ERR_PATH, 'w') as file_err:
-                file_err.write(str(err))
+        system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH)
