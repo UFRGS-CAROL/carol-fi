@@ -55,10 +55,6 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
         os.system(k)
         logging.debug("kill cmd: " + k)
 
-    # Make sure process check_finish before trying to execute
-    p.join()
-    p.terminate()
-
     if cp.DEBUG:
         print("PROCESS JOINED")
 
@@ -296,23 +292,24 @@ def run_gdb_fault_injection(**kwargs):
                            end_time=max_time, p=fi_process)
     if cp.DEBUG:
         print("FINISH CHECK OK")
-    #
-    # # Run pos execution function
-    # pos_execution(conf=conf, section=section)
-    # sdc_check_script = conf.get('DEFAULT', 'goldenCheckScript')
-    #
-    # # Check output files for SDCs
-    # is_sdc, is_app_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
-    # if cp.DEBUG:
-    #     print("CHECK SDCs OK")
 
-    # remove thrash
-    signal_app_thread.join()
+    # finishing and removing thrash
     fi_process.join()
+    fi_process.terminate()
+    signal_app_thread.join()
+    del fi_process, signal_app_thread
+
     if cp.DEBUG:
         print("PROCESSES JOINED")
 
-    del fi_process, signal_app_thread
+    # Run pos execution function
+    pos_execution(conf=conf, section=section)
+    sdc_check_script = conf.get('DEFAULT', 'goldenCheckScript')
+    #
+    # # Check output files for SDCs
+    is_sdc, is_app_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
+    if cp.DEBUG:
+        print("CHECK SDCs OK")
 
     # Search for set values for register
     # Must be done before save output
@@ -331,9 +328,9 @@ def run_gdb_fault_injection(**kwargs):
             print(str(e))
 
     # Copy output files to a folder
-    # save_output(
-    #     section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
-    #     flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
+    save_output(
+        section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
+        flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
     cf.kill_all(conf=conf)
     if cp.DEBUG:
