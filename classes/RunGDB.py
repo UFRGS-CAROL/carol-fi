@@ -23,7 +23,7 @@ class RunGDB(Process):
         system("stty tostop")
 
         if cp.DEBUG:
-            print("GDB Thread run, section and id: ", self.__unique_id)
+            print("GDB Thread run, section and id: {}".format(self.__unique_id))
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
         try:

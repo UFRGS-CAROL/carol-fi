@@ -282,8 +282,8 @@ def run_gdb_fault_injection(**kwargs):
         print("STARTING PROCESS")
 
     # Starting both threads
-    signal_app_thread.start()
     fi_process.start()
+    signal_app_thread.start()
 
     if cp.DEBUG:
         print("PROCESS SPAWNED")
@@ -482,48 +482,47 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
             for kernel_info_dict in kernel_info_list:
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(fault_model)
-                try:
-                    thread, block, register, bits_to_flip = gen_injection_location(
-                        kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
-                        injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
+                thread, block, register, bits_to_flip = gen_injection_location(
+                    kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
+                    injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
 
-                    # Selects the random line to inject
-                    kernel_begin = kernel_info_dict["kernel_line"]
-                    kernel_end = kernel_info_dict["kernel_end_line"]
-                    rand_line = random.randint(int(kernel_begin), int(kernel_end))
-                    break_line = str(kernel_info_dict["kernel_name"] + ":"
-                                     + str(rand_line))
+                # Selects the random line to inject
+                kernel_begin = kernel_info_dict["kernel_line"]
+                kernel_end = kernel_info_dict["kernel_end_line"]
+                rand_line = random.randint(int(kernel_begin), int(kernel_end))
+                break_line = str(kernel_info_dict["kernel_name"] + ":"
+                                 + str(rand_line))
 
-                    # max time that app can run
-                    max_time = kernel_info_dict["max_time"]
+                # max time that app can run
+                max_time = kernel_info_dict["max_time"]
 
-                    r_old_val, r_new_val, fault_injected, hang, crash, sdc = run_gdb_fault_injection(section="DEFAULT",
-                                                                                              conf=conf,
-                                                                                              unique_id=unique_id,
-                                                                                              valid_block=block,
-                                                                                              valid_thread=thread,
-                                                                                              valid_register=register,
-                                                                                              bits_to_flip=bits_to_flip,
-                                                                                              fault_model=fault_model,
-                                                                                              break_line=break_line,
-                                                                                              max_time=max_time,
-                                                                                              current_path=current_path,
-                                                                                              kludge=kludge)
-                    # Write a row to summary file
-                    row = [num_rounds, fault_model]
-                    row.extend(thread)
-                    row.extend(block)
-                    row.extend(
-                        [r_old_val, r_new_val, 0, register, break_line, fault_injected,
-                         hang,
-                         sdc])
-                    print(row)
-                    summary_file.write_row(row=row)
-                    time.sleep(2)
-                except Exception as err:
-                    if cp.DEBUG:
-                        print("\nERROR ON BREAK POINT MODE: Fault was not injected, {}".format(str(err)))
-                    raise
+                old_val, new_val, fault_injected, hang, crash, sdc = run_gdb_fault_injection(section="DEFAULT",
+                                                                                             conf=conf,
+                                                                                             unique_id=unique_id,
+                                                                                             valid_block=block,
+                                                                                             valid_thread=thread,
+                                                                                             valid_register=register,
+                                                                                             bits_to_flip=bits_to_flip,
+                                                                                             fault_model=fault_model,
+                                                                                             break_line=break_line,
+                                                                                             max_time=max_time,
+                                                                                             current_path=current_path,
+                                                                                             kludge=kludge)
+                # Write a row to summary file
+                row = [num_rounds, fault_model]
+                row.extend(thread)
+                row.extend(block)
+                row.extend(
+                    [old_val, new_val, 0, register, break_line, fault_injected,
+                     hang,
+                     sdc])
+                print(row)
+                summary_file.write_row(row=row)
+                time.sleep(2)
+                # except Exception as err:
+                #     if cp.DEBUG:
+                #         print("\nERROR ON BREAK POINT MODE: Fault was not injected, {}".format(str(err)))
+                #     raise
 
 
 """
