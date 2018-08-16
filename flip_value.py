@@ -33,6 +33,8 @@ def place_breakpoint(event):
     # Check if many breakpoints are going to be set
     if not was_hit:
         was_hit = True
+    else:
+        return
 
     if cp.DEBUG:
         print("PLACE_BREAKPOINT hit, event {}".format(str(event)))
