@@ -306,9 +306,9 @@ def run_gdb_fault_injection(**kwargs):
     #     print("CHECK SDCs OK")
 
     # remove thrash
-    del fi_process, signal_app_thread
     signal_app_thread.join()
     fi_process.join()
+    del fi_process, signal_app_thread
 
     # Search for set values for register
     # Must be done before save output
