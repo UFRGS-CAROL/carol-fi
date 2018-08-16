@@ -268,8 +268,7 @@ def run_gdb_fault_injection(**kwargs):
 
     # First we have to start the SignalApp thread
     signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),
-                                  log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id,
-                                  seq_signals=conf.get("DEFAULT", "seqSignals"))
+                                  log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id)
 
     # Create one thread to start gdb script
     # Start fault injection process
