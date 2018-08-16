@@ -79,13 +79,13 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # Single bit flip or Least significant bits
             if self.__fault_model == 0 or self.__fault_model == 4:
                 # single bit flip
-                reg_content_new = self.flip_a_bit(self.__bits_to_flip[0], reg_content_old)
+                reg_content_new = self.__flip_a_bit(self.__bits_to_flip[0], reg_content_old)
 
             # Double bit flip
             elif self.__fault_model == 1:
                 # multiple bit flip
                 for bit_to_flip in self.__bits_to_flip:
-                    reg_content_new = self.flip_a_bit(bit_to_flip, reg_content_old)
+                    reg_content_new = self.__flip_a_bit(bit_to_flip, reg_content_old)
 
             # Random value
             elif self.__fault_model == 2:
