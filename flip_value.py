@@ -55,7 +55,7 @@ Main function
 
 
 def main():
-    global global_logging, global_logging, block, thread, register
+    global global_logging, global_logging, block, thread, register, kludge_breakpoint
     global bits_to_flip, fault_model, breakpoint_location, kludge, breakpoint_kernel_line
 
     # Initialize GDB to run the app
