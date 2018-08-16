@@ -78,8 +78,8 @@ It makes standart gdb script calls
 
 
 def run_gdb_python(gdb_name, script):
-    cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
-    cmd += ' -n -batch -x ' + script  # -batch-silent
+    # cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
+    cmd = gdb_name + ' -n -batch -x ' + script  # -batch-silent
     # -n --nh --nx -q --return-child-result -x
     return cmd
 
