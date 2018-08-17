@@ -34,7 +34,8 @@ def place_breakpoint(event):
     # Check if many breakpoints are going to be set
     if not was_hit:
         was_hit = True
-        cp.SHARED_FLAG.value = True
+        print()
+        cp.SHARED_FLAG.value = 1
     else:
         return
 

@@ -19,7 +19,6 @@ class SignalApp(Thread):
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
         cp.SHARED_FLAG.value = 0
 
-
     def run(self):
         init = 0
         end = self.__max_wait_time * cp.TIME_BEFORE_FIRST_SIGNAL
