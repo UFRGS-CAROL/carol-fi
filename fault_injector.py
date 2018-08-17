@@ -86,22 +86,22 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
     ymdhms = unique_id + "-" + ymdhms
     dir_d_t = os.path.join(ymd, ymdhms)
 
-    fi_result = "Outcome:"
+    # Log and create the paths
     if not fi_injected:
-        cp_dir = os.path.join('logs', fi_result, 'failed-injection', dir_d_t)
-        logging.summary(fi_result + "Fault Injection Failed")
+        cp_dir = os.path.join('logs', 'failed-injection', dir_d_t)
+        logging.summary("Fault Injection Failed")
     elif is_hang:
-        cp_dir = os.path.join('logs', fi_result, 'hangs', dir_d_t)
-        logging.summary(fi_result + "Hang")
+        cp_dir = os.path.join('logs', 'hangs', dir_d_t)
+        logging.summary("Hang")
     elif is_sdc:
-        cp_dir = os.path.join('logs', fi_result, 'sdcs', dir_d_t)
-        logging.summary(fi_result + "SDC")
+        cp_dir = os.path.join('logs', 'sdcs', dir_d_t)
+        logging.summary("SDC")
     elif not os.path.isfile(output_file):
-        cp_dir = os.path.join('logs', fi_result, 'noOutputGenerated', dir_d_t)
-        logging.summary(fi_result + "NoOutputGenerated")
+        cp_dir = os.path.join('logs', 'no_output_generated', dir_d_t)
+        logging.summary("no_output_generated")
     else:
-        cp_dir = os.path.join('logs', fi_result, 'masked', dir_d_t)
-        logging.summary(fi_result + "Masked")
+        cp_dir = os.path.join('logs', 'masked', dir_d_t)
+        logging.summary("Masked")
 
     if not os.path.isdir(cp_dir):
         os.makedirs(cp_dir)
