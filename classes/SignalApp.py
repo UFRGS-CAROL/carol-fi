@@ -39,6 +39,8 @@ class SignalApp(Thread):
         self.__log.info(log_string)
 
         for i in range(0, cp.NUM_OF_SIGNALS):
+            if cp.DEBUG:
+                print("ENV VAR {}".format(os.environ[cp.FLAG_TO_STOP_CAROL_FI]))
             if os.environ[cp.FLAG_TO_STOP_CAROL_FI] == '1':
                 os.system(self.__signal_cmd)
                 time.sleep(time_interval)
