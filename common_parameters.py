@@ -49,6 +49,9 @@ TIME_BEFORE_FIRST_SIGNAL = 0.5
 # Num of signals that will be send to the application
 NUM_OF_SIGNALS = 10
 
+# Num of sleep time divisor
+NUM_DIVISION_TIMES = 10.0
+
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
            'SIGFPE', 'SIGILL', 'SIGSEGV', 'SIGBUS', 'SIGABRT', 'SIGIOT', 'SIGTRAP', 'SIGEMT', 'SIGSYS',  # program codes
