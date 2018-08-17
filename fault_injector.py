@@ -36,6 +36,7 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
     while diff_time < max_wait_time and p_is_alive:
         time.sleep(max_wait_time / cp.NUM_DIVISION_TIMES)
         now = int(time.time())
+        diff_time = now - timestamp_start
         p_is_alive = p.is_alive()
 
     # Process finished ok
@@ -45,6 +46,7 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
             print("PROCESS NOT RUNNING")
 
     # check execution finished before or after waitTime
+    diff_time = now - timestamp_start
     if diff_time < max_wait_time:
         logging.info("Execution finished before waitTime. {} seconds.".format(diff_time))
     else:
