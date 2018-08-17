@@ -17,7 +17,8 @@ class SignalApp(Thread):
         self.__signal_cmd = signal_cmd
         self.__max_wait_time = float(max_wait_time)
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
-        os.environ[cp.FLAG_TO_STOP_CAROL_FI] = '1'
+        cp.SHARED_FLAG.value = False
+
 
     def run(self):
         init = 0
@@ -40,7 +41,7 @@ class SignalApp(Thread):
 
         for i in range(0, cp.NUM_OF_SIGNALS):
             if cp.DEBUG:
-                print("ENV VAR {}".format(os.environ[cp.FLAG_TO_STOP_CAROL_FI]))
-            if os.environ[cp.FLAG_TO_STOP_CAROL_FI] == '1':
+                print("SHARED FLAG {}".format(cp.SHARED_FLAG.value))
+            if not cp.SHARED_FLAG.value:
                 os.system(self.__signal_cmd)
                 time.sleep(time_interval)

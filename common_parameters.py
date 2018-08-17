@@ -1,3 +1,5 @@
+from multiprocessing import Value
+
 # Max size of register
 HALF_MAX_SIZE_REGISTER = 16
 SINGLE_MAX_SIZE_REGISTER = 32
@@ -47,8 +49,7 @@ TIME_BEFORE_FIRST_SIGNAL = 0.5
 # Num of signals that will be send to the application
 NUM_OF_SIGNALS = 10
 
-# To not stay sending signals to application
-FLAG_TO_STOP_CAROL_FI = "FLAG_TO_STOP_CAROL_FI"
+SHARED_FLAG = Value('carol_fi_flag', False)
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes

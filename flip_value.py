@@ -34,7 +34,7 @@ def place_breakpoint(event):
     # Check if many breakpoints are going to be set
     if not was_hit:
         was_hit = True
-        os.environ[cp.FLAG_TO_STOP_CAROL_FI] = '0'
+        cp.SHARED_FLAG.value = True
     else:
         return
 
