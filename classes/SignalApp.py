@@ -17,7 +17,7 @@ class SignalApp(Thread):
         self.__signal_cmd = signal_cmd
         self.__max_wait_time = float(max_wait_time)
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
-        cp.SHARED_FLAG.value = False
+        cp.SHARED_FLAG.value = 0
 
 
     def run(self):
@@ -42,6 +42,6 @@ class SignalApp(Thread):
         for i in range(0, cp.NUM_OF_SIGNALS):
             if cp.DEBUG:
                 print("SHARED FLAG {}".format(cp.SHARED_FLAG.value))
-            if not cp.SHARED_FLAG.value:
+            if cp.SHARED_FLAG.value == 0:
                 os.system(self.__signal_cmd)
                 time.sleep(time_interval)
