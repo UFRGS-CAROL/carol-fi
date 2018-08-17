@@ -34,11 +34,12 @@ def place_breakpoint(event):
     # Check if many breakpoints are going to be set
     if not was_hit:
         was_hit = True
+        os.environ[cp.FLAG_TO_STOP_CAROL_FI] = '0'
     else:
         return
 
     if cp.DEBUG:
-        print("PLACE_BREAKPOINT hit, event {}".format(str(event)))
+        print("PLACE_BREAKPOINT hit, event {}".format(str(event.stop_signal)))
     global_logging.info("PLACE_BREAKPOINT hit, event {}".format(str(event)))
     try:
         # Place the first breakpoint, it is only to avoid

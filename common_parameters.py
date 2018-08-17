@@ -47,6 +47,9 @@ TIME_BEFORE_FIRST_SIGNAL = 0.5
 # Num of signals that will be send to the application
 NUM_OF_SIGNALS = 10
 
+# To not stay sending signals to application
+FLAG_TO_STOP_CAROL_FI = "FLAG_TO_STOP_CAROL_FI"
+
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
            'SIGFPE', 'SIGILL', 'SIGSEGV', 'SIGBUS', 'SIGABRT', 'SIGIOT', 'SIGTRAP', 'SIGEMT', 'SIGSYS',  # program codes
@@ -62,3 +65,5 @@ SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination c
            'CUDA_EXCEPTION_6', 'CUDA_EXCEPTION_7', 'CUDA_EXCEPTION_8', 'CUDA_EXCEPTION_9', 'CUDA_EXCEPTION_10',
            'CUDA_EXCEPTION_11',
            'CUDA_EXCEPTION_12', 'CUDA_EXCEPTION_13', 'CUDA_EXCEPTION_14', 'CUDA_EXCEPTION_15']
+
+

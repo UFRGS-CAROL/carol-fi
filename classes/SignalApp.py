@@ -2,9 +2,9 @@ import time
 from classes.Logging import Logging
 from threading import Thread
 from random import uniform
-from os import system
 
 import common_parameters as cp  # All common parameters will bet at common_parameters module
+import os
 
 """
 Signal the app to stop so GDB can execute the script to flip a value
@@ -17,6 +17,7 @@ class SignalApp(Thread):
         self.__signal_cmd = signal_cmd
         self.__max_wait_time = float(max_wait_time)
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
+        os.environ[cp.FLAG_TO_STOP_CAROL_FI] = '1'
 
     def run(self):
         init = 0
@@ -38,5 +39,6 @@ class SignalApp(Thread):
         self.__log.info(log_string)
 
         for i in range(0, cp.NUM_OF_SIGNALS):
-            system(self.__signal_cmd)
-            time.sleep(time_interval)
+            if os.environ[cp.FLAG_TO_STOP_CAROL_FI] == '1':
+                os.system(self.__signal_cmd)
+                time.sleep(time_interval)
