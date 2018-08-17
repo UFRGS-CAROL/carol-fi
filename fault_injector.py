@@ -24,7 +24,6 @@ Check if app stops execution (otherwise kill it after a time)
 
 def check_finish(section, conf, logging, timestamp_start, end_time, p):
     is_hang = False
-    now = int(time.time())
 
     # Wait maxWaitTimes the normal duration of the program before killing it
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
@@ -32,20 +31,24 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
 
     p_is_alive = p.is_alive()
     print("\nMAX_WAIT_TIME {}\n".format(max_wait_time))
-    while (now - timestamp_start) < max_wait_time and p_is_alive:
+    now = int(time.time())
+    diff_time = now - timestamp_start
+    while diff_time < max_wait_time and p_is_alive:
         time.sleep(max_wait_time / cp.NUM_DIVISION_TIMES)
         now = int(time.time())
         p_is_alive = p.is_alive()
-        if not p_is_alive:
-            logging.debug("Process not running")
-            if cp.DEBUG:
-                print("PROCESS NOT RUNNING")
+
+    # Process finished ok
+    if not p_is_alive:
+        logging.debug("Process not running")
+        if cp.DEBUG:
+            print("PROCESS NOT RUNNING")
 
     # check execution finished before or after waitTime
-    if (now - timestamp_start) < max_wait_time:
-        logging.info("Execution finished before waitTime")
+    if diff_time < max_wait_time:
+        logging.info("Execution finished before waitTime. {} seconds.".format(diff_time))
     else:
-        logging.info("Execution did not check_finish before waitTime")
+        logging.info("Execution did not check_finish before waitTime {} seconds.".format(diff_time))
         is_hang = True
 
     logging.debug("now: " + str(now))
