@@ -50,7 +50,7 @@ TIME_BEFORE_FIRST_SIGNAL = 0.5
 NUM_OF_SIGNALS = 10
 
 # Num of sleep time divisor
-NUM_DIVISION_TIMES = 10.0
+NUM_DIVISION_TIMES = 100.0
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes

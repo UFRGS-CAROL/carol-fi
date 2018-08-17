@@ -35,9 +35,9 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
     diff_time = now - timestamp_start
     while diff_time < max_wait_time and p_is_alive:
         time.sleep(max_wait_time / cp.NUM_DIVISION_TIMES)
+        p_is_alive = p.is_alive()
         now = int(time.time())
         diff_time = now - timestamp_start
-        p_is_alive = p.is_alive()
 
     # Process finished ok
     if not p_is_alive:
@@ -46,11 +46,10 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
             print("PROCESS NOT RUNNING")
 
     # check execution finished before or after waitTime
-    diff_time = now - timestamp_start
     if diff_time < max_wait_time:
         logging.info("Execution finished before waitTime. {} seconds.".format(diff_time))
     else:
-        logging.info("Execution did not check_finish before waitTime {} seconds.".format(diff_time))
+        logging.info("Execution did not finish before waitTime {} seconds.".format(diff_time))
         is_hang = True
 
     logging.debug("now: " + str(now))
@@ -337,7 +336,7 @@ def run_gdb_fault_injection(**kwargs):
             print(str(e))
 
     # Copy output files to a folder
-    save_output(is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
+    save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
                 flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
     cf.kill_all(conf=conf)
