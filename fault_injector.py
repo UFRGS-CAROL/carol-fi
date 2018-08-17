@@ -31,8 +31,9 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
     kill_strings = conf.get(section, "killStrs")
 
     p_is_alive = p.is_alive()
+    print("\nMAX_WAIT_TIME {}\n".format(max_wait_time))
     while (now - timestamp_start) < max_wait_time and p_is_alive:
-        time.sleep(max_wait_time / 10.0)
+        time.sleep(max_wait_time / cp.NUM_DIVISION_TIMES)
         now = int(time.time())
         p_is_alive = p.is_alive()
         if not p_is_alive:
@@ -66,7 +67,7 @@ Copy the logs and output(if fault not masked) to a selected folder
 """
 
 
-def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, output_file):
+def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file):
     # FI successful
     fi_injected = False
     if os.path.isfile(flip_log_file):
@@ -82,27 +83,29 @@ def save_output(section, is_sdc, is_hang, logging, unique_id, flip_log_file, out
     ymdhms = unique_id + "-" + ymdhms
     dir_d_t = os.path.join(ymd, ymdhms)
 
+    fi_result = "Outcome:"
     if not fi_injected:
-        cp_dir = os.path.join('logs', section, 'failed-injection', dir_d_t)
-        logging.summary(section + " - Fault Injection Failed")
+        cp_dir = os.path.join('logs', fi_result, 'failed-injection', dir_d_t)
+        logging.summary(fi_result + "Fault Injection Failed")
     elif is_hang:
-        cp_dir = os.path.join('logs', section, 'hangs', dir_d_t)
-        logging.summary(section + " - Hang")
+        cp_dir = os.path.join('logs', fi_result, 'hangs', dir_d_t)
+        logging.summary(fi_result + "Hang")
     elif is_sdc:
-        cp_dir = os.path.join('logs', section, 'sdcs', dir_d_t)
-        logging.summary(section + " - SDC")
+        cp_dir = os.path.join('logs', fi_result, 'sdcs', dir_d_t)
+        logging.summary(fi_result + "SDC")
     elif not os.path.isfile(output_file):
-        cp_dir = os.path.join('logs', section, 'noOutputGenerated', dir_d_t)
-        logging.summary(section + " - NoOutputGenerated")
+        cp_dir = os.path.join('logs', fi_result, 'noOutputGenerated', dir_d_t)
+        logging.summary(fi_result + "NoOutputGenerated")
     else:
-        cp_dir = os.path.join('logs', section, 'masked', dir_d_t)
-        logging.summary(section + " - Masked")
+        cp_dir = os.path.join('logs', fi_result, 'masked', dir_d_t)
+        logging.summary(fi_result + "Masked")
 
     if not os.path.isdir(cp_dir):
         os.makedirs(cp_dir)
 
     # Moving all necessary files
-    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG]:
+    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG,
+                         cp.SIGNAL_APP_LOG]:
         try:
             shutil.move(file_to_move, cp_dir)
         except Exception as err:
@@ -271,9 +274,6 @@ def run_gdb_fault_injection(**kwargs):
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
                         flip_script=cp.FLIP_SCRIPT)
 
-    # sdc, crash or hang
-    is_sdc, is_hang, is_crash = False, False, False
-
     if cp.DEBUG:
         print("STARTING PROCESS")
 
@@ -286,6 +286,10 @@ def run_gdb_fault_injection(**kwargs):
 
     # Start counting time
     timestamp_start = int(time.time())
+
+    # Checking vars
+    # sdc, crash or hang
+    is_sdc, is_hang, is_crash = False, False, False
 
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = check_finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
@@ -328,9 +332,8 @@ def run_gdb_fault_injection(**kwargs):
             print(str(e))
 
     # Copy output files to a folder
-    save_output(
-        section=section, is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
-        flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
+    save_output(is_sdc=is_sdc, is_hang=(is_hang or is_app_crash), logging=logging, unique_id=unique_id,
+                flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
     cf.kill_all(conf=conf)
     if cp.DEBUG:
