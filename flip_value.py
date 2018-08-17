@@ -80,8 +80,6 @@ def main():
 
     # Get variables values from environment
     # First parse line
-    # CAROL_FI_INFO = blockX,blockY,blockZ;threadX,threadY,threadZ;validRegister;bits_0,bits_1;fault_model;
-    # injection_site;breakpoint;flip_log_file;debug;gdb_init_strings
     [block, thread, register, bits_to_flip, fault_model, breakpoint_location,
      flip_log_file, gdb_init_strings, kludge] = str(os.environ['CAROL_FI_INFO']).split('|')
 

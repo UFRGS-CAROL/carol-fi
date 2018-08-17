@@ -37,6 +37,6 @@ class SignalApp(Thread):
 
         self.__log.info(log_string)
 
-        for i in range(0, cp.NUM_OF_SIGNALS):
-            os.system(self.__signal_cmd)
-            time.sleep(time_interval)
+        #  for i in range(0, cp.NUM_OF_SIGNALS):
+        os.system(self.__signal_cmd)
+        time.sleep(time_interval)

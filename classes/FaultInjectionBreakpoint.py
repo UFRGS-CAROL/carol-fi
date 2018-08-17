@@ -18,7 +18,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         self.__bits_to_flip = kwargs.pop('bits_to_flip') if 'bits_to_flip' in kwargs else None
         self.__fault_model = kwargs.pop('fault_model') if 'fault_model' in kwargs else None
         self.__logging = kwargs.pop('logging') if 'logging' in kwargs else None
-        # self.ignore_count = int(kwargs.pop('breaks_to_ignore')) if 'breaks_to_ignore' in kwargs else 0
 
         super(FaultInjectionBreakpoint, self).__init__(*args, **kwargs)
 
@@ -84,8 +83,9 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # Double bit flip
             elif self.__fault_model == 1:
                 # multiple bit flip
+                reg_content_new = reg_content_old
                 for bit_to_flip in self.__bits_to_flip:
-                    reg_content_new = self.__flip_a_bit(bit_to_flip, reg_content_old)
+                    reg_content_new = self.__flip_a_bit(bit_to_flip, reg_content_new)
 
             # Random value
             elif self.__fault_model == 2:
