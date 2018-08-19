@@ -223,7 +223,7 @@ return old register value, new register value
 """
 
 
-def run_gdb_fault_injection(**kwargs):
+def gdb_inject_fault(**kwargs):
     # These are the mandatory parameters
     bits_to_flip = kwargs.get('bits_to_flip')
     fault_model = kwargs.get('fault_model')
@@ -291,10 +291,6 @@ def run_gdb_fault_injection(**kwargs):
     # Start counting time
     timestamp_start = int(time.time())
 
-    # Checking vars
-    # sdc, crash or hang
-    is_sdc, is_hang, is_crash = False, False, False
-
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = check_finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
                            end_time=max_time, p=fi_process)
@@ -305,6 +301,10 @@ def run_gdb_fault_injection(**kwargs):
     fi_process.join()
     fi_process.terminate()
     signal_app_thread.join()
+
+    # Get the signal init wait time before destroy the thread
+    signal_init_wait_time = signal_app_thread.get_int_wait_time()
+
     del fi_process, signal_app_thread
 
     if cp.DEBUG:
@@ -315,7 +315,7 @@ def run_gdb_fault_injection(**kwargs):
     sdc_check_script = conf.get('DEFAULT', 'goldenCheckScript')
     #
     # # Check output files for SDCs
-    is_sdc, is_app_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
+    is_sdc, is_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
     if cp.DEBUG:
         print("CHECK SDCs OK")
 
@@ -343,7 +343,7 @@ def run_gdb_fault_injection(**kwargs):
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
 
-    return reg_old_value, reg_new_value, fault_successful, is_hang, is_crash, is_sdc
+    return reg_old_value, reg_new_value, fault_successful, is_hang, is_crash, is_sdc, signal_init_wait_time
 
 
 """
@@ -504,33 +504,43 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 # max time that app can run
                 max_time = kernel_info_dict["max_time"]
 
-                old_val, new_val, fault_injected, hang, crash, sdc = run_gdb_fault_injection(section="DEFAULT",
-                                                                                             conf=conf,
-                                                                                             unique_id=unique_id,
-                                                                                             valid_block=block,
-                                                                                             valid_thread=thread,
-                                                                                             valid_register=register,
-                                                                                             bits_to_flip=bits_to_flip,
-                                                                                             fault_model=fault_model,
-                                                                                             break_line=break_line,
-                                                                                             max_time=max_time,
-                                                                                             current_path=current_path,
-                                                                                             kludge=kludge)
+                # inject one fault with an specified fault model, in a specific
+                # thread, in a bit flip pattern
+                fi_tic = int(time.time())
+                old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time = gdb_inject_fault(
+                    section="DEFAULT",
+                    conf=conf,
+                    unique_id=unique_id,
+                    valid_block=block,
+                    valid_thread=thread,
+                    valid_register=register,
+                    bits_to_flip=bits_to_flip,
+                    fault_model=fault_model,
+                    break_line=break_line,
+                    max_time=max_time,
+                    current_path=current_path,
+                    kludge=kludge)
+
+                # Time toc
+                fi_toc = int(time.time())
+
+                # FI injection time
+                injection_time = fi_toc - fi_tic
+
+                # 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
+                # 'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
+                # 'register', 'breakpoint_location', 'fault_successful',
+                # 'crash', 'sdc', 'time', 'inj_time_location'
                 # Write a row to summary file
                 row = [num_rounds, fault_model]
                 row.extend(thread)
                 row.extend(block)
                 row.extend(
                     [old_val, new_val, 0, register, break_line, fault_injected,
-                     hang,
-                     sdc])
+                     hang, crash,
+                     sdc, injection_time, signal_init_time])
                 print(row)
                 summary_file.write_row(row=row)
-                time.sleep(2)
-                # except Exception as err:
-                #     if cp.DEBUG:
-                #         print("\nERROR ON BREAK POINT MODE: Fault was not injected, {}".format(str(err)))
-                #     raise
 
 
 """
@@ -569,8 +579,8 @@ def main():
     # Csv log
     fieldnames = ['iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
-                  'register', 'breakpoint_location', 'fault_successful',
-                  'crash', 'sdc']
+                  'register', 'breakpoint_location', 'fault_successful', 'hang',
+                  'crash', 'sdc', 'time', 'inj_time_location']
 
     ########################################################################
     # Fault injection

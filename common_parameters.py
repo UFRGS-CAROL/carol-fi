@@ -44,10 +44,8 @@ SIGNAL_APP_LOG = "/tmp/signal_app_thread.txt"
 # Time before first signal
 # Before the first signal we define the percentage of the overall time
 # to send the first signal (IT IS THE PERCENTAGE)
-TIME_BEFORE_FIRST_SIGNAL = 0.5
-
-# Num of signals that will be send to the application
-NUM_OF_SIGNALS = 10
+# A value between 0.1 and 1
+TIME_BEFORE_FIRST_SIGNAL = 1
 
 # Num of sleep time divisor
 NUM_DIVISION_TIMES = 100.0
