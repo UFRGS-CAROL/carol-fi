@@ -530,7 +530,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 # 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                 # 'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                 # 'register', 'breakpoint_location', 'fault_successful',
-                # 'crash', 'sdc', 'time', 'inj_time_location'
+                # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip'
                 # Write a row to summary file
                 row = [num_rounds, fault_model]
                 row.extend(thread)
@@ -538,7 +538,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 row.extend(
                     [old_val, new_val, 0, register, break_line, fault_injected,
                      hang, crash,
-                     sdc, injection_time, signal_init_time])
+                     sdc, injection_time, signal_init_time, bits_to_flip])
                 print(row)
                 summary_file.write_row(row=row)
 
@@ -580,7 +580,7 @@ def main():
     fieldnames = ['iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                   'register', 'breakpoint_location', 'fault_successful', 'hang',
-                  'crash', 'sdc', 'time', 'inj_time_location']
+                  'crash', 'sdc', 'time', 'inj_time_location', 'bits_flipped']
 
     ########################################################################
     # Fault injection
