@@ -18,18 +18,18 @@ For each fault injected, CAROL-FI will compare the output produced with a _**gol
 
 ## How to run a simple test
 
-To test quicksort, run the make into the quicksort folder '/codes/quicksort'. A folder into /tmp directory will be created with the binaries and files needed.
+To test quicksort, run the make into the quicksort folder '/sample-code/quicksort'. A folder into /tmp directory will be created with the binaries and files needed.
 
 Supposing you cloned the repository into your home directory, you should be able to run the simple test with the following commands:
 ```{r, engine='bash', code_block_name} 
-$ cd ~/carol-fi/codes/quicksort
+$ cd ~/carol-fi/sample-code/quicksort
 $ make
 ```
 
 Then, to run the fault injector use the following command:
 ```{r, engine='bash', code_block_name} 
 $ cd ~/carol-fi
-$ ./fault_injector.py -c ./codes/quicksort/quicksort.conf -i 10
+$ ./fault_injector.py -c ./sample-code/quicksort/quicksort.conf -i 10
 ```
 
 The fault injector will run quicksort 10 times and, the logs will be stored in the *logs* folder.
