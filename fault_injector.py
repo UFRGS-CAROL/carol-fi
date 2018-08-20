@@ -43,6 +43,8 @@ else:
 # Counters to keep track of fault effects so we can show them to the user
 faults = {"masked": 0, "sdc": 0, "crash": 0, "hang": 0, "noOutput": 0, "failed": 0}
 
+status = ""
+
 # The number of threads that will stop the target program at a random time (each stop is a fault injection tentative)
 # Fault injections tentatives are not always successful, that is why we need to do it more than once. 
 # However, only one fault can be injected
@@ -322,15 +324,26 @@ def checkmd5():
         print("It seems you are using a different version of the flip_value.py script")
         sys.exit(0)
 
-def printStatusCurses(stdscr, args, numRounds, avgRoundTime, sec, faults):
+def updateStatus(args, numRounds, avgRoundTime, sec, faults):
+    global status
+    status = "\tIteration "+str(numRounds)+"/"+str(args.iterations)+"\n\n"
+    status += "\tIteration average time: "+str(avgRoundTime)+"s\n\n"
+    status += "\tExecuting section: "+str(sec)+"\n\n"
+    status += "\tFault Effects: \n"
+    for k, v in faults.items():
+        status += "\t\t"+str(k)+": "+str(v)+"\n"
+
+
+def printStatusCurses(stdscr):
     try:
         stdscr.clear()
-        stdscr.addstr(0, 0, "\tIteration "+str(numRounds)+"/"+str(args.iterations)+"\n\n")
-        stdscr.addstr("\tIteration average time: "+str(avgRoundTime)+"s\n\n")
-        stdscr.addstr("\tExecuting section: "+str(sec)+"\n\n")
-        stdscr.addstr("\tFault Effects: \n")
-        for k, v in faults.items():
-            stdscr.addstr("\t\t"+str(k)+": "+str(v)+"\n")
+        stdscr.addstr(0, 0, status)
+        #stdscr.addstr(0, 0, "\tIteration "+str(numRounds)+"/"+str(args.iterations)+"\n\n")
+        #stdscr.addstr("\tIteration average time: "+str(avgRoundTime)+"s\n\n")
+        #stdscr.addstr("\tExecuting section: "+str(sec)+"\n\n")
+        #stdscr.addstr("\tFault Effects: \n")
+        #for k, v in faults.items():
+        #    stdscr.addstr("\t\t"+str(k)+": "+str(v)+"\n")
         stdscr.refresh()
     except:
         stdscr.clear()
@@ -365,15 +378,18 @@ def main(stdscr):
             # Execute the fault injector for each one of the sections(apps) of the configuration file
             for sec in conf.sections():
                 # Print status information
-                printStatusCurses(stdscr, args, numRounds, avgRoundTime, sec, faults)
+                updateStatus(args, numRounds, avgRoundTime, sec, faults)
+                printStatusCurses(stdscr)
                 # Execute one fault injection for a specific app
                 runGDBFaultInjection(sec)
             sumRoundTime += (int(time.time()) - start) # in seconds
             numRounds += 1
             avgRoundTime = sumRoundTime / numRounds
+        updateStatus(args, numRounds, avgRoundTime, sec, faults)
         subprocess.call("rm -f /tmp/*"+uniqueID+"*", shell=True, stdout=DEVNULL, stderr=subprocess.STDOUT)
 
     except KeyboardInterrupt:  # Ctrl+c
+        print(status)
         print ("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
         # Get all kill commands from all sections from the config file to make sure there is no spawn process running
         for sec in conf.sections():
@@ -388,4 +404,5 @@ def main(stdscr):
 if __name__ == "__main__":
     #main()
     wrapper(main) # ncurses
+    print (status)
 

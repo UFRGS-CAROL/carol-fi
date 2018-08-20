@@ -194,55 +194,95 @@ for dirName, subdirList, fileList in os.walk(rootDir):
 #print ("varCrashList: ", Counter(varCrashList).most_common(20))
 #print ("varSDCList: ", Counter(varSDCList).most_common(20))
 
+maskedCount = flipCount - sdcCount - crashCount - hangCount
+sdcPVF = "N/A"
+if sdcCount:
+    sdcPVF = sdcCount/flipCount
+crashPVF = "N/A"
+if crashCount:
+    crashPVF = crashCount/flipCount
+hangPVF = "N/A"
+if hangCount:
+    hangPVF = hangCount/flipCount
+maskedPVF = "N/A"
+if maskedCount:
+    maskedPVF = maskedCount/flipCount
 fp = open(current_folder_name+"_"+summFilename, "w")
-fp.write("bitflips:;"+str(flipCount))
-fp.write("\nSDCs:;"+str(sdcCount))
-fp.write("\nCrashes:;"+str(crashCount))
-fp.write("\nHangs:;"+str(hangCount))
+fp.write("Faults Injected:;"+str(flipCount))
+
+fp.write("\n\nFault Effect;#Effect;PVF")
+fp.write("\nMasked;"+str(maskedCount)+";"+str(maskedPVF))
+fp.write("\nSDCs;"+str(sdcCount)+";"+str(sdcPVF))
+fp.write("\nCrashes;"+str(crashCount)+";"+str(crashPVF))
+fp.write("\nHangs;"+str(hangCount)+";"+str(hangPVF))
 fp.write("\n\n")
 
 flips = Counter(flipList)
 
-fp.write("FaultModels SDCs:")
-fp.write("\nFaultModel ;#SDCs; percentage")
-for k,v in Counter(faultModelSDC).most_common():
-    per = float(v)/float(sdcCount) * 100
-    fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
+if faultModelSDC:
+    fp.write("FaultModels SDCs:")
+    fp.write("\nFaultModel ;#SDCs;percentage")
+    for k,v in Counter(faultModelSDC).most_common():
+        try:
+            per = float(v)/float(sdcCount) * 100
+        except:
+            per = "N/A"
+        fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
-fp.write("\n\n")
-fp.write("FaultModels Crashes:")
-fp.write("\nFaultModel ;#Crashes; percentage")
-for k,v in Counter(faultModelCrash).most_common():
-    per = float(v)/float(sdcCount) * 100
-    fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
+if faultModelCrash:
+    fp.write("\n\n")
+    fp.write("FaultModels Crashes:")
+    fp.write("\nFaultModel ;#Crashes;percentage")
+    for k,v in Counter(faultModelCrash).most_common():
+        try:
+            per = float(v)/float(crashCount) * 100
+        except:
+            per = "N/A"
+        fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
-fp.write("\n\n")
-fp.write("FaultModels Hangs:")
-fp.write("\nFaultModel ;#Hangs; percentage")
-for k,v in Counter(faultModelHang).most_common():
-    per = float(v)/float(sdcCount) * 100
-    fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
+if faultModelHang:
+    fp.write("\n\n")
+    fp.write("FaultModels Hangs:")
+    fp.write("\nFaultModel ;#Hangs;percentage")
+    for k,v in Counter(faultModelHang).most_common():
+        try:
+            per = float(v)/float(hangCount) * 100
+        except:
+            per = "N/A"
+        fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
-fp.write("\n\n")
-fp.write("Variables that caused SDCs:")
-fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
-for k,v in Counter(varSDCList).most_common():
-    pvf = float(v)/float(flips[k]) * 100
-    fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
+if varSDCList:
+    fp.write("\n\n")
+    fp.write("Variables that caused SDCs:")
+    fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
+    for k,v in Counter(varSDCList).most_common():
+        try:
+            pvf = float(v)/float(flips[k]) * 100
+        except:
+            pvf = "N/A"
+        fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
 
-fp.write("\n")
-fp.write("\nVariables that caused Crash:")
-fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
-for k,v in Counter(varCrashList).most_common():
-    pvf = float(v)/float(flips[k]) * 100
-    fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
+if varCrashList:
+    fp.write("\n")
+    fp.write("\nVariables that caused Crash:")
+    fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
+    for k,v in Counter(varCrashList).most_common():
+        try:
+            pvf = float(v)/float(flips[k]) * 100
+        except:
+            pvf = "N/A"
+        fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
 
-fp.write("\n")
-fp.write("\nVariables that caused Hang:")
-fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
-for k,v in Counter(varHangList).most_common():
-    pvf = float(v)/float(flips[k]) * 100
-    fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
+if varHangList:
+    fp.write("\n")
+    fp.write("\nVariables that caused Hang:")
+    fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
+    for k,v in Counter(varHangList).most_common():
+        try:
+            pvf = float(v)/float(flips[k]) * 100
+        except:
+            pvf = "N/A"
+        fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
 
 fp.close()
 
