@@ -407,6 +407,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         all_symbols = list()
         frame = gdb.selected_frame()
         while frame:
+            if 'main' in frame.name():
+                break
             print("SELECTING NEW FRAME")
             print(frame.is_valid(), frame.name(), frame.architecture(), frame.type())
 
