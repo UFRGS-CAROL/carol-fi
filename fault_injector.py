@@ -205,12 +205,12 @@ The default parameters are necessary for break and signal mode differentiations
 
 
 def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
-                   breakpoint_location, flip_log_file, gdb_init_strings, kludge):
+                   breakpoint_location, flip_log_file, gdb_init_strings, kludge, injection_mode='RF'):
     # Block and thread
     env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + breakpoint_location
-    env_string += "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(kludge)
+    env_string += "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(kludge) + "|" + str(injection_mode)
 
     if cp.DEBUG:
         print("ENV STRING:", env_string)
@@ -258,7 +258,8 @@ def gdb_inject_fault(**kwargs):
                    fault_model=fault_model,
                    breakpoint_location=breakpoint_location,
                    flip_log_file=flip_log_file,
-                   kludge=kludge)
+                   kludge=kludge,
+                   injection_mode=conf.get("DEFAULT", "injectionSite"))
 
     if cp.DEBUG:
         print("ENV GENERATE FINISHED")

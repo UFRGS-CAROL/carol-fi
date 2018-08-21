@@ -29,7 +29,7 @@ signal
 
 
 def place_breakpoint(event):
-    global breakpoint_kernel_line, kludge_breakpoint, was_hit
+    global breakpoint_kernel_line, kludge_breakpoint, was_hit, injection_mode
 
     # Check if many breakpoints are going to be set
     if not was_hit:
@@ -46,7 +46,8 @@ def place_breakpoint(event):
         breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
                                                           bits_to_flip=bits_to_flip, fault_model=fault_model,
                                                           logging=global_logging, spec=breakpoint_location,
-                                                          type=gdb.BP_BREAKPOINT, temporary=True)
+                                                          type=gdb.BP_BREAKPOINT, temporary=True,
+                                                          injection_mode=injection_mode)
 
         if kludge != 'None':
             kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
@@ -63,7 +64,7 @@ Main function
 
 
 def main():
-    global global_logging, global_logging, block, thread, register, kludge_breakpoint
+    global global_logging, global_logging, block, thread, register, kludge_breakpoint, injection_mode
     global bits_to_flip, fault_model, breakpoint_location, kludge, breakpoint_kernel_line
 
     # Initialize GDB to run the app
@@ -81,7 +82,7 @@ def main():
     # Get variables values from environment
     # First parse line
     [block, thread, register, bits_to_flip, fault_model, breakpoint_location,
-     flip_log_file, gdb_init_strings, kludge] = str(os.environ['CAROL_FI_INFO']).split('|')
+     flip_log_file, gdb_init_strings, kludge, injection_mode] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Logging
     global_logging = Logging(log_file=flip_log_file)
@@ -127,5 +128,6 @@ breakpoint_kernel_line = None
 kludge = None
 kludge_breakpoint = None
 was_hit = False
+injection_mode = None
 
 main()
