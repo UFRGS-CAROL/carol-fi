@@ -411,3 +411,35 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                 all_symbols.append([frame, symbols])
             frame = frame.older()
         return all_symbols
+
+    """
+    Returns a list of all symbols of the frame, frame is a GDB Frame object
+    """
+
+    def __get_frame_symbols(self, frame):
+        try:
+            symbols = list()
+            block = frame.block()
+            while block:
+                for symbol in block:
+                    if self.__is_bit_flip_possible(symbol, frame):
+                        symbols.append(symbol)
+                block = block.superblock
+            return symbols
+        except:
+            return None
+
+    """
+         Returns True if we can bitflip some bit of this symbol, i.e. if this is a variable or
+         constant and not functions and another symbols
+    """
+
+    @staticmethod
+    def __is_bit_flip_possible(symbol, frame):
+        if symbol.is_variable or symbol.is_constant or symbol.is_argument:
+            var_GDB = symbol.value(frame)
+            address = re.sub("<.*>|\".*\"", "", str(var_GDB.address))
+            if var_GDB.address is not None and not var_GDB.is_optimized_out and hex(int(address, 16)) > hex(
+                    int("0x0", 16)):
+                return True
+        return False
