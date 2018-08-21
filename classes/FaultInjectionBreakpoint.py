@@ -402,7 +402,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     where frame is a GDB Frame object and symbolsList is a list of all symbols of this frame
     """
 
-    def get_all_valid_symbols(self):
+    def __get_all_valid_symbols(self):
         all_symbols = list()
         frame = gdb.selected_frame()
         while frame:
