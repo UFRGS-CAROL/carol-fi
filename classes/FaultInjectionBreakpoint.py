@@ -408,11 +408,12 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         frame = gdb.selected_frame()
         while frame:
             print("SELECTING NEW FRAME")
+            print(frame.is_valid(), frame.name(), frame.architecture(), frame.type())
+
             symbols = self.__get_frame_symbols(frame)
             if symbols is not None:
                 all_symbols.append([frame, symbols])
             print("GETTING OLDER")
-            print(frame.is_valid(), frame.name(), frame.architecture(), frame.type())
             frame = frame.older()
 
         print("RETURNING ALL SYMBOLS")
