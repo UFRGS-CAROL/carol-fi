@@ -371,6 +371,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                         threads_symbols.append([th, th_symbols])
                 except Exception as err:
                     print(err)
+                    print("ERROR ON THREAD INFERIORS")
                     continue
             th_len = len(threads_symbols)
             print("AFTER THREAD LEN")
