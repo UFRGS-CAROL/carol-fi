@@ -412,7 +412,9 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             if symbols is not None:
                 all_symbols.append([frame, symbols])
             print("GETTING OLDER")
+            print(frame.is_valid(), frame.name(), frame.architecture(), frame.type())
             frame = frame.older()
+
         print("RETURNING ALL SYMBOLS")
         return all_symbols
 
