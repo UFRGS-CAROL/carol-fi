@@ -425,14 +425,13 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             symbols = list()
             block = frame.block()
             while block:
-                print("FOUND BLOCK")
                 for symbol in block:
                     if self.__is_bit_flip_possible(symbol, frame):
                         symbols.append(symbol)
                 block = block.superblock
             return symbols
         except Exception as err:
-            print("ERROR: {}".format(err))
+            print("GET_FRAME_SYMBOLS_ERROR: {}".format(err))
             return None
 
     """
