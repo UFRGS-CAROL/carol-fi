@@ -367,6 +367,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                 try:
                     th.switch()
                     th_symbols = self.__get_all_valid_symbols()
+                    print("TH SYMBOLS SET")
                     if len(th_symbols) > 0:
                         threads_symbols.append([th, th_symbols])
                 except Exception as err:
