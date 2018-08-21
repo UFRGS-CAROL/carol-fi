@@ -365,7 +365,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             print("FOR INFERIOR THREADS")
             # try:
             th.switch()
-            # th_symbols = self.__get_all_valid_symbols()
+            th_symbols = self.__get_all_valid_symbols()
             # if len(th_symbols) > 0:
             #     print("TH SYMBOLS APPEND")
             #
