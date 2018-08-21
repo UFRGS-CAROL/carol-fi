@@ -363,17 +363,17 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         threads_symbols = list()
         for th in inferior.threads():
             print("FOR INFERIOR THREADS")
-            try:
-                th.switch()
-                th_symbols = self.__get_all_valid_symbols()
-                if len(th_symbols) > 0:
-                    print("TH SYMBOLS APPEND")
+            # try:
+            th.switch()
+            th_symbols = self.__get_all_valid_symbols()
+            if len(th_symbols) > 0:
+                print("TH SYMBOLS APPEND")
 
-                    threads_symbols.append([th, th_symbols])
-            except Exception as err:
-                print(err)
-                print("ERROR ON THREAD INFERIORS")
-                continue
+                threads_symbols.append([th, th_symbols])
+            # except Exception as err:
+            #     print(err)
+            #     print("ERROR ON THREAD INFERIORS")
+            #     continue
         # th_len = len(threads_symbols)
         # print("AFTER THREAD LEN")
         # if th_len <= 0:
