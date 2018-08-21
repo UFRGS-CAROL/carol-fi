@@ -262,7 +262,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                     pass
                 return True
             except gdb.error as err:
-                print("gdbException: "+str(err))
+                print("gdbException: " + str(err))
                 return False
 
         except Exception as err:
@@ -396,3 +396,18 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         except Exception as err:
             print("pythonException: " + str(err))
             return False
+
+    """
+    Get all the symbols of the stacked frames, returns a list of tuples [frame, symbolsList]
+    where frame is a GDB Frame object and symbolsList is a list of all symbols of this frame
+    """
+
+    def get_all_valid_symbols(self):
+        all_symbols = list()
+        frame = gdb.selected_frame()
+        while frame:
+            symbols = self.__get_frame_symbols(frame)
+            if symbols is not None:
+                all_symbols.append([frame, symbols])
+            frame = frame.older()
+        return all_symbols
