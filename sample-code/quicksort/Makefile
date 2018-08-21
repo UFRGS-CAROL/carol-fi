@@ -16,7 +16,7 @@ gen_data: gen_bin
 
 mv_bin: gen_data
 	mkdir -p $(destDir)
-	mkdir lastDataCreated
+	mkdir -p lastDataCreated
 	cp inputsort_134217728 gold_5000000 lastDataCreated
 	mv genInput quicksort inputsort_134217728 gold_5000000 $(destDir)
 	@echo "All Done, executables should be in the $(destDir)"
