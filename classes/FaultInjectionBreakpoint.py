@@ -432,7 +432,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                         symbols.append(symbol)
                 block = block.superblock
             return symbols
-        except:
+        except Exception as err:
+            print("ERROR: {}".format(err))
             return None
 
     """
