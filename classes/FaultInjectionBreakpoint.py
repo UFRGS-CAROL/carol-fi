@@ -193,7 +193,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         set_cmd = "set {char}" + address_f + " = " + hex(int(bin_data, 2))
         gdb.execute(set_cmd)
 
-
     def __show_memory_content(self, address, byte_sizeof):
         x_mem = "x/" + str(byte_sizeof) + "xb " + address
         hex_data = gdb.execute(x_mem, to_string=True)
@@ -372,32 +371,32 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             #     print(err)
             #     print("ERROR ON THREAD INFERIORS")
             #     continue
-        # th_len = len(threads_symbols)
-        # print("AFTER THREAD LEN")
-        # if th_len <= 0:
-        #     print(str("No Threads with symbols"))
-        #     return False
-        #
-        # th_pos = random.randint(0, th_len - 1)
-        # print("AFTER THREAD rand int")
-        # cur_thread = threads_symbols[th_pos][0]
-        # print("Thread name: " + str(cur_thread.name))
-        # print("Thread num: " + str(cur_thread.num))
-        # print("Thread ptid: " + str(cur_thread.ptid))
-        # r = self.__chose_frame_to_flip(threads_symbols[th_pos][1])
-        # while r is False:
-        #     threads_symbols.pop(th_pos)
-        #     th_len -= 1
-        #     if th_len <= 0:
-        #         break
-        #     th_pos = random.randint(0, th_len - 1)
-        #     try:
-        #         r = self.__chose_frame_to_flip(threads_symbols[th_pos][1])
-        #     except Exception as err:
-        #         print(err)
-        #         r = False
-        #
-        # return r
+            # th_len = len(threads_symbols)
+            # print("AFTER THREAD LEN")
+            # if th_len <= 0:
+            #     print(str("No Threads with symbols"))
+            #     return False
+            #
+            # th_pos = random.randint(0, th_len - 1)
+            # print("AFTER THREAD rand int")
+            # cur_thread = threads_symbols[th_pos][0]
+            # print("Thread name: " + str(cur_thread.name))
+            # print("Thread num: " + str(cur_thread.num))
+            # print("Thread ptid: " + str(cur_thread.ptid))
+            # r = self.__chose_frame_to_flip(threads_symbols[th_pos][1])
+            # while r is False:
+            #     threads_symbols.pop(th_pos)
+            #     th_len -= 1
+            #     if th_len <= 0:
+            #         break
+            #     th_pos = random.randint(0, th_len - 1)
+            #     try:
+            #         r = self.__chose_frame_to_flip(threads_symbols[th_pos][1])
+            #     except Exception as err:
+            #         print(err)
+            #         r = False
+            #
+            # return r
 
     """
     Get all the symbols of the stacked frames, returns a list of tuples [frame, symbolsList]
@@ -420,18 +419,18 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     """
 
     def __get_frame_symbols(self, frame):
-        try:
-            symbols = list()
-            block = frame.block()
-            while block:
-                for symbol in block:
-                    if self.__is_bit_flip_possible(symbol, frame):
-                        symbols.append(symbol)
-                block = block.superblock
-            return symbols
-        except Exception as err:
-            print("GET_FRAME_SYMBOLS_ERROR: {}".format(err))
-            return None
+        # try:
+        symbols = list()
+        block = frame.block()
+        while block:
+            for symbol in block:
+                if self.__is_bit_flip_possible(symbol, frame):
+                    symbols.append(symbol)
+            block = block.superblock
+        return symbols
+        # except Exception as err:
+        #     print("GET_FRAME_SYMBOLS_ERROR: {}".format(err))
+        #     return None
 
     """
          Returns True if we can bitflip some bit of this symbol, i.e. if this is a variable or
