@@ -373,10 +373,13 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                     print(err)
                     continue
             th_len = len(threads_symbols)
+            print("AFTER THREAD LEN")
             if th_len <= 0:
                 print(str("No Threads with symbols"))
                 return False
+
             th_pos = random.randint(0, th_len - 1)
+            print("AFTER THREAD rand int")
             cur_thread = threads_symbols[th_pos][0]
             print("Thread name: " + str(cur_thread.name))
             print("Thread num: " + str(cur_thread.num))
