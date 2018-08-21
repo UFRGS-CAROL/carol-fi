@@ -357,8 +357,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         print("Backtrace BEGIN:")
         bt = gdb.execute("bt", to_string=True)
         print(bt)
-        # source_lines = gdb.execute("list", to_string=True)
-        # print(source_lines)
+        source_lines = gdb.execute("list", to_string=True)
+        print(source_lines)
 
         threads_symbols = list()
         for th in inferior.threads():
