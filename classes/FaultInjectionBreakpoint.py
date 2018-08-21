@@ -160,8 +160,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     Flip only a bit in a register content
     """
 
-    @staticmethod
-    def __flip_a_bit(bit_to_flip, reg_content):
+    def __flip_a_bit(self, bit_to_flip, reg_content):
         new_bit = '0' if reg_content[bit_to_flip] == '1' else '1'
         reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
         return reg_content
@@ -173,8 +172,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     def __inst_generic_injector(self):
         pass
 
-    @staticmethod
-    def __single_bit_flip_word_address(address, byte_sizeof):
+    def __single_bit_flip_word_address(self, address, byte_sizeof):
         buf_fog = "Fault Model: Single bit-flip"
         buf_fog += "\n"
         buf_fog += "base address to flip value: " + str(address)
@@ -195,8 +193,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         set_cmd = "set {char}" + address_f + " = " + hex(int(bin_data, 2))
         gdb.execute(set_cmd)
 
-    @staticmethod
-    def __show_memory_content(address, byte_sizeof):
+
+    def __show_memory_content(self, address, byte_sizeof):
         x_mem = "x/" + str(byte_sizeof) + "xb " + address
         hex_data = gdb.execute(x_mem, to_string=True)
         hex_data = re.sub(".*:|\s", "", hex_data)
@@ -440,8 +438,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
          constant and not functions and another symbols
     """
 
-    @staticmethod
-    def __is_bit_flip_possible(symbol, frame):
+    def __is_bit_flip_possible(self, symbol, frame):
         if symbol.is_variable or symbol.is_constant or symbol.is_argument:
             var_GDB = symbol.value(frame)
             address = re.sub("<.*>|\".*\"", "", str(var_GDB.address))
