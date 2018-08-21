@@ -412,6 +412,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             if symbols is not None:
                 all_symbols.append([frame, symbols])
             frame = frame.older()
+        print("RETURNING ALL SYMBOLS")
         return all_symbols
 
     """
@@ -419,18 +420,18 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     """
 
     def __get_frame_symbols(self, frame):
-        # try:
-        symbols = list()
-        block = frame.block()
-        while block:
-            for symbol in block:
-                if self.__is_bit_flip_possible(symbol, frame):
-                    symbols.append(symbol)
-            block = block.superblock
-        return symbols
-        # except Exception as err:
-        #     print("GET_FRAME_SYMBOLS_ERROR: {}".format(err))
-        #     return None
+        try:
+            symbols = list()
+            block = frame.block()
+            while block:
+                for symbol in block:
+                    if self.__is_bit_flip_possible(symbol, frame):
+                        symbols.append(symbol)
+                block = block.superblock
+            return symbols
+        except Exception as err:
+            print("GET_FRAME_SYMBOLS_ERROR: {}".format(err))
+            return None
 
     """
          Returns True if we can bitflip some bit of this symbol, i.e. if this is a variable or
