@@ -410,6 +410,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         all_symbols = list()
         frame = gdb.selected_frame()
         while frame:
+            print("SELECTING NEW FRAME")
             symbols = self.__get_frame_symbols(frame)
             if symbols is not None:
                 all_symbols.append([frame, symbols])
