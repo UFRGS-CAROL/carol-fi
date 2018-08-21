@@ -449,5 +449,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             address = re.sub("<.*>|\".*\"", "", str(var_GDB.address))
             if var_GDB.address is not None and not var_GDB.is_optimized_out and hex(int(address, 16)) > hex(
                     int("0x0", 16)):
+                print("BIT FLIP IS POSSIBLE")
                 return True
         return False
