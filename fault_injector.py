@@ -284,7 +284,7 @@ def gdb_inject_fault(**kwargs):
 
     # Starting both threads
     fi_process.start()
-    signal_app_thread.start()
+    # signal_app_thread.start()
 
     if cp.DEBUG:
         print("PROCESSES SPAWNED")
@@ -301,10 +301,10 @@ def gdb_inject_fault(**kwargs):
     # finishing and removing thrash
     fi_process.join()
     # fi_process.terminate()
-    signal_app_thread.join()
+    # signal_app_thread.join()
 
     # Get the signal init wait time before destroy the thread
-    signal_init_wait_time = signal_app_thread.get_int_wait_time()
+    signal_init_wait_time = 0  # signal_app_thread.get_int_wait_time()
 
     del fi_process, signal_app_thread
 
