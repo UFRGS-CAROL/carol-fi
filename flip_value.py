@@ -57,6 +57,14 @@ def place_breakpoint(event):
             print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
         global_logging.exception(str("ERR: {} on stop code {}".format(err, str(event.exit_code))))
 
+"""
+Make sure that before vars were set no signal is send
+"""
+
+
+def unlock_fi():
+    with open(cp.LOCK_FILE, "w") as fp:
+        fp.write("1")
 
 """
 Main function
@@ -103,6 +111,9 @@ def main():
 
     # Start app execution
     gdb.execute("r")
+
+    # FI is ready to go
+    unlock_fi()
 
     # Man, this is a quick fix
     if kludge_breakpoint is not None:

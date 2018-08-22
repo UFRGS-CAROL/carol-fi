@@ -19,6 +19,16 @@ class SignalApp(Thread):
         self.__init_wait_time = uniform(0, float(max_wait_time) * cp.TIME_BEFORE_FIRST_SIGNAL)
 
     def run(self):
+        # fix failed injections
+        ready_to_go = False
+        while not ready_to_go:
+            try:
+                with open(cp.LOCK_FILE, "r") as fi:
+                    if '1' in fi.read():
+                        ready_to_go = True
+            except:
+                continue
+
         # Sleep for a random time
         time.sleep(self.__init_wait_time)
 
