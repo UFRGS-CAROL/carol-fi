@@ -37,9 +37,9 @@ def place_breakpoint(event):
     else:
         return
 
-    if cp.DEBUG:
-        print("PLACE_BREAKPOINT hit, event {}".format(str(event.stop_signal)))
-    global_logging.info("PLACE_BREAKPOINT hit, event {}".format(str(event)))
+    # if cp.DEBUG:
+    #     print("PLACE_BREAKPOINT hit, event {}".format(str(event.stop_signal)))
+    # global_logging.info("PLACE_BREAKPOINT hit, event {}".format(str(event)))
     try:
         # Place the first breakpoint, it is only to avoid
         # address memory error
@@ -55,7 +55,7 @@ def place_breakpoint(event):
     except Exception as err:
         if cp.DEBUG:
             print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
-        global_logging.exception(str("ERR: {} on stop code {}".format(err, str(event.exit_code))))
+        # global_logging.exception(str("ERR: {} on stop code {}".format(err, str(event.exit_code))))
 
 """
 Make sure that before vars were set no signal is send
@@ -109,11 +109,13 @@ def main():
     bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
 
+    place_breakpoint(None)
+
     # Start app execution
     gdb.execute("r")
 
-    # FI is ready to go
-    unlock_fi()
+    # # FI is ready to go
+    # unlock_fi()
 
     # Man, this is a quick fix
     if kludge_breakpoint is not None:

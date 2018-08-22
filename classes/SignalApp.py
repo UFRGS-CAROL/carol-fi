@@ -40,7 +40,7 @@ class SignalApp(Thread):
 
         self.__log.info(log_string)
 
-        os.system(self.__signal_cmd)
+        # os.system(self.__signal_cmd)
 
     def get_int_wait_time(self):
         return self.__init_wait_time
