@@ -397,7 +397,7 @@ to inject a fault.
 def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault_model):
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
-    valid_block, valid_thread = cp.get_valid_thread(kernel_info_dict["threads"])
+    valid_block, valid_thread = cf.get_valid_thread(kernel_info_dict["threads"])
 
     # Randomly choose a place to inject a fault
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
