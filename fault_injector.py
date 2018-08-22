@@ -300,7 +300,7 @@ def gdb_inject_fault(**kwargs):
 
     # finishing and removing thrash
     fi_process.join()
-    fi_process.terminate()
+    # fi_process.terminate()
     signal_app_thread.join()
 
     # Get the signal init wait time before destroy the thread
