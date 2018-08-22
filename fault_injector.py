@@ -108,8 +108,8 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
         os.makedirs(cp_dir)
 
     # Moving all necessary files
-    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG,
-                         cp.SIGNAL_APP_LOG]:
+    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG]:  # ,
+        # cp.SIGNAL_APP_LOG]:
         try:
             shutil.move(file_to_move, cp_dir)
         except Exception as err:
@@ -284,7 +284,7 @@ def gdb_inject_fault(**kwargs):
 
     # Starting both threads
     fi_process.start()
-    # signal_app_thread.start()
+    signal_app_thread.start()
 
     if cp.DEBUG:
         print("PROCESSES SPAWNED")
@@ -301,10 +301,10 @@ def gdb_inject_fault(**kwargs):
     # finishing and removing thrash
     fi_process.join()
     # fi_process.terminate()
-    # signal_app_thread.join()
+    signal_app_thread.join()
 
     # Get the signal init wait time before destroy the thread
-    signal_init_wait_time = 0  # signal_app_thread.get_int_wait_time()
+    signal_init_wait_time = signal_app_thread.get_int_wait_time()
 
     del fi_process, signal_app_thread
 
@@ -389,31 +389,6 @@ def parse_line(instruction_line):
 
 
 """
-Selects a valid thread for a specific
-kernel
-return the coordinates for the block
-and the thread
-"""
-
-
-def get_valid_thread(threads):
-    element = random.randrange(2, len(threads))
-    # randomly chosen first block and thread
-    #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
-    block_thread = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", threads[element])
-
-    block_x = block_thread.group(1)
-    block_y = block_thread.group(2)
-    block_z = block_thread.group(3)
-
-    thread_x = block_thread.group(4)
-    thread_y = block_thread.group(5)
-    thread_z = block_thread.group(6)
-
-    return [block_x, block_y, block_z], [thread_x, thread_y, thread_z]
-
-
-"""
 Randomly selects a thread, address and a bit location
 to inject a fault.
 """
@@ -422,7 +397,7 @@ to inject a fault.
 def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault_model):
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
-    valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
+    valid_block, valid_thread = cp.get_valid_thread(kernel_info_dict["threads"])
 
     # Randomly choose a place to inject a fault
     bits_to_flip = bit_flip_selection(fault_model=fault_model)

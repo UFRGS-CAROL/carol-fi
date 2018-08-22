@@ -113,7 +113,7 @@ def main():
     bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
 
-    place_breakpoint(None)
+    # place_breakpoint(None)
 
     # Start app execution
     gdb.execute("r")

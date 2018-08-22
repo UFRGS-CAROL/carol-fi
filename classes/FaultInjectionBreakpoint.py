@@ -71,11 +71,11 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         try:
             # RF is the default mode of injection
             if self.__injection_mode == 'RF' or self.__injection_mode is None:
-                    # Do the fault injection magic
-                    if self.__rf_generic_injector():
-                        self.__logging.info("Fault Injection Successful")
-                    else:
-                        self.__logging.info("Fault Injection Went Wrong, reg_old and reg_new are the same")
+                # Do the fault injection magic
+                if self.__rf_generic_injector():
+                    self.__logging.info("Fault Injection Successful")
+                else:
+                    self.__logging.info("Fault Injection Went Wrong, reg_old and reg_new are the same")
 
             elif self.__injection_mode == 'VARS':
                 self.__var_generic_injector()
@@ -100,10 +100,29 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             thread_focus = gdb.execute(change_focus_cmd, to_string=True)
             # Thread focus return information
             self.__logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
+            return True
         except Exception as err:
             self.__logging.exception("CUDA_FOCUS_exception: " + str(err))
+
+        try:
+            # Trying with hard thread focus
+            block, thread = cf.get_valid_thread(cf.execute_command(gdb, "info cuda threads"))
+            change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(block[0]),
+                                                                                           str(block[1]),
+                                                                                           str(block[2]),
+                                                                                           str(thread[0]),
+                                                                                           str(thread[1]),
+                                                                                           str(thread[2]))
+            self.__logging.debug(change_focus_cmd)
+            thread_focus = gdb.execute(change_focus_cmd, to_string=True)
+            # Thread focus return information
+            self.__logging.info(
+                "CUDA focus only on second try: " + str(thread_focus).replace("[", "").replace("]", "").strip())
+        except Exception as err:
+            self.__logging.exception("CUDA_FOCUS_exception second try: " + str(err))
             self.__logging.exception("Fault Injection Went Wrong")
             return False
+
         return True
 
     """
