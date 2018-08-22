@@ -1,4 +1,5 @@
-from multiprocessing import Process
+# from multiprocessing import Process
+from threading import Thread
 from os import system, path
 from subprocess import Popen, PIPE
 from re import search
@@ -13,7 +14,7 @@ this thread will be killed
 """
 
 
-class RunGDB(Process):
+class RunGDB(Thread):
     def __init__(self, unique_id, gdb_exec_name, flip_script):
         super(RunGDB, self).__init__()
         self.__gdb_exe_name = gdb_exec_name
