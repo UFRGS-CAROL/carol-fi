@@ -39,8 +39,9 @@ class SignalApp(Thread):
             print(log_string)
 
         self.__log.info(log_string)
-
-        # os.system(self.__signal_cmd)
+        for signals in range(0, 5):
+            os.system(self.__signal_cmd)
+            time.sleep(0.01)
 
     def get_int_wait_time(self):
         return self.__init_wait_time
