@@ -96,7 +96,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                                                                                            str(self.__thread[0]),
                                                                                            str(self.__thread[1]),
                                                                                            str(self.__thread[2]))
-            print(change_focus_cmd)
+            self.__logging.debug(change_focus_cmd)
             thread_focus = gdb.execute(change_focus_cmd, to_string=True)
             # Thread focus return information
             self.__logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
