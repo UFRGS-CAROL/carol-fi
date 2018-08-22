@@ -55,6 +55,10 @@ def place_breakpoint(event):
                 print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
             global_logging.exception(str("ERR: {} on stop code {}".format(err, str(event.exit_code))))
 
+    # Must continue, even if fault is already injected
+    gdb.execute("c")
+
+
 """
 Make sure that before vars were set no signal is send
 """
