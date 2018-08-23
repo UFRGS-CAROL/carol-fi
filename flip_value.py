@@ -44,9 +44,9 @@ def place_breakpoint():
                                                       type=gdb.BP_BREAKPOINT,
                                                       injection_mode=injection_mode)
 
-    # if kludge != 'None':
-    #     kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
-    #                                                  temporary=True)
+    if kludge != 'None':
+        kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
+                                                     temporary=True)
     # except Exception as err:
     #     if cp.DEBUG:
     #         print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
@@ -97,7 +97,7 @@ def main():
     except gdb.error as err:
         print("ERROR on initializing setup: " + str(err))
 
-    # Set Breakpoint attributes to be used
+    # Set Breakpoint attributes to be usedexport OMP_NUM_THREADS=
     block = block.split(",")
     thread = thread.split(",")
     bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
@@ -108,18 +108,6 @@ def main():
     # Start app execution
     gdb.execute("r")
 
-    print("FOI")
-    # Man, this is a quick fix
-    # if kludge_breakpoint is not None:
-    #     del kludge_breakpoint
-    #     gdb.execute('c')
-
-    print("FOI2")
-    # while not was_hit:
-    #     print("FOI3")
-    #     gdb.execute('c')
-
-    print("FOI4")
     # Delete the breakpoint
     breakpoint_kernel_line.delete()
     del breakpoint_kernel_line
