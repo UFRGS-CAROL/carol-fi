@@ -98,19 +98,20 @@ def main():
         print("ERROR on initializing setup: " + str(err))
 
     # Set Breakpoint attributes to be use
+    print("Passou 1")
     block = block.split(",")
     thread = thread.split(",")
     bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
-
+    print("Passou 2")
     place_breakpoint()
-
+    print("Passou 3")
     # Start app execution
     gdb.execute("r")
-
+    print("Passou 4")
     # Delete the breakpoint
-    breakpoint_kernel_line.delete()
-    del breakpoint_kernel_line
+    # breakpoint_kernel_line.delete()
+    # del breakpoint_kernel_line
 
 
 
