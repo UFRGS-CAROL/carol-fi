@@ -70,6 +70,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         if self.__fault_injected:
             return True
 
+        print("PASSOU ONDE NAO DEVIA")
+
         # This if avoid the creation of another event connection
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
