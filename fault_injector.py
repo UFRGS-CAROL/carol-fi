@@ -205,11 +205,11 @@ The default parameters are necessary for break and signal mode differentiations
 """
 
 
-def gen_env_string(valid_block, valid_thread, valid_register, bits_to_flip, fault_model,
+def gen_env_string(valid_register, bits_to_flip, fault_model,
                    breakpoint_location, flip_log_file, gdb_init_strings, kludge, injection_mode='RF'):
     # Block and thread
-    env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
-    env_string += "|" + valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
+    # env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
+    env_string = valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + breakpoint_location
     env_string += "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(kludge) + "|" + str(injection_mode)
 
@@ -236,8 +236,6 @@ def gdb_inject_fault(**kwargs):
     kludge = kwargs.get('kludge')
 
     # Parameters for thread selection
-    valid_block = kwargs.get('valid_block')
-    valid_thread = kwargs.get('valid_thread')
     breakpoint_location = kwargs.get('break_line')
 
     # Logging file
@@ -252,8 +250,6 @@ def gdb_inject_fault(**kwargs):
 
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
-                   valid_block=valid_block,
-                   valid_thread=valid_thread,
                    valid_register=valid_register,
                    bits_to_flip=bits_to_flip,
                    fault_model=fault_model,
@@ -272,8 +268,8 @@ def gdb_inject_fault(**kwargs):
         print("PRE EXECUTION")
 
     # First we have to start the SignalApp thread
-    # signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),
-    #                               log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id)
+    signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),
+                                  log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id)
 
     # Create one thread to start gdb script
     # Start fault injection process
@@ -285,7 +281,7 @@ def gdb_inject_fault(**kwargs):
 
     # Starting both threads
     fi_process.start()
-    # signal_app_thread.start()
+    signal_app_thread.start()
 
     if cp.DEBUG:
         print("PROCESSES SPAWNED")
@@ -302,10 +298,10 @@ def gdb_inject_fault(**kwargs):
     # finishing and removing thrash
     fi_process.join()
     # fi_process.terminate()
-    # signal_app_thread.join()
+    signal_app_thread.join()
 
     # Get the signal init wait time before destroy the thread
-    signal_init_wait_time = 0  # signal_app_thread.get_int_wait_time()
+    signal_init_wait_time = signal_app_thread.get_int_wait_time()
 
     del fi_process  # , signal_app_thread
 
@@ -324,11 +320,18 @@ def gdb_inject_fault(**kwargs):
     # Search for set values for register
     # Must be done before save output
     # Was fault injected?
+    block = thread = ''
     try:
         reg_old_value = logging.search("reg_old_value")
         reg_new_value = logging.search("reg_new_value")
         reg_old_value = re.findall("reg_old_value: (\S+)", reg_old_value)[0]
         reg_new_value = re.findall("reg_new_value: (\S+)", reg_new_value)[0]
+        m = re.search("cuda kernel 0 block (\d+),(\d+),(\d+) thread (\d+),(\d+),(\d+)",
+                      logging.search("cuda kernel 0"))
+
+        if m:
+            block = [m.group(1), m.group(2), m.group(3)]
+            thread = [m.group(4), m.group(5), m.group(6)]
 
         fault_successful = True
     except Exception as e:
@@ -345,7 +348,8 @@ def gdb_inject_fault(**kwargs):
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
 
-    return reg_old_value, reg_new_value, fault_successful, is_hang, is_crash, is_sdc, signal_init_wait_time
+    return reg_old_value, reg_new_value, fault_successful, is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread
+
 
 # TODO: REMOVE THIS FUNCTION
 
@@ -354,6 +358,7 @@ def only_for_radiation_benchs():
     list_of_files = glob.glob('/home/ffsantos/radiation-benchmarks/log/*.log')
     latest_file = max(list_of_files, key=os.path.getctime)
     return os.path.basename(latest_file)
+
 
 """
 Support function to parse a line of disassembled code
@@ -402,10 +407,10 @@ to inject a fault.
 """
 
 
-def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault_model):
+def gen_injection_location(max_num_regs, injection_site, fault_model):
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
-    valid_block, valid_thread = cf.get_valid_thread(kernel_info_dict["threads"])
+    # valid_block, valid_thread = cf.get_valid_thread(kernel_info_dict["threads"])
 
     # Randomly choose a place to inject a fault
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
@@ -422,7 +427,7 @@ def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault
     elif injection_site == 'RF':
         valid_register = 'R' + str(random.randint(0, max_num_regs))
 
-    return valid_thread, valid_block, valid_register, bits_to_flip
+    return valid_register, bits_to_flip
 
 
 """
@@ -474,9 +479,9 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
             for kernel_info_dict in kernel_info_list:
                 # Generate an unique id for this fault injection
                 unique_id = str(num_rounds) + "_" + str(fault_model)
-                thread, block, register, bits_to_flip = gen_injection_location(
-                    kernel_info_dict=kernel_info_dict, max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
-                    injection_site=conf.get("DEFAULT", "injectionSite"), fault_model=fault_model)
+                register, bits_to_flip = gen_injection_location(max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
+                                                                injection_site=conf.get("DEFAULT", "injectionSite"),
+                                                                fault_model=fault_model)
 
                 # Selects the random line to inject
                 kernel_begin = kernel_info_dict["kernel_line"]
@@ -491,12 +496,10 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 # inject one fault with an specified fault model, in a specific
                 # thread, in a bit flip pattern
                 fi_tic = int(time.time())
-                old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time = gdb_inject_fault(
+                old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = gdb_inject_fault(
                     section="DEFAULT",
                     conf=conf,
                     unique_id=unique_id,
-                    valid_block=block,
-                    valid_thread=thread,
                     valid_register=register,
                     bits_to_flip=bits_to_flip,
                     fault_model=fault_model,

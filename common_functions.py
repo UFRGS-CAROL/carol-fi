@@ -95,28 +95,3 @@ def set_python_env():
     current_path = os.path.dirname(os.path.realpath(__file__))
     os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path + ":" + current_path + "/classes"
     return current_path
-
-
-"""
-Selects a valid thread for a specific
-kernel
-return the coordinates for the block
-and the thread
-"""
-
-
-def get_valid_thread(threads):
-    element = random.randrange(2, len(threads))
-    # randomly chosen first block and thread
-    #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
-    block_thread = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", threads[element])
-
-    block_x = block_thread.group(1)
-    block_y = block_thread.group(2)
-    block_z = block_thread.group(3)
-
-    thread_x = block_thread.group(4)
-    thread_y = block_thread.group(5)
-    thread_z = block_thread.group(6)
-
-    return [block_x, block_y, block_z], [thread_x, thread_y, thread_z]
