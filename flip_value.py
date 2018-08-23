@@ -57,20 +57,19 @@ def set_event(event):
     global bits_to_flip, fault_model, breakpoint_location, breakpoint_kernel_line, was_hit
 
     try:
-         print(event.stop_signal)
+         print("FOI", event.stop_signal)
+
+         if not was_hit:
+             # breakpoint_kernel_line.set_is_ready_to_inject(True)
+             breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
+                                                               bits_to_flip=bits_to_flip, fault_model=fault_model,
+                                                               logging=global_logging, spec=breakpoint_location,
+                                                               type=gdb.BP_BREAKPOINT, temporary=True,
+                                                               injection_mode=injection_mode)
+             was_hit = True
     except:
         pass
 
-    if not was_hit:
-        # breakpoint_kernel_line.set_is_ready_to_inject(True)
-        breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
-                                                          bits_to_flip=bits_to_flip, fault_model=fault_model,
-                                                          logging=global_logging, spec=breakpoint_location,
-                                                          type=gdb.BP_BREAKPOINT, temporary=True,
-                                                          injection_mode=injection_mode)
-        was_hit = True
-    # except:
-    #     pass
 
 """
 Main function
