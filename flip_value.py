@@ -126,12 +126,11 @@ def main():
     gdb.execute("r")
     print("Passou 4")
 
-    gdb.execute('c')
+    while 'This program' not in gdb.execute('c', to_string=True):
+        pass
 
     # Delete the breakpoint
     del breakpoint_kernel_line, kludge
-    # if kludge != 'None':
-    gdb.execute('c')
 
 
 # Call main execution

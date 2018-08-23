@@ -55,19 +55,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
         super(FaultInjectionBreakpoint, self).__init__(*args, **kwargs)
 
-        self.__is_ready_to_inject = False
-        self.__fault_injected = False
-
     def stop(self):
         if self.__kludge:
-            return True
-
-        # if not self.__is_ready_to_inject:
-        #     print("PASSOU AQUI")
-        #     return True
-
-        # print("FAULT INJECTED", self.__fault_injected)
-        if self.__fault_injected:
             return True
 
         # This if avoid the creation of another event connection
@@ -83,8 +72,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # RF is the default mode of injection
             if self.__injection_mode == 'RF' or self.__injection_mode is None:
                 # Do the fault injection magic
-                self.__fault_injected = self.__rf_generic_injector()
-                if self.__fault_injected:
+                fault_injected = self.__rf_generic_injector()
+                if fault_injected:
                     self.__logging.info("Fault Injection Successful")
                 else:
                     self.__logging.info("Fault Injection Went Wrong, reg_old and reg_new are the same")
@@ -100,27 +89,21 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             self.__logging.exception("Fault Injection Went Wrong")
         return True
 
-    def set_is_ready_to_inject(self, is_ready_to_inject):
-        self.__is_ready_to_inject = is_ready_to_inject
-
-    def get_fault_injected(self):
-        return self.__fault_injected
-
     def __thread_focus(self):
-        try:
-            change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(self.__block[0]),
-                                                                                           str(self.__block[1]),
-                                                                                           str(self.__block[2]),
-                                                                                           str(self.__thread[0]),
-                                                                                           str(self.__thread[1]),
-                                                                                           str(self.__thread[2]))
-            self.__logging.debug(change_focus_cmd)
-            thread_focus = gdb.execute(change_focus_cmd, to_string=True)
-            # Thread focus return information
-            self.__logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
-            return True
-        except Exception as err:
-            self.__logging.exception("CUDA_FOCUS_exception: " + str(err))
+        # try:
+        #     change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(self.__block[0]),
+        #                                                                                    str(self.__block[1]),
+        #                                                                                    str(self.__block[2]),
+        #                                                                                    str(self.__thread[0]),
+        #                                                                                    str(self.__thread[1]),
+        #                                                                                    str(self.__thread[2]))
+        #     self.__logging.debug(change_focus_cmd)
+        #     thread_focus = gdb.execute(change_focus_cmd, to_string=True)
+        #     # Thread focus return information
+        #     self.__logging.info(str(thread_focus).replace("[", "").replace("]", "").strip())
+        #     return True
+        # except Exception as err:
+        #     self.__logging.exception("CUDA_FOCUS_exception: " + str(err))
 
         try:
             # Trying with hard thread focus
@@ -139,7 +122,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         except Exception as err:
             self.__logging.exception("CUDA_FOCUS_exception second try: " + str(err))
             self.__logging.exception("Fault Injection Went Wrong")
-            return True
 
         return True
 
