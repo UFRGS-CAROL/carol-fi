@@ -62,13 +62,12 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         if self.__kludge:
             return True
 
-        if not self.__is_ready_to_inject:
-            print("PASSOU AQUI")
-            return True
+        # if not self.__is_ready_to_inject:
+        #     print("PASSOU AQUI")
+        #     return True
 
-        print("FAULT INJECTED", self.__fault_injected)
+        # print("FAULT INJECTED", self.__fault_injected)
         if self.__fault_injected:
-
             return True
 
         # This if avoid the creation of another event connection
