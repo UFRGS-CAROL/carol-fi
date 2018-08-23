@@ -62,6 +62,7 @@ def set_event(event):
 
 def force_delete_breakpoint(breakpoint):
     while not breakpoint.get_fault_injected():
+        print(breakpoint.get_fault_injected())
         pass
     breakpoint.delete()
 
