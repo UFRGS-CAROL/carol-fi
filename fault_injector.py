@@ -351,9 +351,9 @@ def gdb_inject_fault(**kwargs):
 
 
 def only_for_radiation_benchs():
-    list_of_files = glob.glob('/home/ffsantos/radiation-benchmarks/log/*.log')  # * means all if need specific format then *.csv
+    list_of_files = glob.glob('/home/ffsantos/radiation-benchmarks/log/*.log')
     latest_file = max(list_of_files, key=os.path.getctime)
-    return latest_file
+    return os.path.basename(latest_file)
 
 """
 Support function to parse a line of disassembled code
