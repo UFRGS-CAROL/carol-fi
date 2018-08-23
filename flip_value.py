@@ -41,7 +41,7 @@ def place_breakpoint():
     breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
                                                       bits_to_flip=bits_to_flip, fault_model=fault_model,
                                                       logging=global_logging, spec=breakpoint_location,
-                                                      type=gdb.BP_BREAKPOINT,  # temporary=True,
+                                                      type=gdb.BP_BREAKPOINT,  temporary=True,
                                                       injection_mode=injection_mode)
 
     # if kludge != 'None':

@@ -68,9 +68,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
         print("FAULT INJECTED", self.__fault_injected)
         if self.__fault_injected:
-            return True
 
-        print("PASSOU ONDE NAO DEVIA")
+            return True
 
         # This if avoid the creation of another event connection
         # for some reason gdb cannot breakpoint addresses before
