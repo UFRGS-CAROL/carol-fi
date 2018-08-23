@@ -62,6 +62,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             return True
 
         if not self.__is_ready_to_inject:
+            print("PASSOU AQUI")
             return True
 
         # This if avoid the creation of another event connection
