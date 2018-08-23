@@ -133,7 +133,7 @@ def main():
             i += 1
             gdb_result = gdb.execute('c', to_string=True)
         except:
-            pass
+            break
     print("CONTINUED {}".format(i))
 
     # Delete the breakpoint
