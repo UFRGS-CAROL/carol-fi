@@ -47,9 +47,9 @@ def place_breakpoint():
     if kludge != 'None':
         kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
                                                      temporary=True)
-    # except Exception as err:
-    #     if cp.DEBUG:
-    #         print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
+        # except Exception as err:
+        #     if cp.DEBUG:
+        #         print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
 
 
 def set_event(event):
@@ -57,6 +57,7 @@ def set_event(event):
     if not was_hit:
         breakpoint_kernel_line.set_is_ready_to_inject(True)
         was_hit = True
+
 
 """
 Main function
@@ -110,15 +111,12 @@ def main():
     gdb.execute("r")
     print("Passou 4")
 
-    gdb.execute('c', to_string=True)
-    gdb.execute('c', to_string=True)
-    if kludge != 'None':
-        gdb.execute('c', to_string=True)
+    while was_hit is False and 'This program' not in gdb.execute('c', to_string=True):
+        pass
 
     # Delete the breakpoint
     breakpoint_kernel_line.delete()
     del breakpoint_kernel_line
-
 
 
 # Call main execution
