@@ -126,14 +126,13 @@ def main():
     gdb.execute("r")
     print("Passou 4")
 
-    i = 0
-    gdb_result = gdb.execute('c', to_string=True)
-    while 'The program' not in gdb_result:
-        try:
+    try:
+        i = 0
+        while 'The program' not in gdb.execute('c', to_string=True):
             i += 1
-            gdb_result = gdb.execute('c', to_string=True)
-        except:
-            break
+    except Exception as err:
+        print(str(err))
+
     print("CONTINUED {}".format(i))
 
     # Delete the breakpoint
