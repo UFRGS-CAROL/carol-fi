@@ -109,6 +109,9 @@ def main():
     # Start app execution
     gdb.execute("r")
     print("Passou 4")
+        
+    while "This program" not in gdb.execute('c', to_string=True):
+        pass
     # Delete the breakpoint
     # breakpoint_kernel_line.delete()
     # del breakpoint_kernel_line
