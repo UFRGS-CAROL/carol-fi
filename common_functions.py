@@ -94,4 +94,5 @@ GDB python cannot find common_functions.py, so I added this directory to PYTHONP
 def set_python_env():
     current_path = os.path.dirname(os.path.realpath(__file__))
     os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path + ":" + current_path + "/classes"
+    os.environ['OMP_NUM_THREADS'] = 1
     return current_path
