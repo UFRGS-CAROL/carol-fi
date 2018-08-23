@@ -1,6 +1,6 @@
 import os
 import gdb
-
+from threading import Thread
 import common_parameters as cp  # All common parameters will be at common_parameters module
 from classes.FaultInjectionBreakpoint import FaultInjectionBreakpoint
 from classes.Logging import Logging
@@ -41,7 +41,7 @@ def place_breakpoint():
     breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
                                                       bits_to_flip=bits_to_flip, fault_model=fault_model,
                                                       logging=global_logging, spec=breakpoint_location,
-                                                      type=gdb.BP_BREAKPOINT,  temporary=True,
+                                                      type=gdb.BP_BREAKPOINT,
                                                       injection_mode=injection_mode)
 
     # if kludge != 'None':
@@ -57,6 +57,13 @@ def set_event(event):
     breakpoint_kernel_line.set_is_ready_to_inject(True)
     gdb.execute("c")
     was_hit = True
+
+
+def force_delete_breakpoint(breakpoint):
+    while not breakpoint.get_fault_injected():
+        pass
+    breakpoint.delete()
+
 
 """
 Main function
@@ -104,6 +111,8 @@ def main():
     fault_model = int(fault_model)
 
     place_breakpoint()
+    thread = Thread(target=force_delete_breakpoint, args=(breakpoint_kernel_line,))
+    thread.start()
 
     # Start app execution
     gdb.execute("r")
@@ -120,7 +129,7 @@ def main():
     #     gdb.execute('c')
 
     print("FOI4")
-    breakpoint_kernel_line.delete()
+    thread.join()
     # Delete the breakpoint
     del breakpoint_kernel_line
 
