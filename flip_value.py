@@ -1,6 +1,9 @@
 import os
 import gdb
 from threading import Thread
+
+import time
+
 import common_parameters as cp  # All common parameters will be at common_parameters module
 from classes.FaultInjectionBreakpoint import FaultInjectionBreakpoint
 from classes.Logging import Logging
@@ -62,7 +65,7 @@ def set_event(event):
 
 def force_delete_breakpoint(breakpoint):
     while not breakpoint.get_fault_injected():
-        print(breakpoint.get_fault_injected())
+        time.sleep(0.01)
         pass
     breakpoint.delete()
 
