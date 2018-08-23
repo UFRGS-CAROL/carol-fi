@@ -53,9 +53,10 @@ def place_breakpoint():
 
 
 def set_event(event):
+    print(event.stop_signal)
+
     global breakpoint_kernel_line, was_hit
     if not was_hit:
-        print(event.stop_signal)
         print("Setting the hit")
         breakpoint_kernel_line.set_is_ready_to_inject(True)
         was_hit = True
