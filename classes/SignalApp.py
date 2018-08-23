@@ -12,23 +12,14 @@ Signal the app to stop so GDB can execute the script to flip a value
 
 
 class SignalApp(Thread):
-    def __init__(self, signal_cmd, max_wait_time, log_path, unique_id):
+    def __init__(self, signal_cmd, max_wait_time, log_path, unique_id, signals_to_send):
         super(SignalApp, self).__init__()
         self.__signal_cmd = signal_cmd
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
         self.__init_wait_time = uniform(0, float(max_wait_time) * cp.TIME_BEFORE_FIRST_SIGNAL)
+        self.__signals_to_send = int(signals_to_send)
 
     def run(self):
-        # fix failed injections
-        # ready_to_go = False
-        # while not ready_to_go:
-        #     try:
-        #         with open(cp.LOCK_FILE, "r") as fi:
-        #             if '1' in fi.read():
-        #                 ready_to_go = True
-        #     except:
-        #         continue
-
         # Sleep for a random time
         time.sleep(self.__init_wait_time)
 
@@ -39,9 +30,9 @@ class SignalApp(Thread):
             print(log_string)
 
         self.__log.info(log_string)
-        for signals in range(0, 5):
+        for signals in range(0, self.__signals_to_send):
             os.system(self.__signal_cmd)
-            time.sleep(0.01)
+            time.sleep(cp.TIME_TO_SLEEP)
 
     def get_int_wait_time(self):
         return self.__init_wait_time
