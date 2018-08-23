@@ -37,6 +37,7 @@ def set_event(event):
                                                               logging=global_logging, spec=breakpoint_location,
                                                               type=gdb.BP_BREAKPOINT, temporary=True,
                                                               injection_mode=injection_mode)
+            global_logging.info("BREAKPOINT SET ON SIGNAL")
             was_hit = True
     except Exception as err:
         global_logging.exception("EVENT DIFFERENT FROM STOP SIGNAL: {}".format(str(err)))

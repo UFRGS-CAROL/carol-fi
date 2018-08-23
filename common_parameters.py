@@ -48,8 +48,8 @@ TIME_BEFORE_FIRST_SIGNAL = 0.4
 # Num of sleep time divisor
 NUM_DIVISION_TIMES = 100.0
 
-# Lock signal thread
-LOCK_FILE = "/tmp/carol-fi_lock_file.lock"
+# time to sleep between the signals
+TIME_TO_SLEEP = 0.01
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
