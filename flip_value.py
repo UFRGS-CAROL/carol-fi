@@ -41,7 +41,7 @@ def place_breakpoint():
     breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
                                                       bits_to_flip=bits_to_flip, fault_model=fault_model,
                                                       logging=global_logging, spec=breakpoint_location,
-                                                      type=gdb.BP_BREAKPOINT, temporary=True,
+                                                      type=gdb.BP_BREAKPOINT,
                                                       injection_mode=injection_mode)
 
     # if kludge != 'None':
@@ -56,7 +56,6 @@ def set_event(event):
     global breakpoint_kernel_line, was_hit
     if not was_hit:
         breakpoint_kernel_line.set_is_ready_to_inject(True)
-        gdb.execute("c")
         was_hit = True
 
 """
@@ -122,6 +121,7 @@ def main():
 
     print("FOI4")
     # Delete the breakpoint
+    breakpoint_kernel_line.delete()
     del breakpoint_kernel_line
 
     # Continue execution until the next breakpoint
