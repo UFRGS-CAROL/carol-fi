@@ -112,7 +112,7 @@ def main():
     gdb.execute("r")
     print("Passou 4")
 
-    while was_hit is not False and 'This program' not in gdb.execute('c', to_string=True):
+    while not was_hit and 'This program' not in gdb.execute('c', to_string=True):
         pass
 
     # Delete the breakpoint
