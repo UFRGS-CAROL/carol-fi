@@ -98,7 +98,7 @@ def main():
             i += 1
     except Exception as err:
         global_logging.info("CONTINUED {} times".format(i))
-        global_logging.exception("IGNORED CONTINUE ERROR {}".format(str(err)))
+        global_logging.exception("IGNORED CONTINUE ERROR: {}".format(str(err)))
 
     # Delete the breakpoint
     del breakpoint_kernel_line, kludge
