@@ -76,7 +76,7 @@ def main():
     gdb.execute("set non-stop off")
 
     # Connecting to a exit handler event
-    gdb.events.exited.connect(exit_handler)
+    # gdb.events.exited.connect(exit_handler)
 
     # Connecting to a stop signal event
     gdb.events.stop.connect(set_event)
@@ -97,7 +97,7 @@ def main():
     except gdb.error as err:
         print("ERROR on initializing setup: " + str(err))
 
-    # Set Breakpoint attributes to be usedexport OMP_NUM_THREADS=
+    # Set Breakpoint attributes to be use
     block = block.split(",")
     thread = thread.split(",")
     bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
