@@ -32,7 +32,7 @@ class ProfilerBreakpoint(gdb.Breakpoint):
             if kernel_info["breakpoint"].__kernel_line == self.__kernel_line:
                 if cp.DEBUG_PROFILER:
                     print("FOUND A KERNEL LINE {}".format(kernel_info["breakpoint"].__kernel_line))
-
-                kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
-                kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
+                #
+                # kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
+                # kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
         return True
