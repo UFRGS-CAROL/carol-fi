@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import argparse
+import glob
 import os
 import random
 import re
@@ -108,8 +109,8 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
         os.makedirs(cp_dir)
 
     # Moving all necessary files
-    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG,
-                         cp.SIGNAL_APP_LOG]:
+    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG]:  # ,
+        # cp.SIGNAL_APP_LOG]:
         try:
             shutil.move(file_to_move, cp_dir)
         except Exception as err:
@@ -271,8 +272,8 @@ def gdb_inject_fault(**kwargs):
         print("PRE EXECUTION")
 
     # First we have to start the SignalApp thread
-    signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),
-                                  log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id)
+    # signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),
+    #                               log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id)
 
     # Create one thread to start gdb script
     # Start fault injection process
@@ -306,7 +307,7 @@ def gdb_inject_fault(**kwargs):
     # Get the signal init wait time before destroy the thread
     signal_init_wait_time = 0  # signal_app_thread.get_int_wait_time()
 
-    del fi_process, signal_app_thread
+    del fi_process  # , signal_app_thread
 
     if cp.DEBUG:
         print("PROCESSES JOINED")
@@ -346,6 +347,13 @@ def gdb_inject_fault(**kwargs):
 
     return reg_old_value, reg_new_value, fault_successful, is_hang, is_crash, is_sdc, signal_init_wait_time
 
+# TODO: REMOVE THIS FUNCTION
+
+
+def only_for_radiation_benchs():
+    list_of_files = glob.glob('/home/ffsantos/radiation-benchmarks/log/*.log')  # * means all if need specific format then *.csv
+    latest_file = max(list_of_files, key=os.path.getctime)
+    return latest_file
 
 """
 Support function to parse a line of disassembled code
@@ -389,31 +397,6 @@ def parse_line(instruction_line):
 
 
 """
-Selects a valid thread for a specific
-kernel
-return the coordinates for the block
-and the thread
-"""
-
-
-def get_valid_thread(threads):
-    element = random.randrange(2, len(threads))
-    # randomly chosen first block and thread
-    #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
-    block_thread = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", threads[element])
-
-    block_x = block_thread.group(1)
-    block_y = block_thread.group(2)
-    block_z = block_thread.group(3)
-
-    thread_x = block_thread.group(4)
-    thread_y = block_thread.group(5)
-    thread_z = block_thread.group(6)
-
-    return [block_x, block_y, block_z], [thread_x, thread_y, thread_z]
-
-
-"""
 Randomly selects a thread, address and a bit location
 to inject a fault.
 """
@@ -422,7 +405,7 @@ to inject a fault.
 def gen_injection_location(kernel_info_dict, max_num_regs, injection_site, fault_model):
     # A valid block is a [block_x, block_y, block_z] coordinate
     # A valid thread is a [thread_x, thread_y, thread_z] coordinate
-    valid_block, valid_thread = get_valid_thread(kernel_info_dict["threads"])
+    valid_block, valid_thread = cf.get_valid_thread(kernel_info_dict["threads"])
 
     # Randomly choose a place to inject a fault
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
@@ -531,7 +514,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 # 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                 # 'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                 # 'register', 'breakpoint_location', 'fault_successful',
-                # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip'
+                # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip', 'log_file'
                 # Write a row to summary file
                 row = [num_rounds, fault_model]
                 row.extend(thread)
@@ -539,7 +522,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 row.extend(
                     [old_val, new_val, 0, register, break_line, fault_injected,
                      hang, crash,
-                     sdc, injection_time, signal_init_time, bits_to_flip])
+                     sdc, injection_time, signal_init_time, bits_to_flip, only_for_radiation_benchs()])
                 print(row)
                 summary_file.write_row(row=row)
 
@@ -581,7 +564,7 @@ def main():
     fieldnames = ['iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                   'register', 'breakpoint_location', 'fault_successful', 'hang',
-                  'crash', 'sdc', 'time', 'inj_time_location', 'bits_flipped']
+                  'crash', 'sdc', 'time', 'inj_time_location', 'bits_flipped', 'log_file']
 
     ########################################################################
     # Fault injection
