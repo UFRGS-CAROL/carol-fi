@@ -54,14 +54,14 @@ def place_breakpoint():
 
 def set_event(event):
     global breakpoint_kernel_line, was_hit
-    try:
-        result_event = event.stop_signal
-        if not was_hit:
-            print("Setting the hit", result_event)
-            breakpoint_kernel_line.set_is_ready_to_inject(True)
-            was_hit = True
-    except:
-        pass
+    # try:
+    #     result_event = event.stop_signal
+    if not was_hit:
+        # print("Setting the hit", result_event)
+        breakpoint_kernel_line.set_is_ready_to_inject(True)
+        was_hit = True
+    # except:
+    #     pass
 
 """
 Main function
@@ -113,7 +113,6 @@ def main():
     print("Passou 3")
 
     breakpoint_kernel_line.ignore_count = 10000
-
 
     # Start app execution
     gdb.execute("r")
