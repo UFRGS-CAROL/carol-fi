@@ -66,6 +66,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             print("PASSOU AQUI")
             return True
 
+        print("FAULT INJECTED", self.__fault_injected)
         if self.__fault_injected:
             return True
 
