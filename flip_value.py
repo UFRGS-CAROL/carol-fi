@@ -35,21 +35,21 @@ def place_breakpoint():
     # if not was_hit:
     # was_hit = True
 
-    try:
-        # Place the first breakpoint, it is only to avoid
-        # address memory error
-        breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
-                                                          bits_to_flip=bits_to_flip, fault_model=fault_model,
-                                                          logging=global_logging, spec=breakpoint_location,
-                                                          type=gdb.BP_BREAKPOINT,  # temporary=True,
-                                                          injection_mode=injection_mode)
+    # try:
+    # Place the first breakpoint, it is only to avoid
+    # address memory error
+    breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
+                                                      bits_to_flip=bits_to_flip, fault_model=fault_model,
+                                                      logging=global_logging, spec=breakpoint_location,
+                                                      type=gdb.BP_BREAKPOINT,  # temporary=True,
+                                                      injection_mode=injection_mode)
 
-        if kludge != 'None':
-            kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
-                                                         temporary=True)
-    except Exception as err:
-        if cp.DEBUG:
-            print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
+    # if kludge != 'None':
+    #     kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
+    #                                                  temporary=True)
+    # except Exception as err:
+    #     if cp.DEBUG:
+    #         print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
 
 
 def set_event(event):
@@ -57,16 +57,6 @@ def set_event(event):
     breakpoint_kernel_line.set_is_ready_to_inject(True)
     gdb.execute("c")
     was_hit = True
-
-
-"""
-Make sure that before vars were set no signal is send
-"""
-
-
-def unlock_fi():
-    with open(cp.LOCK_FILE, "w") as fp:
-        fp.write("1")
 
 """
 Main function
@@ -120,15 +110,14 @@ def main():
 
     print("FOI")
     # Man, this is a quick fix
-    if kludge_breakpoint is not None:
-        del kludge_breakpoint
-        gdb.execute('c')
+    # if kludge_breakpoint is not None:
+    #     del kludge_breakpoint
+    #     gdb.execute('c')
 
     print("FOI2")
-    while not was_hit:
-        print("FOI3")
-        gdb.execute('c')
-
+    # while not was_hit:
+    #     print("FOI3")
+    #     gdb.execute('c')
 
     print("FOI4")
     breakpoint_kernel_line.delete()
