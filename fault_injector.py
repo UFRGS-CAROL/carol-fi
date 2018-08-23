@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import argparse
+import glob
 import os
 import random
 import re
@@ -346,6 +347,13 @@ def gdb_inject_fault(**kwargs):
 
     return reg_old_value, reg_new_value, fault_successful, is_hang, is_crash, is_sdc, signal_init_wait_time
 
+# TODO: REMOVE THIS FUNCTION
+
+
+def only_for_radiation_benchs():
+    list_of_files = glob.glob('/home/ffsantos/radiation-benchmarks/log/*.log')  # * means all if need specific format then *.csv
+    latest_file = max(list_of_files, key=os.path.getctime)
+    return latest_file
 
 """
 Support function to parse a line of disassembled code
@@ -506,7 +514,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 # 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                 # 'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                 # 'register', 'breakpoint_location', 'fault_successful',
-                # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip'
+                # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip', 'log_file'
                 # Write a row to summary file
                 row = [num_rounds, fault_model]
                 row.extend(thread)
@@ -514,7 +522,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 row.extend(
                     [old_val, new_val, 0, register, break_line, fault_injected,
                      hang, crash,
-                     sdc, injection_time, signal_init_time, bits_to_flip])
+                     sdc, injection_time, signal_init_time, bits_to_flip, only_for_radiation_benchs()])
                 print(row)
                 summary_file.write_row(row=row)
 
@@ -556,7 +564,7 @@ def main():
     fieldnames = ['iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
                   'register', 'breakpoint_location', 'fault_successful', 'hang',
-                  'crash', 'sdc', 'time', 'inj_time_location', 'bits_flipped']
+                  'crash', 'sdc', 'time', 'inj_time_location', 'bits_flipped', 'log_file']
 
     ########################################################################
     # Fault injection
