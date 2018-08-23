@@ -38,11 +38,11 @@ def place_breakpoint():
     # try:
     # Place the first breakpoint, it is only to avoid
     # address memory error
-    breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
-                                                      bits_to_flip=bits_to_flip, fault_model=fault_model,
-                                                      logging=global_logging, spec=breakpoint_location,
-                                                      type=gdb.BP_BREAKPOINT,
-                                                      injection_mode=injection_mode)
+    # breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
+    #                                                   bits_to_flip=bits_to_flip, fault_model=fault_model,
+    #                                                   logging=global_logging, spec=breakpoint_location,
+    #                                                   type=gdb.BP_BREAKPOINT,
+    #                                                   injection_mode=injection_mode)
 
     if kludge != 'None':
         kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
@@ -53,12 +53,21 @@ def place_breakpoint():
 
 
 def set_event(event):
-    global breakpoint_kernel_line, was_hit
-    # try:
-    #     result_event = event.stop_signal
+    global global_logging, block, thread, register, injection_mode
+    global bits_to_flip, fault_model, breakpoint_location, breakpoint_kernel_line, was_hit
+
+    try:
+         print(event.stop_signal)
+    except:
+        pass
+
     if not was_hit:
-        # print("Setting the hit", result_event)
-        breakpoint_kernel_line.set_is_ready_to_inject(True)
+        # breakpoint_kernel_line.set_is_ready_to_inject(True)
+        breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
+                                                          bits_to_flip=bits_to_flip, fault_model=fault_model,
+                                                          logging=global_logging, spec=breakpoint_location,
+                                                          type=gdb.BP_BREAKPOINT, temporary=True,
+                                                          injection_mode=injection_mode)
         was_hit = True
     # except:
     #     pass
@@ -69,7 +78,7 @@ Main function
 
 
 def main():
-    global global_logging, global_logging, block, thread, register, kludge_breakpoint, injection_mode
+    global global_logging, block, thread, register, kludge_breakpoint, injection_mode
     global bits_to_flip, fault_model, breakpoint_location, kludge, breakpoint_kernel_line, was_hit
 
     was_hit = False
@@ -112,7 +121,7 @@ def main():
     place_breakpoint()
     print("Passou 3")
 
-    breakpoint_kernel_line.ignore_count = 10000
+    # breakpoint_kernel_line.ignore_count = 10000
 
     # Start app execution
     gdb.execute("r")
@@ -121,10 +130,10 @@ def main():
     gdb.execute('c')
 
     # Delete the breakpoint
-    breakpoint_kernel_line.delete()
-    del breakpoint_kernel_line
-
-    gdb.execute('c')
+    # breakpoint_kernel_line.delete()
+    # del breakpoint_kernel_line
+    if kludge != 'None':
+        gdb.execute('c')
 
 
 # Call main execution
