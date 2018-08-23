@@ -108,6 +108,8 @@ def main():
     # Start app execution
     gdb.execute("r")
 
+    gdb.execute("c")
+
     # Delete the breakpoint
     breakpoint_kernel_line.delete()
     del breakpoint_kernel_line
