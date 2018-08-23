@@ -114,11 +114,14 @@ def main():
 
     breakpoint_kernel_line.ignore_count = 10000
 
+
     # Start app execution
     gdb.execute("r")
     print("Passou 4")
 
-
+    while was_hit is False and 'This program' not in gdb.execute('c', to_string=True):
+        print()
+        pass
 
     # Delete the breakpoint
     breakpoint_kernel_line.delete()
