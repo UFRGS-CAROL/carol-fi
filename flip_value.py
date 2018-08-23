@@ -111,6 +111,8 @@ def main():
     print("Passou 4")
 
     gdb.execute('c', to_string=True)
+    if kludge != 'None':
+        gdb.execute('c', to_string=True)
 
     # Delete the breakpoint
     breakpoint_kernel_line.delete()
