@@ -118,14 +118,19 @@ def main():
     # Start app execution
     gdb.execute("r")
 
+    print("FOI")
     # Man, this is a quick fix
     if kludge_breakpoint is not None:
         del kludge_breakpoint
         gdb.execute('c')
 
+    print("FOI2")
     while not was_hit:
+        print("FOI3")
         gdb.execute('c')
 
+
+    print("FOI4")
     breakpoint_kernel_line.delete()
     # Delete the breakpoint
     del breakpoint_kernel_line

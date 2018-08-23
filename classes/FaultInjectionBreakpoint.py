@@ -129,7 +129,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         except Exception as err:
             self.__logging.exception("CUDA_FOCUS_exception second try: " + str(err))
             self.__logging.exception("Fault Injection Went Wrong")
-            return False
+            return True
 
         return True
 
