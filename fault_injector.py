@@ -271,8 +271,8 @@ def gdb_inject_fault(**kwargs):
         print("PRE EXECUTION")
 
     # First we have to start the SignalApp thread
-    signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),
-                                  log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id)
+    # signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),
+    #                               log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id)
 
     # Create one thread to start gdb script
     # Start fault injection process
@@ -284,7 +284,7 @@ def gdb_inject_fault(**kwargs):
 
     # Starting both threads
     fi_process.start()
-    signal_app_thread.start()
+    # signal_app_thread.start()
 
     if cp.DEBUG:
         print("PROCESSES SPAWNED")
@@ -301,12 +301,12 @@ def gdb_inject_fault(**kwargs):
     # finishing and removing thrash
     fi_process.join()
     # fi_process.terminate()
-    signal_app_thread.join()
+    # signal_app_thread.join()
 
     # Get the signal init wait time before destroy the thread
-    signal_init_wait_time = signal_app_thread.get_int_wait_time()
+    signal_init_wait_time = 0  # signal_app_thread.get_int_wait_time()
 
-    del fi_process, signal_app_thread
+    del fi_process  # , signal_app_thread
 
     if cp.DEBUG:
         print("PROCESSES JOINED")
