@@ -55,8 +55,13 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
         super(FaultInjectionBreakpoint, self).__init__(*args, **kwargs)
 
+        self.__is_ready_to_inject = False
+
     def stop(self):
         if self.__kludge:
+            return True
+
+        if not self.__is_ready_to_inject:
             return True
 
         # This if avoid the creation of another event connection
@@ -87,6 +92,9 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             self.__logging.exception("fault_injection_python_exception: " + str(err))
             self.__logging.exception("Fault Injection Went Wrong")
         return True
+
+    def set_is_ready_to_inject(self, is_ready_to_inject):
+        self.__is_ready_to_inject = is_ready_to_inject
 
     def __thread_focus(self):
         try:

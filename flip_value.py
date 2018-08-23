@@ -28,35 +28,35 @@ signal
 """
 
 
-def place_breakpoint(event):
-    global breakpoint_kernel_line, kludge_breakpoint, was_hit, injection_mode
+def place_breakpoint():
+    global breakpoint_kernel_line, kludge_breakpoint, injection_mode
 
     # Check if many breakpoints are going to be set
-    if not was_hit:
-        was_hit = True
+    # if not was_hit:
+    # was_hit = True
 
-        # if cp.DEBUG:
-        #     print("PLACE_BREAKPOINT hit, event {}".format(str(event.stop_signal)))
-        # global_logging.info("PLACE_BREAKPOINT hit, event {}".format(str(event)))
-        try:
-            # Place the first breakpoint, it is only to avoid
-            # address memory error
-            breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
-                                                              bits_to_flip=bits_to_flip, fault_model=fault_model,
-                                                              logging=global_logging, spec=breakpoint_location,
-                                                              type=gdb.BP_BREAKPOINT, temporary=True,
-                                                              injection_mode=injection_mode)
+    try:
+        # Place the first breakpoint, it is only to avoid
+        # address memory error
+        breakpoint_kernel_line = FaultInjectionBreakpoint(block=block, thread=thread, register=register,
+                                                          bits_to_flip=bits_to_flip, fault_model=fault_model,
+                                                          logging=global_logging, spec=breakpoint_location,
+                                                          type=gdb.BP_BREAKPOINT,  # temporary=True,
+                                                          injection_mode=injection_mode)
 
-            if kludge != 'None':
-                kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
-                                                             temporary=True)
-        except Exception as err:
-            if cp.DEBUG:
-                print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
-            # global_logging.exception(str("ERR: {} on stop code {}".format(err, str(event.exit_code))))
+        if kludge != 'None':
+            kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
+                                                         temporary=True)
+    except Exception as err:
+        if cp.DEBUG:
+            print("ERROR ON PLACE_BREAKPOINT HANDLER {}".format(str(err)))
 
-    # Must continue, even if fault is already injected
-    # gdb.execute("c")
+
+def set_event(event):
+    global breakpoint_kernel_line, was_hit
+    breakpoint_kernel_line.set_is_ready_to_inject(True)
+    gdb.execute("c")
+    was_hit = True
 
 
 """
@@ -89,7 +89,7 @@ def main():
     gdb.events.exited.connect(exit_handler)
 
     # Connecting to a stop signal event
-    gdb.events.stop.connect(place_breakpoint)
+    gdb.events.stop.connect(set_event)
 
     # Get variables values from environment
     # First parse line
@@ -113,7 +113,7 @@ def main():
     bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
 
-    place_breakpoint(None)
+    place_breakpoint()
 
     # Start app execution
     gdb.execute("r")
@@ -123,6 +123,10 @@ def main():
         del kludge_breakpoint
         gdb.execute('c')
 
+    while not was_hit:
+        gdb.execute('c')
+
+    breakpoint_kernel_line.delete()
     # Delete the breakpoint
     del breakpoint_kernel_line
 
