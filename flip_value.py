@@ -129,10 +129,9 @@ def main():
     gdb.execute('c')
 
     # Delete the breakpoint
-    # breakpoint_kernel_line.delete()
-    # del breakpoint_kernel_line
-    if kludge != 'None':
-        gdb.execute('c')
+    del breakpoint_kernel_line, kludge
+    # if kludge != 'None':
+    gdb.execute('c')
 
 
 # Call main execution
