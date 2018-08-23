@@ -54,9 +54,10 @@ def place_breakpoint():
 
 def set_event(event):
     global breakpoint_kernel_line, was_hit
-    breakpoint_kernel_line.set_is_ready_to_inject(True)
-    gdb.execute("c")
-    was_hit = True
+    if not was_hit:
+        breakpoint_kernel_line.set_is_ready_to_inject(True)
+        gdb.execute("c")
+        was_hit = True
 
 
 def force_delete_breakpoint(breakpoint):
