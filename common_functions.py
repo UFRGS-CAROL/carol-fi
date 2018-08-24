@@ -68,9 +68,12 @@ Kill all remaining processes
 """
 
 
-def kill_all(conf):
+def kill_all(conf, logging = None):
     for cmd in str(conf.get("DEFAULT", "killStrs")).split(";"):
         os.system(cmd)
+        if logging:
+            logging.debug("kill cmd: {}".format(cmd))
+
 
 
 """

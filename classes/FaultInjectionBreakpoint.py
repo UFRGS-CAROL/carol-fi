@@ -1,5 +1,4 @@
 import random
-
 import gdb
 import re
 import common_functions as cf  # All common functions will be at common_functions module
@@ -83,7 +82,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                 raise NotImplementedError("INST INJECTION MODE NOT IMPLEMENTED YET")
 
         except Exception as err:
-            self.__logging.exception("fault_injection_python_exception: " + str(err))
+            self.__logging.exception("fault_injection_python_exception: {}".format(err))
             self.__logging.exception("Fault Injection Went Wrong")
         return True
 

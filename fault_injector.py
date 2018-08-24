@@ -28,10 +28,12 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
 
     # Wait maxWaitTimes the normal duration of the program before killing it
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
-    kill_strings = conf.get(section, "killStrs")
 
     p_is_alive = p.is_alive()
-    print("\nMAX_WAIT_TIME {}\n".format(max_wait_time))
+    if cp.DEBUG:
+        print("MAX_WAIT_TIME {}".format(max_wait_time))
+
+    # Watchdog to avoid hangs
     now = int(time.time())
     diff_time = now - timestamp_start
     while diff_time < max_wait_time and p_is_alive:
@@ -42,7 +44,7 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
 
     # Process finished ok
     if not p_is_alive:
-        logging.debug("Process not running")
+        logging.debug("PROCESS NOT RUNNING")
         if cp.DEBUG:
             print("PROCESS NOT RUNNING")
 
@@ -53,16 +55,11 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
         logging.info("Execution did not finish before waitTime {} seconds.".format(diff_time))
         is_hang = True
 
-    logging.debug("now: " + str(now))
-    logging.debug("timestampStart: " + str(timestamp_start))
+    logging.debug("now: {}".format(now))
+    logging.debug("timestampStart: {}".format(timestamp_start))
 
     # Kill all the processes to make sure the machine is clean for another test
-    for k in kill_strings.split(";"):
-        os.system(k)
-        logging.debug("kill cmd: " + k)
-
-    if cp.DEBUG:
-        print("PROCESS JOINED")
+    cf.kill_all(conf=conf, logging=logging)
 
     return is_hang
 
@@ -208,13 +205,12 @@ The default parameters are necessary for break and signal mode differentiations
 def gen_env_string(valid_register, bits_to_flip, fault_model,
                    breakpoint_location, flip_log_file, gdb_init_strings, kludge, injection_mode='RF'):
     # Block and thread
-    # env_string = ",".join(str(i) for i in valid_block) + "|" + ",".join(str(i) for i in valid_thread)
     env_string = valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + breakpoint_location
     env_string += "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(kludge) + "|" + str(injection_mode)
 
     if cp.DEBUG:
-        print("ENV STRING:", env_string)
+        print("ENV STRING:{}".format(env_string))
     os.environ['CAROL_FI_INFO'] = env_string
 
 
@@ -304,10 +300,10 @@ def gdb_inject_fault(**kwargs):
     # Get the signal init wait time before destroy the thread
     signal_init_wait_time = signal_app_thread.get_int_wait_time()
 
-    del fi_process  # , signal_app_thread
+    del fi_process, signal_app_thread
 
     if cp.DEBUG:
-        print("PROCESSES JOINED")
+        print("PROCESS JOINED")
 
     # Run pos execution function
     pos_execution(conf=conf, section=section)
@@ -321,7 +317,7 @@ def gdb_inject_fault(**kwargs):
     # Search for set values for register
     # Must be done before save output
     # Was fault injected?
-    block = thread = ''
+    block = thread = None
     try:
         reg_old_value = logging.search("reg_old_value")
         reg_new_value = logging.search("reg_new_value")
@@ -334,22 +330,21 @@ def gdb_inject_fault(**kwargs):
             block = [m.group(1), m.group(2), m.group(3)]
             thread = [m.group(4), m.group(5), m.group(6)]
 
-        fault_successful = True
+        fi_successful = True
     except Exception as e:
-        reg_new_value = reg_old_value = ''
-        fault_successful = False
+        reg_new_value = reg_old_value = None
+        fi_successful = False
         if cp.DEBUG:
-            print(str(e))
+            print("FAULT WAS NOT INJECTED. ERROR {}".format(e))
 
     # Copy output files to a folder
     save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
                 flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
 
-    cf.kill_all(conf=conf)
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
 
-    return reg_old_value, reg_new_value, fault_successful, is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread
+    return reg_old_value, reg_new_value, fi_successful, is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread
 
 
 # TODO: REMOVE THIS FUNCTION
@@ -362,57 +357,12 @@ def only_for_radiation_benchs():
 
 
 """
-Support function to parse a line of disassembled code
-"""
-
-
-def parse_line(instruction_line):
-    registers = []
-    instruction = ''
-    address = ''
-    byte_location = ''
-
-    # Do not process MOV instructions
-    if 'mov' in instruction_line or 'MOV' in instruction_line:
-        return None, None, None, None, None
-
-    comma_line_count = instruction_line.count(',')
-
-    # INSTRUCTION R1, R2...
-    # 0x0000000000b418e8 <+40>: MOV R4, R2
-    expression = ".*([0-9a-fA-F][xX][0-9a-fA-F]+) (\S+):[ \t\r\f\v]*(\S+)[ ]*(\S+)" + str(
-        ",[ ]*(\S+)" * comma_line_count)
-
-    m = re.match(expression + ".*", instruction_line)
-    if m:
-        address = m.group(1)
-        byte_location = m.group(2)
-        instruction = m.group(3)
-
-        # Check register also
-        registers = [m.group(4 + i) for i in range(0, comma_line_count + 1)]
-        is_valid_line = False
-        for r in registers:
-            if 'R' in r:
-                is_valid_line = True
-                break
-
-        if not is_valid_line:
-            return None, None, None, None, None
-    return registers, address, byte_location, instruction, m
-
-
-"""
 Randomly selects a thread, address and a bit location
 to inject a fault.
 """
 
 
 def gen_injection_location(max_num_regs, injection_site, fault_model):
-    # A valid block is a [block_x, block_y, block_z] coordinate
-    # A valid thread is a [thread_x, thread_y, thread_z] coordinate
-    # valid_block, valid_thread = cf.get_valid_thread(kernel_info_dict["threads"])
-
     # Randomly choose a place to inject a fault
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
     valid_register = None
@@ -465,7 +415,7 @@ by creating a breakpoint and steeping into it
 """
 
 
-def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_list, summary_file, current_path):
+def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_list, summary_file, current_path, thread):
     # kludge
     if conf.has_option("DEFAULT", "kludge"):
         kludge = conf.get("DEFAULT", "kludge")
@@ -479,7 +429,8 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
             # For each kernel
             for kernel_info_dict in kernel_info_list:
                 # Generate an unique id for this fault injection
-                unique_id = str(num_rounds) + "_" + str(fault_model)
+                # Thread is for multi gpu
+                unique_id = "{}_{}_{}".format(num_rounds, fault_model, thread)
                 register, bits_to_flip = gen_injection_location(max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
                                                                 injection_site=conf.get("DEFAULT", "injectionSite"),
                                                                 fault_model=fault_model)
@@ -582,7 +533,7 @@ def main():
     kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
     fault_injection_by_breakpoint(conf=conf, fault_models=fault_models, iterations=int(iterations),
                                   kernel_info_list=kernel_info_list, summary_file=summary_file,
-                                  current_path=current_path)
+                                  current_path=current_path, thread=0)
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")

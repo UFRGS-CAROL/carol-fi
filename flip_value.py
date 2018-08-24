@@ -25,12 +25,13 @@ signal
 
 
 def set_event(event):
-    global global_logging, register, injection_mode
-    global bits_to_flip, fault_model, breakpoint_location, breakpoint_kernel_line, was_hit
-
     try:
+        # Just checking if
         global_logging.info("EVENT: {}".format(event.stop_signal))
 
+        # Accessing global vars
+        global global_logging, register, injection_mode, was_hit
+        global bits_to_flip, fault_model, breakpoint_location, breakpoint_kernel_line
         if was_hit is False:
             breakpoint_kernel_line = FaultInjectionBreakpoint(register=register,
                                                               bits_to_flip=bits_to_flip, fault_model=fault_model,
