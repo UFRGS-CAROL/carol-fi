@@ -138,7 +138,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # get register content
         reg_cmd = cf.execute_command(gdb, "p/t $" + str(self.__register))
         m = re.match('\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
-
+        print("BITS TO FLIP {}".format(self.__bits_to_flip))
         if m:
             reg_content = str(m.group(2))
             # Make sure that binary value will have max size register
@@ -167,6 +167,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # Zero values
             elif self.__fault_model == 3:
                 reg_content_new = '0'
+
             print("REG CONTENT {}".format(reg_content_new))
             reg_content_flipped = str(int(reg_content_new, 2))
             # send the new value to gdb
