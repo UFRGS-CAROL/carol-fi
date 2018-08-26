@@ -162,7 +162,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # Random value
             elif self.__fault_model == 2:
                 # random value is stored at bits_to_flip[0]
-                reg_content_new = str(self.__bits_to_flip[0])
+                reg_content_new = self.__bits_to_flip[0]
 
             # Zero values
             elif self.__fault_model == 3:

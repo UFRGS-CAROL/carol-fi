@@ -10,6 +10,9 @@ import re
 import shutil
 import time
 import datetime
+
+import sys
+
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 
@@ -391,20 +394,38 @@ def bit_flip_selection(fault_model):
     # Randomly select (a) bit(s) to flip
     # Max double bit flip
     max_size_register_fault_model = cp.SINGLE_MAX_SIZE_REGISTER
+    # Max size of bits to flip is 2, max double bit flip
+    bits_to_flip = [0] * 2
+
+    # Single bit flip
+    if fault_model == 0:
+        bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
+
+    # Double bit flip
+    elif fault_model == 1:
+        bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
+        # Make sure that the same bit is not going to be selected
+        r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register_fault_model)
+        bits_to_flip[1] = random.choice(r)
+
+    # Random value
+    elif fault_model == 2:
+        bits_to_flip[0] = str(bin(random.randint(0, sys.maxsize - 1))).replace("0b", "")
+
+    # Zero value is not necessary since it's zero
+    # elif fault_model == 3:
+    #     pass
 
     # Least 16 bits
-    if fault_model == 4:
+    elif fault_model == 4:
         max_size_register_fault_model = 16
+        bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
 
     # Least 8 bits
     elif fault_model == 5:
         max_size_register_fault_model = 8
+        bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
 
-    bits_to_flip = [0] * 2
-    bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
-    # Make sure that the same bit is not going to be selected
-    r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register_fault_model)
-    bits_to_flip[1] = random.choice(r)
     return bits_to_flip
 
 
