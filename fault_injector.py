@@ -84,9 +84,9 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
 
     dt = datetime.datetime.fromtimestamp(time.time())
     ymd = dt.strftime('%Y_%m_%d')
-    ymdhms = dt.strftime('%Y_%m_%d_%H_%M_%S')
-    ymdhms = unique_id + "-" + ymdhms
-    dir_d_t = os.path.join(ymd, ymdhms)
+    y_m_d_h_m_s = dt.strftime('%Y_%m_%d_%H_%M_%S')
+    y_m_d_h_m_s = unique_id + "-" + y_m_d_h_m_s
+    dir_d_t = os.path.join(ymd, y_m_d_h_m_s)
 
     # Log and create the paths
     if not fi_injected:
@@ -109,8 +109,8 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
         os.makedirs(cp_dir)
 
     # Moving all necessary files
-    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG]:  # ,
-        # cp.SIGNAL_APP_LOG]:
+    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH,
+                         cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG, cp.SIGNAL_APP_LOG]:
         try:
             shutil.move(file_to_move, cp_dir)
         except Exception as err:
@@ -436,7 +436,8 @@ by creating a breakpoint and steeping into it
 """
 
 
-def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_list, summary_file, current_path, thread):
+def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_list, summary_file, current_path,
+                                  host_thread):
     # kludge
     if conf.has_option("DEFAULT", "kludge"):
         kludge = conf.get("DEFAULT", "kludge")
@@ -451,7 +452,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
             for kernel_info_dict in kernel_info_list:
                 # Generate an unique id for this fault injection
                 # Thread is for multi gpu
-                unique_id = "{}_{}_{}".format(num_rounds, fault_model, thread)
+                unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
                 register, bits_to_flip = gen_injection_location(max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
                                                                 injection_site=conf.get("DEFAULT", "injectionSite"),
                                                                 fault_model=fault_model)
@@ -554,7 +555,7 @@ def main():
     kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
     fault_injection_by_breakpoint(conf=conf, fault_models=fault_models, iterations=int(iterations),
                                   kernel_info_list=kernel_info_list, summary_file=summary_file,
-                                  current_path=current_path, thread=0)
+                                  current_path=current_path, host_thread=0)
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")
