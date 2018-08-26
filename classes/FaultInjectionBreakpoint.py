@@ -167,7 +167,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # Zero values
             elif self.__fault_model == 3:
                 reg_content_new = '0'
-
+            print("REG CONTENT {}".format(reg_content_new))
             reg_content_flipped = str(int(reg_content_new, 2))
             # send the new value to gdb
             reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(self.__register) + " = " + reg_content_flipped)
