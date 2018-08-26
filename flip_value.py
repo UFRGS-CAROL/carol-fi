@@ -41,6 +41,7 @@ def set_event(event):
                                                               injection_mode=injection_mode)
             global_logging.info("BREAKPOINT SET ON SIGNAL")
             was_hit = True
+            gdb.execute("c")
     except Exception as err:
         global_logging.exception("EVENT DIFFERENT FROM STOP SIGNAL: {}".format(str(err)))
 
