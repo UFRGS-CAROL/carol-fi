@@ -150,14 +150,14 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # Single bit flip or Least significant bits
             if self.__fault_model == 0 or self.__fault_model == 4:
                 # single bit flip
-                reg_content_new = self.__flip_a_bit(self.__bits_to_flip[0], reg_content_old)
+                reg_content_new = self.__flip_a_bit(int(self.__bits_to_flip[0]), reg_content_old)
 
             # Double bit flip
             elif self.__fault_model == 1:
                 # multiple bit flip
                 reg_content_new = reg_content_old
                 for bit_to_flip in self.__bits_to_flip:
-                    reg_content_new = self.__flip_a_bit(bit_to_flip, reg_content_new)
+                    reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
 
             # Random value
             elif self.__fault_model == 2:
@@ -192,7 +192,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     Flip only a bit in a register content
     """
 
-    def __flip_a_bit(self, bit_to_flip, reg_content):
+    @staticmethod
+    def __flip_a_bit(bit_to_flip, reg_content):
         new_bit = '0' if reg_content[bit_to_flip] == '1' else '1'
         reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
         return reg_content
@@ -204,7 +205,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     def __inst_generic_injector(self):
         pass
 
-    def __single_bit_flip_word_address(self, address, byte_sizeof):
+    @staticmethod
+    def __single_bit_flip_word_address(address, byte_sizeof):
         buf_fog = "Fault Model: Single bit-flip"
         buf_fog += "\n"
         buf_fog += "base address to flip value: " + str(address)
@@ -225,7 +227,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         set_cmd = "set {char}" + address_f + " = " + hex(int(bin_data, 2))
         gdb.execute(set_cmd)
 
-    def __show_memory_content(self, address, byte_sizeof):
+    @staticmethod
+    def __show_memory_content(address, byte_sizeof):
         x_mem = "x/" + str(byte_sizeof) + "xb " + address
         hex_data = gdb.execute(x_mem, to_string=True)
         hex_data = re.sub(".*:|\s", "", hex_data)
@@ -478,7 +481,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
          constant and not functions and another symbols
     """
 
-    def __is_bit_flip_possible(self, symbol, frame):
+    @staticmethod
+    def __is_bit_flip_possible(symbol, frame):
         if symbol.is_variable or symbol.is_constant or symbol.is_argument:
             var_GDB = symbol.value(frame)
             address = re.sub("<.*>|\".*\"", "", str(var_GDB.address))
