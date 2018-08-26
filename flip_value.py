@@ -26,12 +26,13 @@ signal
 
 def set_event(event):
     try:
-        # Just checking if
-        global_logging.info("EVENT: {}".format(event.stop_signal))
-
         # Accessing global vars
         global global_logging, register, injection_mode, was_hit
         global bits_to_flip, fault_model, breakpoint_location, breakpoint_kernel_line
+
+        # Just checking if
+        global_logging.info("EVENT: {}".format(event.stop_signal))
+
         if was_hit is False:
             breakpoint_kernel_line = FaultInjectionBreakpoint(register=register,
                                                               bits_to_flip=bits_to_flip, fault_model=fault_model,
@@ -84,7 +85,7 @@ def main():
         global_logging.exception("ERROR on initializing setup: {}".format(str(err)))
 
     # Set Breakpoint attributes to be use
-    bits_to_flip = [int(i) for i in bits_to_flip.split(",")]
+    bits_to_flip = [i for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
 
     if kludge != 'None':
