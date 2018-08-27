@@ -448,12 +448,13 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
     else:
         kludge = None
 
-    for num_rounds in range(iterations):
-        # Execute the fault injector for each one of the sections(apps) of the configuration file
-        for fault_model in fault_models:
-            # Execute one fault injection for a specific app
-            # For each kernel
-            for kernel_info_dict in kernel_info_list:
+    # Execute the fault injector for each one of the sections(apps) of the configuration file
+    for fault_model in fault_models:
+        # Execute one fault injection for a specific app
+        # For each kernel
+        for kernel_info_dict in kernel_info_list:
+            num_rounds = 1
+            while num_rounds <= iterations:
                 # Generate an unique id for this fault injection
                 # Thread is for multi gpu
                 unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
@@ -492,20 +493,22 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                 # FI injection time
                 injection_time = fi_toc - fi_tic
 
-                # 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
-                # 'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
-                # 'register', 'breakpoint_location', 'fault_successful',
-                # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip', 'log_file'
-                # Write a row to summary file
-                row = [num_rounds, fault_model]
-                row.extend(thread)
-                row.extend(block)
-                row.extend(
-                    [old_val, new_val, 0, register, break_line, fault_injected,
-                     hang, crash,
-                     sdc, injection_time, signal_init_time, bits_to_flip, only_for_radiation_benchs()])
-                print(row)
-                summary_file.write_row(row=row)
+                if fault_injected:
+                    # 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
+                    # 'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
+                    # 'register', 'breakpoint_location', 'fault_successful',
+                    # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip', 'log_file'
+                    # Write a row to summary file
+                    row = [num_rounds, fault_model]
+                    row.extend(thread)
+                    row.extend(block)
+                    row.extend(
+                        [old_val, new_val, 0, register, break_line, fault_injected,
+                         hang, crash,
+                         sdc, injection_time, signal_init_time, bits_to_flip, only_for_radiation_benchs()])
+                    print(row)
+                    summary_file.write_row(row=row)
+                    num_rounds += 1
 
 
 """
