@@ -326,12 +326,16 @@ def gdb_inject_fault(**kwargs):
         reg_new_value = logging.search("reg_new_value")
         reg_old_value = re.findall("reg_old_value: (\S+)", reg_old_value)[0]
         reg_new_value = re.findall("reg_new_value: (\S+)", reg_new_value)[0]
-        m = re.search("cuda kernel 0 block (\d+),(\d+),(\d+) thread (\d+),(\d+),(\d+)",
-                      logging.search("cuda kernel 0"))
 
+        # Search for block
+        m = re.search("CUDA_BLOCK_FOCUS:.*block.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_BLOCK_FOCUS"))
         if m:
             block = [m.group(1), m.group(2), m.group(3)]
-            thread = [m.group(4), m.group(5), m.group(6)]
+
+        # Search for thread
+        m = re.search("CUDA_THREAD_FOCUS:.*thread.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_BLOCK_FOCUS"))
+        if m:
+            thread = [m.group(1), m.group(2), m.group(3)]
 
         fi_successful = True
     except Exception as e:
