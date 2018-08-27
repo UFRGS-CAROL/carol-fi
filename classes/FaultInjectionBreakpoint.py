@@ -130,8 +130,9 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                     m = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", threads[thread_index])
                     if m:
                         thread = "{},{},{}".format(m.group(1), m.group(2), m.group(3))
+            print("TEST", thread)
 
-            change_focus_thread_cmd = "cuda block {}".format(block)
+            change_focus_thread_cmd = "cuda thread {}".format(thread)
             thread_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_thread_cmd)
 
             # Thread focus return information
