@@ -124,12 +124,16 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
             thread = None
             thread_len = len(threads)
+            print("TEST1", thread, thread_len)
+
             while not thread:
                 thread_index = random.randint(0, thread_len)
                 if 'running' in threads[thread_index] and '*' not in threads[thread_index]:
-                    m = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", threads[thread_index])
+                    pattern = ".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*"
+                    pattern += "\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*"
+                    m = re.match(pattern, threads[thread_index])
                     if m:
-                        thread = "{},{},{}".format(m.group(1), m.group(2), m.group(3))
+                        thread = "{},{},{}".format(m.group(10), m.group(11), m.group(12))
             print("TEST", thread)
 
             change_focus_thread_cmd = "cuda thread {}".format(thread)
