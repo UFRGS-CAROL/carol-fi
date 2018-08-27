@@ -205,6 +205,16 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             raise NotImplementedError
 
     """
+    Flip only a bit in a register content
+    """
+
+    @staticmethod
+    def __flip_a_bit(bit_to_flip, reg_content):
+        new_bit = '0' if reg_content[bit_to_flip] == '1' else '1'
+        reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
+        return reg_content
+
+    """
     Instructions generic injector
     """
 
@@ -218,17 +228,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     def __var_generic_injector(self):
         raise NotImplementedError
 
-        # """
-        # Flip only a bit in a register content
-        # """
-        #
-        # @staticmethod
-        # def __flip_a_bit(bit_to_flip, reg_content):
-        #     new_bit = '0' if reg_content[bit_to_flip] == '1' else '1'
-        #     reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
-        #     return reg_content
-        #
-        #
+
         # @staticmethod
         # def __single_bit_flip_word_address(address, byte_sizeof):
         #     buf_fog = "Fault Model: Single bit-flip"
