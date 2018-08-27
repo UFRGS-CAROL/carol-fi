@@ -95,34 +95,42 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     """
 
     def __thread_focus(self):
-        # Trying with hard thread focus
-        threads = cf.execute_command(gdb, "info cuda threads")
-        element = random.randrange(2, len(threads))
-        # randomly chosen first block and thread
-        #  (15,2,0) (31,12,0)    (15,2,0) (31,31,0)    20 0x0000000000b41a28 matrixMul.cu    47
-        block_thread = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", threads[element])
-
         try:
-            block_x = block_thread.group(1)
-            block_y = block_thread.group(2)
-            block_z = block_thread.group(3)
+            # Selecting the block
+            blocks = cf.execute_command(gdb=gdb, to_execute="info cuda blocks")
+            # it must be a valid block
+            block = None
+            block_len = len(blocks)
+            while not block:
+                block_index = random.randint(0, block_len)
+                if 'running' in blocks[block_index] and '*' not in blocks[block_index]:
+                    m = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", blocks[block_index])
+                    if m:
+                        block = "{},{},{}".format(m.group(1), m.group(2), m.group(3))
 
-            thread_x = block_thread.group(4)
-            thread_y = block_thread.group(5)
-            thread_z = block_thread.group(6)
-
-            # TODO: Fix kernel 0 to multiple kernels
-            change_focus_cmd = "cuda kernel 0 block {0},{1},{2} thread {3},{4},{5}".format(str(block_x),
-                                                                                           str(block_y),
-                                                                                           str(block_z),
-                                                                                           str(thread_x),
-                                                                                           str(thread_y),
-                                                                                           str(thread_z))
-            self.__logging.debug(change_focus_cmd)
-            thread_focus = gdb.execute(change_focus_cmd, to_string=True)
+            change_focus_block_cmd = "cuda block {}".format(block)
+            block_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_block_cmd)
             # Thread focus return information
             self.__logging.info(
-                "CUDA_FOCUS: " + str(thread_focus).replace("[", "").replace("]", "").strip())
+                "CUDA_BLOCK_FOCUS: " + str(block_focus).replace("[", "").replace("]", "").strip())
+
+            # Selecting the thread
+            threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
+            thread = None
+            thread_len = len(threads)
+            while not thread:
+                thread_index = random.randint(0, thread_len)
+                if 'running' in threads[thread_index] and '*' not in threads[thread_index]:
+                    m = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", threads[thread_index])
+                    if m:
+                        thread = "{},{},{}".format(m.group(1), m.group(2), m.group(3))
+
+            change_focus_thread_cmd = "cuda block {}".format(block)
+            thread_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_thread_cmd)
+
+            # Thread focus return information
+            self.__logging.info(
+                "CUDA_THREAD_FOCUS: " + str(thread_focus).replace("[", "").replace("]", "").strip())
         except Exception as err:
             self.__logging.exception("CUDA_FOCUS_EXCEPTION: " + str(err))
             self.__logging.exception("Fault Injection Went Wrong")
