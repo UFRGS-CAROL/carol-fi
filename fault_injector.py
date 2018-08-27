@@ -238,7 +238,7 @@ def gdb_inject_fault(**kwargs):
     breakpoint_location = kwargs.get('break_line')
 
     # Logging file
-    flip_log_file = "/tmp/carolfi-flipvalue-{}.log".format(unique_id)
+    flip_log_file = cp.LOG_DEFAULT_NAME.format(unique_id)
 
     # Starting FI process
     if cp.DEBUG:

@@ -43,13 +43,16 @@ SIGNAL_APP_LOG = "/tmp/signal_app_thread.txt"
 # Before the first signal we define the percentage of the overall time
 # to send the first signal (IT IS THE PERCENTAGE)
 # A value between 0.1 and 1
-TIME_BEFORE_FIRST_SIGNAL = 0.8
+TIME_BEFORE_FIRST_SIGNAL = 0.5
 
 # Num of sleep time divisor
 NUM_DIVISION_TIMES = 100.0
 
 # time to sleep between the signals
 TIME_TO_SLEEP = 0.01
+
+# Common body of log filename
+LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
