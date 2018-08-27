@@ -330,14 +330,12 @@ def gdb_inject_fault(**kwargs):
         # Search for block
         m = re.search("CUDA_BLOCK_FOCUS:.*block.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_BLOCK_FOCUS"))
         if m:
-            block = "{}-{}-{}".format(m.group(1), m.group(2), m.group(3))
+            block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
         # Search for thread
         m = re.search("CUDA_THREAD_FOCUS:.*thread.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_THREAD_FOCUS"))
         if m:
-            thread = "{}-{}-{}".format(m.group(1), m.group(2), m.group(3))
-        
-        print(block, thread)
+            thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
         fi_successful = True
     except Exception as e:
@@ -501,13 +499,9 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                     # 'register', 'breakpoint_location', 'fault_successful',
                     # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip', 'log_file'
                     # Write a row to summary file
-                    row = [num_rounds, fault_model]
-                    row.extend(thread)
-                    row.extend(block)
-                    row.extend(
-                        [old_val, new_val, 0, register, break_line, fault_injected,
-                         hang, crash,
-                         sdc, injection_time, signal_init_time, bits_to_flip, only_for_radiation_benchs()])
+                    row = [num_rounds, fault_model, thread, block, old_val, new_val, 0, register, break_line,
+                           fault_injected, hang, crash, sdc, injection_time,
+                           signal_init_time, bits_to_flip, only_for_radiation_benchs()]
                     print(row)
                     summary_file.write_row(row=row)
                     num_rounds += 1
