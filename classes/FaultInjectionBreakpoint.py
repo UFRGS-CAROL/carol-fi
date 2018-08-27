@@ -117,7 +117,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         except Exception as err:
             self.__logging.exception("CUDA_BLOCK_FOCUS_EXCEPTION: " + str(err))
             self.__logging.exception("Fault Injection Went Wrong")
-            return False
 
         # Selecting the thread
         try:
