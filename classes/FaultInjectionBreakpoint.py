@@ -397,6 +397,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     """
 
     def __var_generic_injector(self):
+        print("VAR GENERIC INJECTOR")
         inferior = gdb.selected_inferior()
 
         for inf in gdb.inferiors():
@@ -414,17 +415,16 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # for th in inferior.threads():
         th = inferior.threads()[0]
         print("FOR INFERIOR THREADS")
-        threads_symbols = []
-        try:
-            # th.switch()
-            threads_symbols = self.__get_all_valid_symbols()
-            if len(threads_symbols) > 0:
-                print("TH SYMBOLS APPEND")
+        # th.switch()
+        threads_symbols = self.__get_all_valid_symbols()
+        if len(threads_symbols) > 0:
+            print("TH SYMBOLS APPEND")
 
-                # threads_symbols = th_symbols
-        except Exception as err:
-            print(err)
-            print("ERROR ON THREAD INFERIORS")
+        print("Thread name: " + str(th.name))
+        print("Thread num: " + str(th.num))
+        print("Thread ptid: " + str(th.ptid))
+        return self.__chose_frame_to_flip(threads_symbols)
+        # threads_symbols = th_symbols
         # continue
 
         # th_len = len(threads_symbols)
@@ -436,9 +436,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # th_pos = random.randint(0, th_len - 1)
         # print("AFTER THREAD rand int")
         # cur_thread = th  # threads_symbols[th_pos][0]
-        print("Thread name: " + str(th.name))
-        print("Thread num: " + str(th.num))
-        print("Thread ptid: " + str(th.ptid))
         # th_pos = 0
         # r = self.__chose_frame_to_flip(threads_symbols[th_pos][1])
         #  while r is False:
@@ -447,11 +444,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # if th_len <= 0:
         #     break
         # th_pos = random.randint(0, th_len - 1)
-        try:
-            return self.__chose_frame_to_flip(threads_symbols)
-        except Exception as err:
-            print(err)
-            return False
+
 
     """
     Get all the symbols of the stacked frames, returns a list of tuples [frame, symbolsList]
