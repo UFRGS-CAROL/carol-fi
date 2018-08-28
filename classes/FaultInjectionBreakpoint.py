@@ -60,30 +60,30 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
         self.__logging.debug("Trying Fault Injection with {} mode".format(self.__injection_mode))
-        # try:
-        # Focusing the thread
-        self.__thread_focus()
-        # Register if fault was injected or not
-        fault_injected = False
-        # Do the fault injection magic
-        # RF is the default mode of injection
-        if 'RF' in self.__injection_mode or self.__injection_mode is None:
-            fault_injected = self.__rf_generic_injector()
-        elif 'VARS' in self.__injection_mode:
-            print("VARS IF")
-            fault_injected = self.__var_generic_injector()
-        elif 'INST' in self.__injection_mode:
-            fault_injected = self.__inst_generic_injector()
+        try:
+            # Focusing the thread
+            self.__thread_focus()
+            # Register if fault was injected or not
+            fault_injected = False
+            # Do the fault injection magic
+            # RF is the default mode of injection
+            if 'RF' in self.__injection_mode or self.__injection_mode is None:
+                fault_injected = self.__rf_generic_injector()
+            elif 'VARS' in self.__injection_mode:
+                print("VARS IF")
+                fault_injected = self.__var_generic_injector()
+            elif 'INST' in self.__injection_mode:
+                fault_injected = self.__inst_generic_injector()
 
-        # Test fault injection result
-        if fault_injected:
-            self.__logging.info("Fault Injection Successful")
-        else:
-            self.__logging.info("Fault Injection Went Wrong")
+            # Test fault injection result
+            if fault_injected:
+                self.__logging.info("Fault Injection Successful")
+            else:
+                self.__logging.info("Fault Injection Went Wrong")
 
-        # except Exception as err:
-        #     self.__logging.exception("fault_injection_python_exception: {}".format(err))
-        #     self.__logging.exception("Fault Injection Went Wrong")
+        except Exception as err:
+            self.__logging.exception("fault_injection_python_exception: {}".format(err))
+            self.__logging.exception("Fault Injection Went Wrong")
         return True
 
     """
@@ -116,7 +116,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
         thread = None
         thread_len = len(threads)
-        print("TEST1", thread, thread_len)
 
         while not thread:
             thread_index = random.randint(0, thread_len)
@@ -124,7 +123,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             m = re.match(pattern, threads[thread_index])
             if m:
                 thread = "{},{},{}".format(m.group(10), m.group(11), m.group(12))
-        print("TEST", thread)
 
         change_focus_thread_cmd = "cuda thread {}".format(thread)
         thread_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_thread_cmd)
@@ -366,8 +364,10 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         var_gdb = symbol.value(frame)
 
         self.__var_bit_flip_value(var_gdb)
+        self.__logging.debug("KEEP GOING 1")
         if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
             self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
+        self.__logging.debug("KEEP GOING 2")
 
         for field in symbol.type.fields():
             self.__logging.debug("Field name: " + str(field.name))
@@ -375,6 +375,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             self.__logging.debug("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
             if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
                 self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
+
+        self.__logging.debug("KEEP GOING 3")
 
         return True
 
