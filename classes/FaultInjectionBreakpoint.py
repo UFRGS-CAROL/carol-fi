@@ -234,26 +234,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         print("Thread num: " + str(th.num))
         print("Thread ptid: " + str(th.ptid))
         return self.__chose_frame_to_flip(threads_symbols)
-        # threads_symbols = th_symbols
-        # continue
 
-        # th_len = len(threads_symbols)
-        # print("AFTER THREAD LEN")
-        # if th_len <= 0:
-        #     print(str("No Threads with symbols"))
-        #     return False
-
-        # th_pos = random.randint(0, th_len - 1)
-        # print("AFTER THREAD rand int")
-        # cur_thread = th  # threads_symbols[th_pos][0]
-        # th_pos = 0
-        # r = self.__chose_frame_to_flip(threads_symbols[th_pos][1])
-        #  while r is False:
-        # threads_symbols.pop(th_pos)
-        # th_len -= 1
-        # if th_len <= 0:
-        #     break
-        # th_pos = random.randint(0, th_len - 1)
 
     """
     Get all the symbols of the stacked frames, returns a list of tuples [frame, symbolsList]
@@ -403,7 +384,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                     pass
                 return True
             except gdb.error as err:
-                print("gdbException: " + str(err))
+                print("gdbException: {}".format(err))
                 return False
 
         except Exception as err:
