@@ -349,10 +349,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         var_gdb = symbol.value(frame)
 
         self.__var_bit_flip_value(var_gdb)
-        self.__logging.debug("KEEP GOING 1")
         if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
             self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
-        self.__logging.debug("KEEP GOING 2 {}".format(symbol.type))
 
         # for field in symbol.type.fields():
         #     self.__logging.debug("Field name: " + str(field.name))
@@ -360,9 +358,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         #     self.__logging.debug("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
         #     if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
         #         self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
-
-        self.__logging.debug("KEEP GOING 3")
-
         return True
 
     def __var_bit_flip_value(self, value):
