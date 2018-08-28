@@ -397,17 +397,17 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             pointer_flip = random.randint(0, 1)
             pointed_address = re.sub("<.*>|\".*\"", "", str(value.referenced_value().address))
             if pointer_flip or hex(int(pointed_address, 16)) <= hex(int("0x0", 16)):
-                print("Flipping a bit of the pointer")
+                self.__logging.debug("Flipping a bit of the pointer")
                 self.__generic_bit_flip(value)
             else:
-                print("Flipping a bit of the value pointed by a pointer")
+                self.__logging.debug("Flipping a bit of the value pointed by a pointer")
                 self.__var_bit_flip_value(value.referenced_value())
         elif value.type.strip_typedefs().code is gdb.TYPE_CODE_REF:
             random.seed()
             ref_flip = random.randint(0, 1)
             pointed_address = re.sub("<.*>|\".*\"", "", str(value.referenced_value().address))
             if ref_flip or hex(int(pointed_address, 16)) <= hex(int("0x0", 16)):
-                print("Flipping a bit of the reference")
+                self.__logging.debug("Flipping a bit of the reference")
                 self.__generic_bit_flip(value)
             else:
                 print("Flipping a bit of the value pointed by a reference")
@@ -416,7 +416,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             range_max = value.type.strip_typedefs().range()[1]
             random.seed()
             array_pos = random.randint(0, range_max)
-            print("Flipping array at pos: " + str(array_pos))
+            self.__logging.debug("Flipping array at pos: " + str(array_pos))
             self.__var_bit_flip_value(value[array_pos])
         elif value.type.strip_typedefs().code is gdb.TYPE_CODE_STRUCT:
             fields = value.type.fields()
@@ -457,10 +457,10 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                     # return
                     raise Exception("Unable to exit loop in union fields; Exiting wihtout making bitflip")
 
-            print("Flipping value of field name: " + str(fields[field_pos].name))
+            self.__logging.debug("Flipping value of field name: " + str(fields[field_pos].name))
             self.__var_bit_flip_value(new_value)
         else:
-            print("Generic bit flip")
+            self.__logging.debug("Generic bit flip")
             self.__generic_bit_flip(value)
 
     """
