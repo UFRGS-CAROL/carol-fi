@@ -59,7 +59,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # This if avoid the creation of another event connection
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
-        self.__logging.debug("Trying Fault Injection")
+        self.__logging.debug("Trying Fault Injection with {} mode".format(self.__injection_mode))
 
         # Focusing the thread
         if not self.__thread_focus():
