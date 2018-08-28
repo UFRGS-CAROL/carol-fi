@@ -341,6 +341,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         print("Memory content after  bitflip:" + str(self.__show_memory_content(address, byte_sizeof)))
 
     def __chose_frame_to_flip(self, frame_symbols):
+        self.__logging.debug("INSIDE CHOOSED FRAME TO FLIP")
         try:
             frames_num = len(frame_symbols)
             if frames_num <= 0:
