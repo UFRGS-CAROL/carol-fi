@@ -420,8 +420,8 @@ def bit_flip_selection(fault_model):
 
     # Least 16 bits
     elif fault_model == 4:
-        max_size_register_fault_model = 16
-        bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
+        max_size_register_fault_model = 32
+        bits_to_flip[0] = random.randint(16, max_size_register_fault_model - 1)
 
     # Least 8 bits
     elif fault_model == 5:
