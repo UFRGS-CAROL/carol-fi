@@ -71,14 +71,15 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             fault_injected = False
             # Do the fault injection magic
             # RF is the default mode of injection
-            if self.__injection_mode == 'RF' or self.__injection_mode is None:
+            if 'RF' in self.__injection_mode or self.__injection_mode is None:
                 fault_injected = self.__rf_generic_injector()
-            elif self.__injection_mode == 'VARS':
+            elif 'VARS' in self.__injection_mode:
                 print("VARS IF")
                 fault_injected = self.__var_generic_injector()
-            elif self.__injection_mode == 'INST':
+            elif 'INST' in self.__injection_mode:
                 fault_injected = self.__inst_generic_injector()
 
+            print("FAULT INJECTED {}".format(fault_injected))
             # Test fault injection result
             if fault_injected:
                 self.__logging.info("Fault Injection Successful")
