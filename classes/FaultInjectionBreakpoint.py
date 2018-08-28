@@ -75,7 +75,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             elif 'INST' in self.__injection_mode:
                 fault_injected = self.__inst_generic_injector()
 
-            print("FAULT INJECTED {}".format(fault_injected))
+            self.__logging.info("FAULT INJECTED {}".format(fault_injected))
             # Test fault injection result
             if fault_injected:
                 self.__logging.info("Fault Injection Successful")
