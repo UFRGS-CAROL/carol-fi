@@ -367,7 +367,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         self.__logging.debug("KEEP GOING 1")
         if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
             self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
-        self.__logging.debug("KEEP GOING 2")
+        self.__logging.debug("KEEP GOING 2 {}".format(symbol.type.fields()))
 
         for field in symbol.type.fields():
             self.__logging.debug("Field name: " + str(field.name))
