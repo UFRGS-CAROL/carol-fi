@@ -69,14 +69,14 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         try:
             # Register if fault was injected or not
             fault_injected = False
+            # Do the fault injection magic
             # RF is the default mode of injection
             if self.__injection_mode == 'RF' or self.__injection_mode is None:
-                # Do the fault injection magic
                 fault_injected = self.__rf_generic_injector()
             elif self.__injection_mode == 'VARS':
                 fault_injected = self.__var_generic_injector()
             elif self.__injection_mode == 'INST':
-                raise NotImplementedError("INST INJECTION MODE NOT IMPLEMENTED YET")
+                fault_injected = self.__inst_generic_injector()
 
             # Test fault injection result
             if fault_injected:
@@ -217,11 +217,116 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         return reg_content
 
     """
-    Instructions generic injector
+     generic injector
     """
 
-    def __inst_generic_injector(self):
-        raise NotImplementedError
+    def __var_generic_injector(self):
+        print("VAR GENERIC INJECTOR")
+        inferior = gdb.selected_inferior()
+
+        for inf in gdb.inferiors():
+            print("Inferior PID: " + str(inf.pid))
+            print("Inferior is valid: " + str(inf.is_valid()))
+            print("Inferior #threads: " + str(len(inf.threads())))
+
+        print("Backtrace BEGIN:")
+        bt = gdb.execute("bt", to_string=True)
+        print(bt)
+        source_lines = gdb.execute("list", to_string=True)
+        print(source_lines)
+
+        # threads_symbols = list()
+        # for th in inferior.threads():
+        th = inferior.threads()[0]
+        print("FOR INFERIOR THREADS")
+        # th.switch()
+        threads_symbols = self.__get_all_valid_symbols()
+        if len(threads_symbols) > 0:
+            print("TH SYMBOLS APPEND")
+
+        print("Thread name: " + str(th.name))
+        print("Thread num: " + str(th.num))
+        print("Thread ptid: " + str(th.ptid))
+        return self.__chose_frame_to_flip(threads_symbols)
+        # threads_symbols = th_symbols
+        # continue
+
+        # th_len = len(threads_symbols)
+        # print("AFTER THREAD LEN")
+        # if th_len <= 0:
+        #     print(str("No Threads with symbols"))
+        #     return False
+
+        # th_pos = random.randint(0, th_len - 1)
+        # print("AFTER THREAD rand int")
+        # cur_thread = th  # threads_symbols[th_pos][0]
+        # th_pos = 0
+        # r = self.__chose_frame_to_flip(threads_symbols[th_pos][1])
+        #  while r is False:
+        # threads_symbols.pop(th_pos)
+        # th_len -= 1
+        # if th_len <= 0:
+        #     break
+        # th_pos = random.randint(0, th_len - 1)
+
+    """
+    Get all the symbols of the stacked frames, returns a list of tuples [frame, symbolsList]
+    where frame is a GDB Frame object and symbolsList is a list of all symbols of this frame
+    """
+
+    def __get_all_valid_symbols(self):
+        all_symbols = list()
+        frame = gdb.selected_frame()
+        # while frame:
+        # Cuda dgb behavior bad if this is not here
+        # if 'main' in frame.name():
+        #     break
+
+        print("SELECTING NEW FRAME")
+        print(frame.is_valid(), frame.name(), frame.architecture(), frame.type())
+
+        symbols = self.__get_frame_symbols(frame)
+        if symbols is not None:
+            all_symbols.append([frame, symbols])
+            # print("GETTING OLDER")
+            # frame = frame.older()
+
+        print("RETURNING ALL SYMBOLS")
+        return all_symbols
+
+    """
+    Returns a list of all symbols of the frame, frame is a GDB Frame object
+    """
+
+    def __get_frame_symbols(self, frame):
+        try:
+            symbols = list()
+            block = frame.block()
+            while block:
+                for symbol in block:
+                    if self.__is_bit_flip_possible(symbol, frame):
+                        symbols.append(symbol)
+                block = block.superblock
+            return symbols
+        except Exception as err:
+            print("GET_FRAME_SYMBOLS_ERROR: {}".format(err))
+            return None
+
+    """
+         Returns True if we can bitflip some bit of this symbol, i.e. if this is a variable or
+         constant and not functions and another symbols
+    """
+
+    @staticmethod
+    def __is_bit_flip_possible(symbol, frame):
+        if symbol.is_variable or symbol.is_constant or symbol.is_argument:
+            var = symbol.value(frame)
+            address = re.sub("<.*>|\".*\"", "", str(var.address))
+            if var.address is not None and not var.is_optimized_out and hex(int(address, 16)) > hex(
+                    int("0x0", 16)):
+                print("BIT FLIP IS POSSIBLE")
+                return True
+        return False
 
     @staticmethod
     def __single_bit_flip_word_address(address, byte_sizeof):
@@ -393,114 +498,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             self.__generic_bit_flip(value)
 
     """
-     generic injector
+    Instructions generic injector
     """
 
-    def __var_generic_injector(self):
-        print("VAR GENERIC INJECTOR")
-        inferior = gdb.selected_inferior()
-
-        for inf in gdb.inferiors():
-            print("Inferior PID: " + str(inf.pid))
-            print("Inferior is valid: " + str(inf.is_valid()))
-            print("Inferior #threads: " + str(len(inf.threads())))
-
-        print("Backtrace BEGIN:")
-        bt = gdb.execute("bt", to_string=True)
-        print(bt)
-        source_lines = gdb.execute("list", to_string=True)
-        print(source_lines)
-
-        # threads_symbols = list()
-        # for th in inferior.threads():
-        th = inferior.threads()[0]
-        print("FOR INFERIOR THREADS")
-        # th.switch()
-        threads_symbols = self.__get_all_valid_symbols()
-        if len(threads_symbols) > 0:
-            print("TH SYMBOLS APPEND")
-
-        print("Thread name: " + str(th.name))
-        print("Thread num: " + str(th.num))
-        print("Thread ptid: " + str(th.ptid))
-        return self.__chose_frame_to_flip(threads_symbols)
-        # threads_symbols = th_symbols
-        # continue
-
-        # th_len = len(threads_symbols)
-        # print("AFTER THREAD LEN")
-        # if th_len <= 0:
-        #     print(str("No Threads with symbols"))
-        #     return False
-
-        # th_pos = random.randint(0, th_len - 1)
-        # print("AFTER THREAD rand int")
-        # cur_thread = th  # threads_symbols[th_pos][0]
-        # th_pos = 0
-        # r = self.__chose_frame_to_flip(threads_symbols[th_pos][1])
-        #  while r is False:
-        # threads_symbols.pop(th_pos)
-        # th_len -= 1
-        # if th_len <= 0:
-        #     break
-        # th_pos = random.randint(0, th_len - 1)
-
-
-    """
-    Get all the symbols of the stacked frames, returns a list of tuples [frame, symbolsList]
-    where frame is a GDB Frame object and symbolsList is a list of all symbols of this frame
-    """
-
-    def __get_all_valid_symbols(self):
-        all_symbols = list()
-        frame = gdb.selected_frame()
-        # while frame:
-        # Cuda dgb behavior bad if this is not here
-        # if 'main' in frame.name():
-        #     break
-
-        print("SELECTING NEW FRAME")
-        print(frame.is_valid(), frame.name(), frame.architecture(), frame.type())
-
-        symbols = self.__get_frame_symbols(frame)
-        if symbols is not None:
-            all_symbols.append([frame, symbols])
-            # print("GETTING OLDER")
-            # frame = frame.older()
-
-        print("RETURNING ALL SYMBOLS")
-        return all_symbols
-
-    """
-    Returns a list of all symbols of the frame, frame is a GDB Frame object
-    """
-
-    def __get_frame_symbols(self, frame):
-        try:
-            symbols = list()
-            block = frame.block()
-            while block:
-                for symbol in block:
-                    if self.__is_bit_flip_possible(symbol, frame):
-                        symbols.append(symbol)
-                block = block.superblock
-            return symbols
-        except Exception as err:
-            print("GET_FRAME_SYMBOLS_ERROR: {}".format(err))
-            return None
-
-    """
-         Returns True if we can bitflip some bit of this symbol, i.e. if this is a variable or
-         constant and not functions and another symbols
-    """
-
-    @staticmethod
-    def __is_bit_flip_possible(symbol, frame):
-        if symbol.is_variable or symbol.is_constant or symbol.is_argument:
-            var = symbol.value(frame)
-            address = re.sub("<.*>|\".*\"", "", str(var.address))
-            if var.address is not None and not var.is_optimized_out and hex(int(address, 16)) > hex(
-                    int("0x0", 16)):
-                print("BIT FLIP IS POSSIBLE")
-                return True
-        return False
+    def __inst_generic_injector(self):
+        raise NotImplementedError
