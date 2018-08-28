@@ -370,24 +370,24 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             try:
                 self.__var_bit_flip_value(var_gdb)
                 if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
-                    print("Type range: " + str(var_gdb.type.strip_typedefs().range()))
+                    self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
 
                 try:
                     for field in symbol.type.fields():
-                        print("Field name: " + str(field.name))
-                        print("Field Type: " + str(GDB_TYPES_DICT[field.type.strip_typedefs().code]))
-                        print("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
+                        self.__logging.debug("Field name: " + str(field.name))
+                        self.__logging.debug("Field Type: " + str(GDB_TYPES_DICT[field.type.strip_typedefs().code]))
+                        self.__logging.debug("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
                         if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
-                            print("Field Type range: " + str(field.type.strip_typedefs().range()))
+                            self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
                 except:
                     pass
                 return True
             except gdb.error as err:
-                print("gdbException: {}".format(err))
+                self.__logging.debug("gdbException: {}".format(err))
                 return False
 
         except Exception as err:
-            print("pythonException: " + str(err))
+            self.__logging.debug("pythonException: " + str(err))
             return False
 
     def __var_bit_flip_value(self, value):
