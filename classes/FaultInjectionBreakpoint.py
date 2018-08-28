@@ -133,7 +133,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         self.__logging.info(
             "CUDA_THREAD_FOCUS: " + str(thread_focus).replace("[", "").replace("]", "").strip())
 
-
     """
     Flip a bit or multiple bits based on a fault model
     """
@@ -233,7 +232,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         self.__logging.debug("Thread num: " + str(th.num))
         self.__logging.debug("Thread ptid: " + str(th.ptid))
         return self.__chose_frame_to_flip(threads_symbols)
-
 
     """
     Get all the symbols of the stacked frames, returns a list of tuples [frame, symbolsList]
@@ -342,54 +340,43 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
     def __chose_frame_to_flip(self, frame_symbols):
         self.__logging.debug("INSIDE CHOOSED FRAME TO FLIP")
-        try:
-            frames_num = len(frame_symbols)
+        frames_num = len(frame_symbols)
+        if frames_num <= 0:
+            return False
+
+        random.seed()
+        frame_pos = random.randint(0, frames_num - 1)
+        frame = frame_symbols[frame_pos][0]
+        symbols = frame_symbols[frame_pos][1]
+        symbols_num = len(symbols)
+
+        while symbols_num <= 0:
+            frame_symbols.pop(frame_pos)
+            frames_num += 1
             if frames_num <= 0:
                 return False
 
-            random.seed()
             frame_pos = random.randint(0, frames_num - 1)
             frame = frame_symbols[frame_pos][0]
             symbols = frame_symbols[frame_pos][1]
             symbols_num = len(symbols)
 
-            while symbols_num <= 0:
-                frame_symbols.pop(frame_pos)
-                frames_num += 1
-                if frames_num <= 0:
-                    return False
+        symbol_pos = random.randint(0, symbols_num - 1)
+        symbol = symbols[symbol_pos]
+        var_gdb = symbol.value(frame)
 
-                frame_pos = random.randint(0, frames_num - 1)
-                frame = frame_symbols[frame_pos][0]
-                symbols = frame_symbols[frame_pos][1]
-                symbols_num = len(symbols)
+        self.__var_bit_flip_value(var_gdb)
+        if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
+            self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
 
-            symbol_pos = random.randint(0, symbols_num - 1)
-            symbol = symbols[symbol_pos]
-            var_gdb = symbol.value(frame)
+        for field in symbol.type.fields():
+            self.__logging.debug("Field name: " + str(field.name))
+            self.__logging.debug("Field Type: " + str(GDB_TYPES_DICT[field.type.strip_typedefs().code]))
+            self.__logging.debug("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
+            if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
+                self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
 
-            try:
-                self.__var_bit_flip_value(var_gdb)
-                if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
-                    self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
-
-                try:
-                    for field in symbol.type.fields():
-                        self.__logging.debug("Field name: " + str(field.name))
-                        self.__logging.debug("Field Type: " + str(GDB_TYPES_DICT[field.type.strip_typedefs().code]))
-                        self.__logging.debug("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
-                        if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
-                            self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
-                except:
-                    pass
-                return True
-            except gdb.error as err:
-                self.__logging.debug("gdbException: {}".format(err))
-                return False
-
-        except Exception as err:
-            self.__logging.debug("pythonException: " + str(err))
-            return False
+        return True
 
     def __var_bit_flip_value(self, value):
 
