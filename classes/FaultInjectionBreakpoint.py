@@ -65,7 +65,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         if not self.__thread_focus():
             # If it return False breakpoint is going to be repeated
             return True
-
+        print("NAO TERMINOU O THREAD FOCUS")
         try:
             # Register if fault was injected or not
             fault_injected = False
