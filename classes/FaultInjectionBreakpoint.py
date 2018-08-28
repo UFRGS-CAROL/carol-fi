@@ -60,7 +60,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
         self.__logging.debug("Trying Fault Injection with {} mode".format(self.__injection_mode))
-        print("\n", self.__injection_mode, "\n")
         try:
             # Focusing the thread
             self.__thread_focus()
@@ -76,7 +75,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             elif 'INST' in self.__injection_mode:
                 fault_injected = self.__inst_generic_injector()
 
-            self.__logging.info("FAULT INJECTED {}".format(fault_injected))
             # Test fault injection result
             if fault_injected:
                 self.__logging.info("Fault Injection Successful")
@@ -208,32 +206,32 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     """
 
     def __var_generic_injector(self):
-        print("VAR GENERIC INJECTOR")
+        self.__logging.debug("VAR GENERIC INJECTOR")
         inferior = gdb.selected_inferior()
 
         for inf in gdb.inferiors():
-            print("Inferior PID: " + str(inf.pid))
-            print("Inferior is valid: " + str(inf.is_valid()))
-            print("Inferior #threads: " + str(len(inf.threads())))
+            self.__logging.debug("Inferior PID: " + str(inf.pid))
+            self.__logging.debug("Inferior is valid: " + str(inf.is_valid()))
+            self.__logging.debug("Inferior #threads: " + str(len(inf.threads())))
 
-        print("Backtrace BEGIN:")
+        self.__logging.debug("Backtrace BEGIN:")
         bt = gdb.execute("bt", to_string=True)
-        print(bt)
+        self.__logging.debug(bt)
         source_lines = gdb.execute("list", to_string=True)
-        print(source_lines)
+        self.__logging.debug(source_lines)
 
         # threads_symbols = list()
         # for th in inferior.threads():
         th = inferior.threads()[0]
-        print("FOR INFERIOR THREADS")
+        self.__logging.debug("FOR INFERIOR THREADS")
         # th.switch()
         threads_symbols = self.__get_all_valid_symbols()
         if len(threads_symbols) > 0:
-            print("TH SYMBOLS APPEND")
+            self.__logging.debug("TH SYMBOLS APPEND")
 
-        print("Thread name: " + str(th.name))
-        print("Thread num: " + str(th.num))
-        print("Thread ptid: " + str(th.ptid))
+        self.__logging.debug("Thread name: " + str(th.name))
+        self.__logging.debug("Thread num: " + str(th.num))
+        self.__logging.debug("Thread ptid: " + str(th.ptid))
         return self.__chose_frame_to_flip(threads_symbols)
 
 
