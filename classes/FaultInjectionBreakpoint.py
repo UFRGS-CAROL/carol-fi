@@ -324,7 +324,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     def __generic_bit_flip(self, value):
         address = re.sub("<.*>|\".*\"", "", str(value.address))
         byte_sizeof = value.type.strip_typedefs().sizeof
-        print("Memory content before bitflip:" + str(self.__show_memory_content(address, byte_sizeof)))
+        self.__logging.debug("Memory content before bitflip:" + str(self.__show_memory_content(address, byte_sizeof)))
 
         if self.__fault_model == 0:
             self.__single_bit_flip_word_address(address, byte_sizeof)
@@ -336,7 +336,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             raise NotImplementedError("Fault model not implemented yet")
         elif self.__fault_model == 4:
             raise NotImplementedError("Fault model not implemented yet")
-        print("Memory content after  bitflip:" + str(self.__show_memory_content(address, byte_sizeof)))
+        self.__logging.debug("Memory content after  bitflip:" + str(self.__show_memory_content(address, byte_sizeof)))
 
     def __chose_frame_to_flip(self, frame_symbols):
         self.__logging.debug("INSIDE CHOOSED FRAME TO FLIP")
