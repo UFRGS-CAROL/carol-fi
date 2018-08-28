@@ -70,7 +70,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             if 'RF' in self.__injection_mode or self.__injection_mode is None:
                 fault_injected = self.__rf_generic_injector()
             elif 'VARS' in self.__injection_mode:
-                print("VARS IF")
                 fault_injected = self.__var_generic_injector()
             elif 'INST' in self.__injection_mode:
                 fault_injected = self.__inst_generic_injector()
@@ -181,8 +180,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             if len(reg_cmd_flipped) > 0:
                 self.__logging.info("flip command return: " + str(reg_cmd_flipped))
 
-            # print("REG MODIFIED ", cf.execute_command(gdb, "p/t $" + str(valid_register)))
-
             # Return the fault confirmation
             return reg_content_old != reg_content_new
         else:
@@ -239,21 +236,11 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     def __get_all_valid_symbols(self):
         all_symbols = list()
         frame = gdb.selected_frame()
-        # while frame:
-        # Cuda dgb behavior bad if this is not here
-        # if 'main' in frame.name():
-        #     break
-
-        print("SELECTING NEW FRAME")
-        print(frame.is_valid(), frame.name(), frame.architecture(), frame.type())
 
         symbols = self.__get_frame_symbols(frame)
         if symbols is not None:
             all_symbols.append([frame, symbols])
-            # print("GETTING OLDER")
-            # frame = frame.older()
 
-        print("RETURNING ALL SYMBOLS")
         return all_symbols
 
     """
@@ -271,7 +258,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                 block = block.superblock
             return symbols
         except Exception as err:
-            print("GET_FRAME_SYMBOLS_ERROR: {}".format(err))
+            self.__logging.exception("GET_FRAME_SYMBOLS_ERROR: {}".format(err))
             return None
 
     """
@@ -279,23 +266,21 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
          constant and not functions and another symbols
     """
 
-    @staticmethod
-    def __is_bit_flip_possible(symbol, frame):
+    def __is_bit_flip_possible(self, symbol, frame):
         if symbol.is_variable or symbol.is_constant or symbol.is_argument:
             var = symbol.value(frame)
             address = re.sub("<.*>|\".*\"", "", str(var.address))
             if var.address is not None and not var.is_optimized_out and hex(int(address, 16)) > hex(
                     int("0x0", 16)):
-                print("BIT FLIP IS POSSIBLE")
+                self.__logging.debug("BIT FLIP IS POSSIBLE")
                 return True
         return False
 
-    @staticmethod
-    def __single_bit_flip_word_address(address, byte_sizeof):
+    def __single_bit_flip_word_address(self, address, byte_sizeof):
         buf_fog = "Fault Model: Single bit-flip"
         buf_fog += "\n"
         buf_fog += "base address to flip value: " + str(address)
-        print(buf_fog)
+        self.__logging.debug(buf_fog)
         random.seed()
         address_offset = random.randint(0, byte_sizeof - 1)
         address_f = hex(int(address, 16) + address_offset)
@@ -400,7 +385,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                 self.__logging.debug("Flipping a bit of the reference")
                 self.__generic_bit_flip(value)
             else:
-                print("Flipping a bit of the value pointed by a reference")
+                self.__logging.debug("Flipping a bit of the value pointed by a reference")
                 self.__var_bit_flip_value(value.referenced_value())
         elif value.type.strip_typedefs().code is gdb.TYPE_CODE_ARRAY:
             range_max = value.type.strip_typedefs().range()[1]
@@ -427,7 +412,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                 if count == 20:
                     raise Exception("Unable to exit loop in struct fields; Exiting wihtout making a bit flip")
 
-            print("Flipping value of field: " + str(fields[field_pos].name))
+            self.__logging.debug("Flipping value of field: " + str(fields[field_pos].name))
             self.__var_bit_flip_value(new_value)
         elif value.type.strip_typedefs().code is gdb.TYPE_CODE_UNION:
             fields = value.type.fields()
