@@ -331,6 +331,10 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
             self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
 
+        self.__logging.debug("SYMBOL {}".format(symbol))
+        self.__logging.debug("TYPE {}".format(symbol.type))
+        self.__logging.debug("FIELDS {}".format(symbol.type))
+
         for field in symbol.type.fields():
             self.__logging.debug("Field name: " + str(field.name))
             self.__logging.debug("Field Type: " + str(GDB_TYPES_DICT[field.type.strip_typedefs().code]))
