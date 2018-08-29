@@ -346,7 +346,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         return True
 
     def __var_bit_flip_value(self, value):
-
+        self.__logging("VAR TYPE IS {}".format(value.type.strip_typedefs().code))
         if value.type.strip_typedefs().code is gdb.TYPE_CODE_PTR:
             random.seed()
             pointer_flip = random.randint(0, 1)
