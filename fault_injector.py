@@ -327,6 +327,8 @@ def gdb_inject_fault(**kwargs):
             old_value = logging.search("reg_old_value")
             new_value = logging.search("reg_new_value")
 
+        print("Old value {} new value {} block {} thread {}".format(old_value, new_value, m.groups()))
+
         old_value = re.findall("reg_old_value:(\S+)", old_value)[0]
         new_value = re.findall("reg_new_value:(\S+)", new_value)[0]
 
@@ -340,7 +342,6 @@ def gdb_inject_fault(**kwargs):
         if m:
             thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
-        print("Old value {} new value {} block {} thread {}".format(old_value, new_value, m.groups()))
         fi_successful = True
     except Exception as e:
         new_value = old_value = None
