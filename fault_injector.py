@@ -204,7 +204,7 @@ The default parameters are necessary for break and signal mode differentiations
 
 
 def gen_env_string(valid_register, bits_to_flip, fault_model,
-                   breakpoint_location, flip_log_file, gdb_init_strings, kludge, injection_mode='RF'):
+                   breakpoint_location, flip_log_file, gdb_init_strings, kludge, injection_mode):
     # Block and thread
     env_string = valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + breakpoint_location
@@ -382,6 +382,10 @@ def gen_injection_location(max_num_regs, injection_site, fault_model):
     # Register file
     elif injection_site == 'RF':
         valid_register = 'R' + str(random.randint(0, max_num_regs))
+
+    # Variables
+    elif injection_site == 'VARS':
+        valid_register = 'R0'
 
     return valid_register, bits_to_flip
 
