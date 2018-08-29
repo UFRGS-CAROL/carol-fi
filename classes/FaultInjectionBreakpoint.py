@@ -331,16 +331,17 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
             self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
 
-        self.__logging.debug("SYMBOL {}".format(symbol))
-        self.__logging.debug("TYPE {}".format(symbol.type))
-        self.__logging.debug("FIELDS {}".format(symbol.type))
+        # If it is an structure it has fields
+        try:
+            for field in symbol.type.fields():
+                self.__logging.debug("Field name: " + str(field.name))
+                self.__logging.debug("Field Type: " + str(GDB_TYPES_DICT[field.type.strip_typedefs().code]))
+                self.__logging.debug("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
+                if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
+                    self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
+        except Exception as err:
+            self.__logging.debug(str(err))
 
-        for field in symbol.type.fields():
-            self.__logging.debug("Field name: " + str(field.name))
-            self.__logging.debug("Field Type: " + str(GDB_TYPES_DICT[field.type.strip_typedefs().code]))
-            self.__logging.debug("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
-            if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
-                self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
         return True
 
     def __var_bit_flip_value(self, value):
