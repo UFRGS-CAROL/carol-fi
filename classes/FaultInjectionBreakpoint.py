@@ -1,3 +1,4 @@
+from inspect import currentframe
 import random
 import gdb
 import re
@@ -340,7 +341,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                 if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
                     self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
         except Exception as err:
-            self.__logging.debug(str(err))
+            self.__logging.debug("ERR {} LINE {}".format(err, currentframe().f_back.f_lineno))
 
         return True
 
