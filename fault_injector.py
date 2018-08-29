@@ -340,6 +340,7 @@ def gdb_inject_fault(**kwargs):
         if m:
             thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
+        print("Old value {} new value {} block {} thread {}".format(old_value, new_value, m.groups()))
         fi_successful = True
     except Exception as e:
         new_value = old_value = None
