@@ -320,9 +320,10 @@ def gdb_inject_fault(**kwargs):
     # Was fault injected?
     block = thread = "___"
     try:
+        print("OLD {}".format(logging.search("old_value")))
         old_value = re.findall("old_value:(\S+)", logging.search("old_value"))[0]
         new_value = re.findall("new_value:(\S+)", logging.search("new_value"))[0]
-        
+
         # Search for block
         m = re.search("CUDA_BLOCK_FOCUS:.*block.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_BLOCK_FOCUS"))
         if m:
