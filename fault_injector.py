@@ -320,18 +320,9 @@ def gdb_inject_fault(**kwargs):
     # Was fault injected?
     block = thread = "___"
     try:
-        if conf.get("DEFAULT", "injectionSite") == "VARS":
-            old_value = logging.search("Memory content before bitflip:")
-            new_value = logging.search("Memory content after  bitflip:")
-        else:
-            old_value = logging.search("reg_old_value")
-            new_value = logging.search("reg_new_value")
-
-        print("Old value {} new value {} before".format(old_value, new_value))
-        old_value = re.findall("old_value:(\S+)", old_value)
-        new_value = re.findall("new_value:(\S+)", new_value)
-        print("Old value {} new value {}".format(old_value, new_value))
-
+        old_value = re.findall("old_value:(\S+)", logging.search("old_value"))[0]
+        new_value = re.findall("new_value:(\S+)", logging.search("new_value"))[0]
+        
         # Search for block
         m = re.search("CUDA_BLOCK_FOCUS:.*block.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_BLOCK_FOCUS"))
         if m:
