@@ -254,7 +254,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             while block:
                 for symbol in block:
                     if self.__is_bit_flip_possible(symbol, frame):
-                        self.__logging.debug("SYMBOL {}".format(symbol))
                         symbols.append(symbol)
                 block = block.superblock
             return symbols
@@ -323,11 +322,11 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         self.__logging.debug("Memory content after  bitflip:" + str(self.__show_memory_content(address, byte_sizeof)))
 
     def __chose_frame_to_flip(self, frame_symbols):
-        self.__logging.debug("INSIDE CHOOSED FRAME TO FLIP")
         frames_num = len(frame_symbols)
         if frames_num <= 0:
             return False
 
+        self.__logging.debug("INSIDE CHOOSED FRAME TO FLIP FRAME POS {}".format(frames_num))
         random.seed()
         frame_pos = random.randint(0, frames_num - 1)
         frame = frame_symbols[frame_pos][0]
