@@ -145,7 +145,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # Make sure that binary value will have max size register
             reg_content_old = str('0' * (cp.SINGLE_MAX_SIZE_REGISTER - len(reg_content))) + reg_content
             # Logging info result extracted from register
-            self.__logging.info("reg_old_value: " + reg_content_old)
+            self.__logging.info("old_value:{}".format(reg_content_old))
             reg_content_new = ''
 
             # Single bit flip or Least significant bits
@@ -175,7 +175,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
             # ['$2 = 100000000111111111111111']
             reg_modified = str(cf.execute_command(gdb, "p/t $" + str(self.__register))[0]).split("=")[1].strip()
-            self.__logging.info("reg_new_value: " + reg_modified)
+            self.__logging.info("new_value:{}".format(reg_modified))
 
             # Log command return only something was printed
             if len(reg_cmd_flipped) > 0:
@@ -300,7 +300,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     def __generic_bit_flip(self, value):
         address = re.sub("<.*>|\".*\"", "", str(value.address))
         byte_sizeof = value.type.strip_typedefs().sizeof
-        self.__logging.debug("Memory content before bitflip:" + str(self.__show_memory_content(address, byte_sizeof)))
+        self.__logging.debug("old_value:{}".format(self.__show_memory_content(address, byte_sizeof)))
 
         if self.__fault_model == 0:
             self.__single_bit_flip_word_address(address, byte_sizeof)
@@ -312,7 +312,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             raise NotImplementedError("Fault model not implemented yet")
         elif self.__fault_model == 4:
             raise NotImplementedError("Fault model not implemented yet")
-        self.__logging.debug("Memory content after  bitflip:" + str(self.__show_memory_content(address, byte_sizeof)))
+        self.__logging.debug("new_value:{}".format(self.__show_memory_content(address, byte_sizeof)))
 
     def __chose_frame_to_flip(self, frame_symbols):
         frames_num = len(frame_symbols)

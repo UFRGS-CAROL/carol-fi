@@ -327,10 +327,9 @@ def gdb_inject_fault(**kwargs):
             old_value = logging.search("reg_old_value")
             new_value = logging.search("reg_new_value")
 
-        old_value = re.findall("reg_old_value:(\S+)", old_value)
-        new_value = re.findall("reg_new_value:(\S+)", new_value)
+        old_value = re.findall("old_value:(\S+)", old_value)
+        new_value = re.findall("new_value:(\S+)", new_value)
         print("Old value {} new value {}".format(old_value, new_value))
-
 
         # Search for block
         m = re.search("CUDA_BLOCK_FOCUS:.*block.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_BLOCK_FOCUS"))
