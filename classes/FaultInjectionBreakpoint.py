@@ -214,11 +214,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         source_lines = gdb.execute("list", to_string=True)
         self.__logging.debug(source_lines)
 
-        # threads_symbols = list()
-        # for th in inferior.threads():
         th = inferior.threads()[0]
         self.__logging.debug("FOR INFERIOR THREADS")
-        # th.switch()
         threads_symbols = self.__get_all_valid_symbols()
         if len(threads_symbols) > 0:
             self.__logging.debug("TH SYMBOLS APPEND")
@@ -234,12 +231,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     """
 
     def __get_all_valid_symbols(self):
-        # all_symbols = list()
         frame = gdb.selected_frame()
         symbols = self.__get_frame_symbols(frame)
-        # if symbols is not None:
-        #     all_symbols.append([frame, symbols])
-
         return symbols
 
     """
@@ -327,36 +320,23 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
         self.__logging.debug("INSIDE CHOOSED FRAME TO FLIP FRAME POS {}".format(frames_num))
         random.seed()
-        # frame = frame_symbols[0][0]
-        symbols = frame_symbols  # [0][1]
+        symbols = frame_symbols
         symbols_num = len(symbols)
-
-        # while symbols_num <= 0:
-        #     frame_symbols.pop(frame_pos)
-        #     frames_num += 1
-        #     if frames_num <= 0:
-        #         return False
-        #
-        #     frame_pos = random.randint(0, frames_num - 1)
-        #     frame = frame_symbols[frame_pos][0]
-        #     symbols = frame_symbols[frame_pos][1]
-        #     symbols_num = len(symbols)
 
         symbol_pos = random.randint(0, symbols_num - 1)
         symbol = symbols[symbol_pos]
         var_gdb = symbol.value(gdb.selected_frame())
 
         self.__var_bit_flip_value(var_gdb)
-        self.__logging.debug("TEST DEBUG {} {}".format(var_gdb.type.strip_typedefs().code, gdb.TYPE_CODE_RANGE))
         if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
             self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
 
-        # for field in symbol.type.fields():
-        #     self.__logging.debug("Field name: " + str(field.name))
-        #     self.__logging.debug("Field Type: " + str(GDB_TYPES_DICT[field.type.strip_typedefs().code]))
-        #     self.__logging.debug("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
-        #     if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
-        #         self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
+        for field in symbol.type.fields():
+            self.__logging.debug("Field name: " + str(field.name))
+            self.__logging.debug("Field Type: " + str(GDB_TYPES_DICT[field.type.strip_typedefs().code]))
+            self.__logging.debug("Field Type sizeof: " + str(field.type.strip_typedefs().sizeof))
+            if field.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
+                self.__logging.debug("Field Type range: " + str(field.type.strip_typedefs().range()))
         return True
 
     def __var_bit_flip_value(self, value):
