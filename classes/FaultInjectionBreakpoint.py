@@ -234,14 +234,13 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
     """
 
     def __get_all_valid_symbols(self):
-        all_symbols = list()
+        # all_symbols = list()
         frame = gdb.selected_frame()
-
         symbols = self.__get_frame_symbols(frame)
-        if symbols is not None:
-            all_symbols.append([frame, symbols])
+        # if symbols is not None:
+        #     all_symbols.append([frame, symbols])
 
-        return all_symbols
+        return symbols
 
     """
     Returns a list of all symbols of the frame, frame is a GDB Frame object
@@ -328,25 +327,24 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
         self.__logging.debug("INSIDE CHOOSED FRAME TO FLIP FRAME POS {}".format(frames_num))
         random.seed()
-        frame_pos = random.randint(0, frames_num - 1)
-        frame = frame_symbols[frame_pos][0]
-        symbols = frame_symbols[frame_pos][1]
+        # frame = frame_symbols[0][0]
+        symbols = frame_symbols  # [0][1]
         symbols_num = len(symbols)
 
-        while symbols_num <= 0:
-            frame_symbols.pop(frame_pos)
-            frames_num += 1
-            if frames_num <= 0:
-                return False
-
-            frame_pos = random.randint(0, frames_num - 1)
-            frame = frame_symbols[frame_pos][0]
-            symbols = frame_symbols[frame_pos][1]
-            symbols_num = len(symbols)
+        # while symbols_num <= 0:
+        #     frame_symbols.pop(frame_pos)
+        #     frames_num += 1
+        #     if frames_num <= 0:
+        #         return False
+        #
+        #     frame_pos = random.randint(0, frames_num - 1)
+        #     frame = frame_symbols[frame_pos][0]
+        #     symbols = frame_symbols[frame_pos][1]
+        #     symbols_num = len(symbols)
 
         symbol_pos = random.randint(0, symbols_num - 1)
         symbol = symbols[symbol_pos]
-        var_gdb = symbol.value(frame)
+        var_gdb = symbol.value(gdb.selected_frame())
 
         self.__var_bit_flip_value(var_gdb)
         if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
