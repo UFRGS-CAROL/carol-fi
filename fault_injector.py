@@ -320,10 +320,15 @@ def gdb_inject_fault(**kwargs):
     # Was fault injected?
     block = thread = "___"
     try:
-        reg_old_value = logging.search("reg_old_value")
-        reg_new_value = logging.search("reg_new_value")
-        reg_old_value = re.findall("reg_old_value: (\S+)", reg_old_value)[0]
-        reg_new_value = re.findall("reg_new_value: (\S+)", reg_new_value)[0]
+        if conf.get("DEFAULT", "injectionSite") == "VARS":
+            old_value = logging.search("Memory content before bitflip:")
+            new_value = logging.search("Memory content after  bitflip:")
+        else:
+            old_value = logging.search("reg_old_value")
+            new_value = logging.search("reg_new_value")
+
+        old_value = re.findall("reg_old_value:(\S+)", old_value)[0]
+        new_value = re.findall("reg_new_value:(\S+)", new_value)[0]
 
         # Search for block
         m = re.search("CUDA_BLOCK_FOCUS:.*block.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_BLOCK_FOCUS"))
@@ -337,7 +342,7 @@ def gdb_inject_fault(**kwargs):
 
         fi_successful = True
     except Exception as e:
-        reg_new_value = reg_old_value = None
+        new_value = old_value = None
         fi_successful = False
         if cp.DEBUG:
             print("FAULT WAS NOT INJECTED. ERROR {}".format(e))
@@ -349,7 +354,7 @@ def gdb_inject_fault(**kwargs):
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
 
-    return reg_old_value, reg_new_value, fi_successful, is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread
+    return old_value, new_value, fi_successful, is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread
 
 
 # TODO: REMOVE THIS FUNCTION
