@@ -1,3 +1,4 @@
+import traceback
 from inspect import currentframe
 import random
 import gdb
@@ -82,7 +83,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                 self.__logging.info("Fault Injection Went Wrong")
 
         except Exception as err:
-            self.__logging.exception("fault_injection_python_exception: {}".format(err))
+            self.__logging.exception("fault_injection_python_exception: {}\n{}".format(err, traceback.format_exc()))
             self.__logging.exception("Fault Injection Went Wrong")
         return True
 
