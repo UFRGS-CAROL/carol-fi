@@ -416,9 +416,9 @@ def bit_flip_selection(fault_model):
     elif fault_model == 2:
         bits_to_flip[0] = str(bin(random.randint(0, sys.maxsize - 1))).replace("0b", "")
 
-    # Zero value is not necessary since it's zero
-    # elif fault_model == 3:
-    #     pass
+    # Zero value
+    elif fault_model == 3:
+        bits_to_flip[0] = 0
 
     # Least 16 bits
     elif fault_model == 4:

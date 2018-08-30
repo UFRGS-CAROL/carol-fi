@@ -137,54 +137,48 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
     def __rf_generic_injector(self):
         # get register content
-        reg_cmd = cf.execute_command(gdb, "p/t $" + str(self.__register))
+        reg_cmd = cf.execute_command(gdb, "p/t ${}".format(self.__register))
         m = re.match('\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
 
-        if m:
-            reg_content = str(m.group(2))
-            # Make sure that binary value will have max size register
-            reg_content_old = str('0' * (cp.SINGLE_MAX_SIZE_REGISTER - len(reg_content))) + reg_content
-            # Logging info result extracted from register
-            self.__logging.info("old_value:{}".format(reg_content_old))
-            reg_content_new = ''
+        reg_content_old = str(m.group(2))
+        # Make sure that binary value will have max size register
+        reg_content_full_bits = str('0' * (cp.SINGLE_MAX_SIZE_REGISTER - len(reg_content_old))) + reg_content_old
 
-            # Single bit flip or Least significant bits
-            if self.__fault_model == 0 or self.__fault_model == 4:
-                # single bit flip
-                reg_content_new = self.__flip_a_bit(int(self.__bits_to_flip[0]), reg_content_old)
+        # Logging info result extracted from register
+        self.__logging.info("old_value:{}".format(reg_content_full_bits))
+        reg_content_new = ''
 
-            # Double bit flip
-            elif self.__fault_model == 1:
-                # multiple bit flip
-                reg_content_new = reg_content_old
-                for bit_to_flip in self.__bits_to_flip:
-                    reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
+        # Single bit flip or Least significant bits
+        if self.__fault_model in [0, 4]:
+            # single bit flip
+            reg_content_new = self.__flip_a_bit(int(self.__bits_to_flip[0]), reg_content_full_bits)
 
-            # Random value
-            elif self.__fault_model == 2:
-                # random value is stored at bits_to_flip[0]
-                reg_content_new = self.__bits_to_flip[0]
+        # Double bit flip
+        elif self.__fault_model == 1:
+            # multiple bit flip
+            reg_content_new = reg_content_full_bits
+            for bit_to_flip in self.__bits_to_flip:
+                reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
 
-            # Zero values
-            elif self.__fault_model == 3:
-                reg_content_new = '0'
+        # Random value or Zero value
+        elif self.__fault_model in [2, 3]:
+            # random value is stored at bits_to_flip[0]
+            reg_content_new = self.__bits_to_flip[0]
 
-            reg_content_flipped = str(int(reg_content_new, 2))
-            # send the new value to gdb
-            reg_cmd_flipped = cf.execute_command(gdb, "set $" + str(self.__register) + " = " + reg_content_flipped)
+        # send the new value to gdb
+        reg_cmd_flipped = cf.execute_command(gdb, "set ${} = {}".format(self.__register, reg_content_new))
 
-            # ['$2 = 100000000111111111111111']
-            reg_modified = str(cf.execute_command(gdb, "p/t $" + str(self.__register))[0]).split("=")[1].strip()
-            self.__logging.info("new_value:{}".format(reg_modified))
+        # ['$2 = 100000000111111111111111']
+        reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
+        self.__logging.info("new_value:{}".format(reg_modified))
 
-            # Log command return only something was printed
-            if len(reg_cmd_flipped) > 0:
-                self.__logging.info("flip command return: " + str(reg_cmd_flipped))
+        # Log command return only something was printed
+        if len(reg_cmd_flipped) > 0:
+            self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
 
-            # Return the fault confirmation
-            return reg_content_old != reg_content_new
-        else:
-            raise NotImplementedError
+        # Return the fault confirmation
+        return reg_content_old != reg_modified
+
 
     """
     Flip only a bit in a register content
