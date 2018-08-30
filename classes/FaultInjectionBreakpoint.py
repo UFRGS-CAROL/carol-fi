@@ -163,7 +163,10 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             reg_content_new = self.__bits_to_flip[0]
 
         # send the new value to gdb
-        reg_cmd_flipped = cf.execute_command(gdb, "set ${} = {}".format(self.__register, reg_content_new))
+        flip_command = "set ${} = {}".format(self.__register, reg_content_new)
+        self.__logging.info("FLIP CMD:{}".format(flip_command))
+
+        reg_cmd_flipped = cf.execute_command(gdb, flip_command)
 
         # ['$2 = 100000000111111111111111']
         reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
