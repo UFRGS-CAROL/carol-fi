@@ -163,7 +163,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
         # send the new value to gdb
         flip_command = "set ${} = {}".format(self.__register, reg_content_new)
-        self.__logging.info("FLIP CMD:{}".format(flip_command))
+        self.__logging.info("FLIP CMD:{} {}".format(flip_command, self.__bits_to_flip[0]))
 
         reg_cmd_flipped = cf.execute_command(gdb, flip_command)
 
