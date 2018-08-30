@@ -416,7 +416,7 @@ def bit_flip_selection(fault_model):
     # Random value
     elif fault_model == 2:
         bits_to_flip[0] = str(bin(random.randint(0, cp.MAX_INT_32))).replace("0b", "")
-
+        print("PRINT AQUI {}".format(bits_to_flip[0]))
     # Zero value
     elif fault_model == 3:
         bits_to_flip[0] = 0
