@@ -150,12 +150,11 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
         # Single bit flip or Least significant bits
         if self.__fault_model in [0, 1, 4]:
-            # single bit flip
-            # Double bit flip
+            # single bit flip or Double bit flip
             reg_content_new = reg_content_full_bits
             for bit_to_flip in self.__bits_to_flip:
                 reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
-                self.__logging.info(str(reg_content_new))
+                self.__logging.info("TESTE " + str(reg_content_new))
 
         # Random value or Zero value
         elif self.__fault_model in [2, 3]:
@@ -163,7 +162,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             reg_content_new = self.__bits_to_flip[0]
 
         # send the new value to gdb
-        reg_cmd_flipped = cf.execute_command(gdb, "set ${} = {}".format(self.__register, str(reg_content_new)))
+        reg_cmd_flipped = cf.execute_command(gdb, "set ${} = {}".format(self.__register, reg_content_new))
 
         # ['$2 = 100000000111111111111111']
         reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
