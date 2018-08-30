@@ -324,15 +324,19 @@ def gdb_inject_fault(**kwargs):
         old_value = re.findall("old_value:(\S+)", logging.search("old_value"))[0]
         new_value = re.findall("new_value:(\S+)", logging.search("new_value"))[0]
 
-        # Search for block
-        m = re.search("CUDA_BLOCK_FOCUS:.*block.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_BLOCK_FOCUS"))
-        if m:
-            block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
+        block_focus = logging.search("CUDA_BLOCK_FOCUS")
+        if block_focus:
+            # Search for block
+            m = re.search("CUDA_BLOCK_FOCUS:.*block.*\((\d+),(\d+),(\d+)\).*", block_focus)
+            if m:
+                block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
-        # Search for thread
-        m = re.search("CUDA_THREAD_FOCUS:.*thread.*\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_THREAD_FOCUS"))
-        if m:
-            thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
+        thread_focus = logging.search("CUDA_BLOCK_FOCUS")
+        if thread_focus:
+            # Search for thread
+            m = re.search("CUDA_THREAD_FOCUS:.*thread.*\((\d+),(\d+),(\d+)\).*", thread_focus)
+            if m:
+                thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
         fi_successful = True
     except Exception as e:
@@ -340,6 +344,7 @@ def gdb_inject_fault(**kwargs):
         fi_successful = False
         if cp.DEBUG:
             print("FAULT WAS NOT INJECTED. ERROR {} trace {}".format(e, traceback.format_exc()))
+            print()
 
     # Copy output files to a folder
     save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
