@@ -1,8 +1,7 @@
 import os
 import pickle
 import sys
-import re
-import random
+import common_parameters as cp
 
 if sys.version_info >= (3, 0):
     import configparser  # python 3
@@ -84,6 +83,7 @@ It makes standart gdb script calls
 
 def run_gdb_python(gdb_name, script):
     # cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
+    os.environ['CUDA_VISIBLE_DEVICES'] = cp.GPU_INDEX
     cmd = gdb_name + ' -n -batch -x ' + script  # -batch-silent
     # -n --nh --nx -q --return-child-result -x
     return cmd
