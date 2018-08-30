@@ -176,8 +176,11 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # Log command return only something was printed
             if len(reg_cmd_flipped) > 0:
                 self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
+                
         except Exception as ee:
-            self.__logging("PAU AQUI {}".format(ee))
+            self.__logging.info("PAU AQUI {}".format(ee))
+
+
         # Return the fault confirmation
         return reg_content_old != reg_modified
 
