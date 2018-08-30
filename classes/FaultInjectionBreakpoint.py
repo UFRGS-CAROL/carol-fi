@@ -61,29 +61,29 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
         self.__logging.debug("Trying Fault Injection with {} mode".format(self.__injection_mode))
-        try:
-            # Focusing the thread
-            self.__thread_focus()
-            # Register if fault was injected or not
-            fault_injected = False
-            # Do the fault injection magic
-            # RF is the default mode of injection
-            if 'RF' in self.__injection_mode or self.__injection_mode is None:
-                fault_injected = self.__rf_generic_injector()
-            elif 'VARS' in self.__injection_mode:
-                fault_injected = self.__var_generic_injector()
-            elif 'INST' in self.__injection_mode:
-                fault_injected = self.__inst_generic_injector()
+        # try:
+        # Focusing the thread
+        self.__thread_focus()
+        # Register if fault was injected or not
+        fault_injected = False
+        # Do the fault injection magic
+        # RF is the default mode of injection
+        if 'RF' in self.__injection_mode or self.__injection_mode is None:
+            fault_injected = self.__rf_generic_injector()
+        elif 'VARS' in self.__injection_mode:
+            fault_injected = self.__var_generic_injector()
+        elif 'INST' in self.__injection_mode:
+            fault_injected = self.__inst_generic_injector()
 
-            # Test fault injection result
-            if fault_injected:
-                self.__logging.info("Fault Injection Successful")
-            else:
-                self.__logging.info("Fault Injection Went Wrong")
+        # Test fault injection result
+        if fault_injected:
+            self.__logging.info("Fault Injection Successful")
+        else:
+            self.__logging.info("Fault Injection Went Wrong")
 
-        except Exception as err:
-            self.__logging.exception("fault_injection_python_exception: {}".format(err))
-            self.__logging.exception("Fault Injection Went Wrong")
+        # except Exception as err:
+        #     self.__logging.exception("fault_injection_python_exception: {}".format(err))
+        #     self.__logging.exception("Fault Injection Went Wrong")
         return True
 
     """
