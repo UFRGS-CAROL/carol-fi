@@ -162,12 +162,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # random value is stored at bits_to_flip[0]
             reg_content_new = self.__bits_to_flip[0]
 
-        try:
-            # send the new value to gdb
-            reg_cmd_flipped = cf.execute_command(gdb, "set ${} = {}".format(self.__register, str(reg_content_new)))
-
-        except Exception as ee:
-            self.__logging.info("PAU AQUI " + str(reg_content_new))
+        # send the new value to gdb
+        reg_cmd_flipped = cf.execute_command(gdb, "set ${} = {}".format(self.__register, str(reg_content_new)))
 
         # ['$2 = 100000000111111111111111']
         reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
