@@ -55,7 +55,7 @@ TIME_TO_SLEEP = 0.01
 LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
 
 # If there are multiple GPUs set the one that will be used
-GPU_INDEX = 3
+GPU_INDEX = '3'
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
