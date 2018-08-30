@@ -58,7 +58,7 @@ LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
 GPU_INDEX = '3'
 
 # MAX INT 32 bits
-MAX_INT_32 = 2147483647
+MAX_INT_32 = 4294967295
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
