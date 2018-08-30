@@ -65,6 +65,11 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         try:
             # Focusing the thread
             self.__thread_focus()
+        except Exception as err:
+            # Even if CUDA focus was not successful we keep going
+            self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED. KEEP GOING, with error {}".format(err))
+
+        try:
             # Register if fault was injected or not
             fault_injected = False
             # Do the fault injection magic
@@ -83,7 +88,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
                 self.__logging.info("Fault Injection Went Wrong")
 
         except Exception as err:
-            self.__logging.exception("fault_injection_python_exception: {}\n{}".format(err, traceback.format_exc()))
+            self.__logging.exception("fault_injection_python_exception: {}".format(err))
             self.__logging.exception("Fault Injection Went Wrong")
         return True
 
