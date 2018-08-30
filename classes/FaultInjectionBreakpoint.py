@@ -61,29 +61,29 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
         self.__logging.debug("Trying Fault Injection with {} mode".format(self.__injection_mode))
-        # try:
-        # Focusing the thread
-        self.__thread_focus()
-        # Register if fault was injected or not
-        fault_injected = False
-        # Do the fault injection magic
-        # RF is the default mode of injection
-        if 'RF' in self.__injection_mode or self.__injection_mode is None:
-            fault_injected = self.__rf_generic_injector()
-        elif 'VARS' in self.__injection_mode:
-            fault_injected = self.__var_generic_injector()
-        elif 'INST' in self.__injection_mode:
-            fault_injected = self.__inst_generic_injector()
+        try:
+            # Focusing the thread
+            self.__thread_focus()
+            # Register if fault was injected or not
+            fault_injected = False
+            # Do the fault injection magic
+            # RF is the default mode of injection
+            if 'RF' in self.__injection_mode or self.__injection_mode is None:
+                fault_injected = self.__rf_generic_injector()
+            elif 'VARS' in self.__injection_mode:
+                fault_injected = self.__var_generic_injector()
+            elif 'INST' in self.__injection_mode:
+                fault_injected = self.__inst_generic_injector()
 
-        # Test fault injection result
-        if fault_injected:
-            self.__logging.info("Fault Injection Successful")
-        else:
-            self.__logging.info("Fault Injection Went Wrong")
+            # Test fault injection result
+            if fault_injected:
+                self.__logging.info("Fault Injection Successful")
+            else:
+                self.__logging.info("Fault Injection Went Wrong")
 
-        # except Exception as err:
-        #     self.__logging.exception("fault_injection_python_exception: {}".format(err))
-        #     self.__logging.exception("Fault Injection Went Wrong")
+        except Exception as err:
+            self.__logging.exception("fault_injection_python_exception: {}".format(err))
+            self.__logging.exception("Fault Injection Went Wrong")
         return True
 
     """
@@ -165,17 +165,19 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             # random value is stored at bits_to_flip[0]
             reg_content_new = self.__bits_to_flip[0]
 
-        # send the new value to gdb
-        reg_cmd_flipped = cf.execute_command(gdb, "set ${} = {}".format(self.__register, str(reg_content_new)))
+        try:
+            # send the new value to gdb
+            reg_cmd_flipped = cf.execute_command(gdb, "set ${} = {}".format(self.__register, str(reg_content_new)))
 
-        # ['$2 = 100000000111111111111111']
-        reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
-        self.__logging.info("new_value:{}".format(str(reg_modified)))
+            # ['$2 = 100000000111111111111111']
+            reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
+            self.__logging.info("new_value:{}".format(str(reg_modified)))
 
-        # Log command return only something was printed
-        if len(reg_cmd_flipped) > 0:
-            self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
-
+            # Log command return only something was printed
+            if len(reg_cmd_flipped) > 0:
+                self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
+        except Exception as ee:
+            self.__logging("PAU AQUI {}".format(ee))
         # Return the fault confirmation
         return reg_content_old != reg_modified
 
