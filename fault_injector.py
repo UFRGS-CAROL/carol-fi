@@ -399,7 +399,7 @@ def bit_flip_selection(fault_model):
     # Max double bit flip
     max_size_register_fault_model = cp.SINGLE_MAX_SIZE_REGISTER
     # Max size of bits to flip is 2, max double bit flip
-    bits_to_flip = [0] * 2
+    bits_to_flip = [0]
 
     # Single bit flip
     if fault_model == 0:
@@ -407,6 +407,7 @@ def bit_flip_selection(fault_model):
 
     # Double bit flip
     elif fault_model == 1:
+        bits_to_flip = [0] * 2
         bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
         # Make sure that the same bit is not going to be selected
         r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register_fault_model)
