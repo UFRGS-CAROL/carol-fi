@@ -173,13 +173,12 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
             self.__logging.info("new_value:{}".format(str(reg_modified)))
 
-            # Log command return only something was printed
-            if len(reg_cmd_flipped) > 0:
-                self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
-                
         except Exception as ee:
             self.__logging.info("PAU AQUI {}".format(ee))
 
+        # Log command return only something was printed
+        if len(reg_cmd_flipped) > 0:
+            self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
 
         # Return the fault confirmation
         return reg_content_old != reg_modified
