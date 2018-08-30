@@ -10,7 +10,8 @@ import re
 import shutil
 import time
 import datetime
-import sys
+import traceback
+
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 
@@ -338,7 +339,7 @@ def gdb_inject_fault(**kwargs):
         new_value = old_value = None
         fi_successful = False
         if cp.DEBUG:
-            print("FAULT WAS NOT INJECTED. ERROR {}".format(e))
+            print("FAULT WAS NOT INJECTED. ERROR {} trace {}".format(e, traceback.format_exc()))
 
     # Copy output files to a folder
     save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
@@ -416,7 +417,7 @@ def bit_flip_selection(fault_model):
     # Random value
     elif fault_model == 2:
         bits_to_flip[0] = str(hex(random.randint(0, cp.MAX_INT_32)))
-        print("PRINT AQUI {}".format(bits_to_flip[0]))
+
     # Zero value
     elif fault_model == 3:
         bits_to_flip[0] = 0
