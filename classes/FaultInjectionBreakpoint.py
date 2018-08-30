@@ -153,6 +153,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
             reg_content_new = reg_content_full_bits
             for bit_to_flip in self.__bits_to_flip:
                 reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
+            reg_content_new = hex(int(reg_content_new, 2))
 
         # Random value or Zero value
         elif self.__fault_model in [2, 3]:
