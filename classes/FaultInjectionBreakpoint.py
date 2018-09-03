@@ -328,9 +328,8 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # Testing if I can access GDB registers
         self.__logging.info("TEST VAR GDB {}".format(var_gdb))
         self.__logging.info(
-            "SYMTAB {}\nPC {}\nLAST {}\nline {}\nis_valid() {}\n".format(symbol.symtab, symbol.symtab.pc,
-                                                                         symbol.symtab.last,
-                                                                         symbol.symtab.line, symbol.symtab.is_valid()))
+            "SYMTAB {}\nLAST {}\nline {}\nis_valid() {}\n".format(symbol.symtab, symbol.symtab.last,
+                                                                  symbol.symtab.line, symbol.symtab.is_valid()))
         self.__logging.info(
             "Filename {}\nObjfile {}\nproducer {}\nfullname {}\nglobal block {}\nstatic block {}linetable {}".format(
                 symbol.symtab.filename, symbol.symtab.objfile, symbol.symtab.producer, symbol.symtab.is_valid(),
