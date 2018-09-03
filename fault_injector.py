@@ -343,7 +343,7 @@ def gdb_inject_fault(**kwargs):
         new_value = old_value = None
         fi_successful = False
         if cp.DEBUG:
-            print("FAULT WAS NOT INJECTED. ERROR {} trace {}".format(e, traceback.format_exc()))
+            print("FAULT WAS NOT INJECTED. ERROR {}".format(e))
             print()
 
     # Copy output files to a folder
