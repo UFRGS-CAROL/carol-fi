@@ -184,7 +184,6 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         # Return the fault confirmation
         return reg_content_old != reg_modified
 
-
     """
     Flip only a bit in a register content
     """
@@ -326,7 +325,24 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         symbol_pos = random.randint(0, symbols_num - 1)
         symbol = symbols[symbol_pos]
         var_gdb = symbol.value(gdb.selected_frame())
+        # Testing if I can access GDB registers
         self.__logging.info("TEST VAR GDB {}".format(var_gdb))
+        self.__logging.info(
+            "SYMTAB {}\nPC {}\nLAST {}\nline {}\nis_valid() {}\n".format(symbol.symtab, symbol.symtab.pc,
+                                                                         symbol.symtab.last,
+                                                                         symbol.symtab.line, symbol.symtab.is_valid()))
+        self.__logging.info(
+            "Filename {}\nObjfile {}\nproducer {}\nfullname {}\nglobal block {}\nstatic block {}linetable {}".format(
+                symbol.symtab.filename, symbol.symtab.objfile, symbol.symtab.producer, symbol.symtab.is_valid(),
+                symbol.symtab.fullname(), symbol.symtab.global_block(), symbol.symtab.static_block(),
+                symbol.symtab.linetable()))
+
+        self.__logging.info("TEST SYMBOL ATTRIBUTES")
+        self.__logging.info(
+            "Symbol type {}\nline {}\nname {}\nlinkage_name {}\nprint_name {}\naddr_class {}\nneeds_frame {}\n".format(
+                symbol.type, symbol.line, symbol.name, symbol.linkage_name, symbol.print_name, symbol.addr_class,
+                symbol.needs_frame))
+
         self.__var_bit_flip_value(var_gdb)
         if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
             self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
