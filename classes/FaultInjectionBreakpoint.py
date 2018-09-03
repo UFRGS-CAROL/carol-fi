@@ -326,7 +326,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         symbol_pos = random.randint(0, symbols_num - 1)
         symbol = symbols[symbol_pos]
         var_gdb = symbol.value(gdb.selected_frame())
-
+        self.__logging.info("TEST VAR GDB {}".format(var_gdb))
         self.__var_bit_flip_value(var_gdb)
         if var_gdb.type.strip_typedefs().code is gdb.TYPE_CODE_RANGE:
             self.__logging.debug("Type range: " + str(var_gdb.type.strip_typedefs().range()))
