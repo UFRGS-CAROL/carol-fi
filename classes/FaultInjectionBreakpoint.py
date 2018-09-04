@@ -200,7 +200,7 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
 
     def __var_generic_injector(self):
         self.__logging.debug("VAR GENERIC INJECTOR")
-        inferior = gdb.selected_inferior()
+        # inferior = gdb.selected_inferior()
 
         for inf in gdb.inferiors():
             self.__logging.debug("Inferior PID: " + str(inf.pid))
@@ -213,15 +213,14 @@ class FaultInjectionBreakpoint(gdb.Breakpoint):
         source_lines = gdb.execute("list", to_string=True)
         self.__logging.debug(source_lines)
 
-        th = inferior.threads()[0]
         self.__logging.debug("FOR INFERIOR THREADS")
         threads_symbols = self.__get_all_valid_symbols()
         if len(threads_symbols) > 0:
             self.__logging.debug("TH SYMBOLS APPEND")
 
-        self.__logging.debug("Thread name: " + str(th.name))
-        self.__logging.debug("Thread num: " + str(th.num))
-        self.__logging.debug("Thread ptid: " + str(th.ptid))
+        self.__logging.debug("Thread name: " + str(self.thread.name))
+        self.__logging.debug("Thread num: " + str(self.thread.num))
+        self.__logging.debug("Thread ptid: " + str(self.thread.ptid))
         return self.__chose_frame_to_flip(threads_symbols)
 
     """
