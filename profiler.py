@@ -32,8 +32,6 @@ def set_breakpoints(kernel_conf_string):
             }
             kernel_info_list.append(kernel_info)
 
-    for i in kernel_info_list:
-        print(i['addresses'])
     return kernel_info_list
 
 
@@ -84,8 +82,8 @@ def main():
 
         for kernel_info in kernel_info_list:
             print("PRINTING KERNEL ADDRESSES\n\n")
-            for i in kernel_info['addresses']:
-                print(i[0])
+            print(kernel_info['addresses'])
+
             del kernel_info['breakpoint']
             kernel_info['breakpoint'] = None
 
