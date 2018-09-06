@@ -16,8 +16,6 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         self.__kernel_name = kwargs.pop('kernel_name') if 'kernel_name' in kwargs else None
         self.__kernel_line = kwargs.pop('kernel_line') if 'kernel_line' in kwargs else None
         self.__kernel_end_line = kwargs.pop('kernel_end_line') if 'kernel_end_line' in kwargs else None
-        self.__inf_file_path = kwargs.pop('inf_file_path') if 'inf_file_path' in kwargs else None
-
         self.__addresses = None
         self.__kernel_line = kwargs.get('spec')
 
@@ -70,4 +68,4 @@ class ProfilerBreakpoint(gdb.Breakpoint):
             'kernel_line': self.__kernel_line,
             'kernel_end_line': self.__kernel_end_line
         }
-        cf.append_file(self.__file_path, kernel_info)
+        cf.append_file(cp.KERNEL_INFO_DIR, kernel_info)

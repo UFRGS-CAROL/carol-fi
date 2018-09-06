@@ -26,8 +26,7 @@ def set_breakpoints(kernel_conf_string):
             kernel_profiler_objs.append(ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True,
                                                            kernel_name=kernel_places[0].split(":")[0],
                                                            kernel_line=kernel_places[0].split(":")[1],
-                                                           kernel_end_line=kernel_places[1].split(":")[1],
-                                                           inf_file_path=cp.KERNEL_INFO_DIR))
+                                                           kernel_end_line=kernel_places[1].split(":")[1]))
 
             # kernel_info_list.append(kernel_info)
 
