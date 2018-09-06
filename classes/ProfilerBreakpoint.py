@@ -13,14 +13,11 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         if cp.DEBUG_PROFILER:
             print("IT IS IN __INIT__ METHOD")
         self.__kludge = kwargs.pop('kludge') if 'kludge' in kwargs else False
+        self.__kernel_list_index = kwargs.pop('list_index') if 'list_index' in kwargs else None
+        self.__kernel_info_list = kwargs.pop('kernel_info_list') if 'kernel_info_list' in kwargs else None
         self.__kernel_line = kwargs.get('spec')
-        self.__kernel_info_list = None
-        self.__first_pass = True
-        super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
-    def set_kernel_info_list(self, kernel_info_list):
-        # This list will contains all kernel info
-        self.__kernel_info_list = kernel_info_list
+        super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
     def stop(self):
         if cp.DEBUG_PROFILER:
@@ -28,18 +25,18 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         if self.__kludge:
             return True
 
-        for kernel_info in self.__kernel_info_list:
-            if kernel_info["breakpoint"].__kernel_line == self.__kernel_line:
-                if cp.DEBUG_PROFILER:
-                    print("FOUND A KERNEL LINE {}".format(kernel_info["breakpoint"].__kernel_line))
+        # for kernel_info in self.__kernel_info_list:
+        #     if kernel_info["breakpoint"].__kernel_line == self.__kernel_line:
+        #         if cp.DEBUG_PROFILER:
+        print("FOUND A KERNEL LINE {}".format(self.__kernel_line))
 
-                kernel_info["addresses"] = self.__generate_source_ass_list()
+        self.__generate_source_ass_list()
 
     """
     inject faults only on the resources used at that source line
     """
-    @staticmethod
-    def __generate_source_ass_list():
+
+    def __generate_source_ass_list(self):
         source_list = []
         assemble_lines = []
         disassemble_gdb = cf.execute_command(gdb, "disassemble /m")
@@ -57,8 +54,8 @@ class ProfilerBreakpoint(gdb.Breakpoint):
             # I have to merge with
             if len(ass_line) is not 0:
                 last_not_zero_size = l
-                ret_source.append([l, ass_line])
+                self.__ret_source.append([l, ass_line])
             else:
                 last_not_zero_size.append(l)
 
-        return ret_source
+        self.__kernel_info_list[self.__kernel_list_index]['addresses'] = ret_source
