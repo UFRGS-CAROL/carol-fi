@@ -78,6 +78,7 @@ def main():
         for kernel_info in kernel_info_list:
             del kernel_info['breakpoint']
             kernel_info['breakpoint'] = None
+            print("PRINTING KERNEL ADDRESSES\n\n")
             for i in kernel_info['addresses']:
                 print(i[0])
 
