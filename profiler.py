@@ -15,23 +15,22 @@ def set_breakpoints(kernel_conf_string):
     # temporary breakpoints
     # to retrieve info of each
     # kernel
-    kernel_info_list = []
+    kernel_profiler_objs = []
     breakpoints_list = kernel_conf_string.split(";")
 
-    for i, kernel_line in enumerate(breakpoints_list):
+    for kernel_line in breakpoints_list:
         # Just to make sure things like this: kernel.cu:52;<nothing here>
         if len(kernel_line) > 0:
             kernel_places = kernel_line.split("-")
             k_l = kernel_places[0]
-            kernel_info = {
-                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True, list_index=i),
-                'kernel_name': kernel_places[0].split(":")[0],
-                'kernel_line': kernel_places[0].split(":")[1],
-                'kernel_end_line': kernel_places[1].split(":")[1]
-            }
-            kernel_info_list.append(kernel_info)
+            kernel_profiler_objs.append(ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True,
+                                                           kernel_name=kernel_places[0].split(":")[0],
+                                                           kernel_line=kernel_places[0].split(":")[1],
+                                                           kernel_end_line=kernel_places[1].split(":")[1]))
 
-    return kernel_info_list
+            # kernel_info_list.append(kernel_info)
+
+    return kernel_profiler_objs
 
 
 """
@@ -59,12 +58,12 @@ def main():
     # First: getting kernel information
     # Run app for the first time
     kludge_breakpoint = None
-    kernel_info_list = None
+    kernel_profiler_objs = None
 
     if not time_profiler:
-        kernel_info_list = set_breakpoints(kernel_conf_string)
-        for kernel_info in kernel_info_list:
-            kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
+        kernel_profiler_objs = set_breakpoints(kernel_conf_string)
+        # for kernel_info in kernel_info_list:
+        #     kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
 
         if kludge != 'None':
             kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, kludge=True, temporary=True)
@@ -80,15 +79,11 @@ def main():
     if not time_profiler:
         gdb.execute("c")
 
-        for kernel_info in kernel_info_list:
-            print("PRINTING KERNEL ADDRESSES\n\n")
-            print(kernel_info['addresses'])
+        for profile_objs in kernel_profiler_objs:
+            del profile_objs
 
-            # del kernel_info['breakpoint']
-            # kernel_info['breakpoint'] = None
-
-        cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
-        del kernel_info_list
+        # cf.save_file(cp.KERNEL_INFO_DIR, kernel_profiler_objs)
+        del kernel_profiler_objs
 
     if cp.DEBUG_PROFILER:
         print('FINISH PROFILER')
