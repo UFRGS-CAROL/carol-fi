@@ -15,7 +15,7 @@ def set_breakpoints(kernel_conf_string):
     # temporary breakpoints
     # to retrieve info of each
     # kernel
-    kernel_profiler_objs = []
+    kernel_profiler_objects = []
     breakpoints_list = kernel_conf_string.split(";")
 
     for kernel_line in breakpoints_list:
@@ -23,14 +23,12 @@ def set_breakpoints(kernel_conf_string):
         if len(kernel_line) > 0:
             kernel_places = kernel_line.split("-")
             k_l = kernel_places[0]
-            kernel_profiler_objs.append(ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True,
-                                                           kernel_name=kernel_places[0].split(":")[0],
-                                                           kernel_line=kernel_places[0].split(":")[1],
-                                                           kernel_end_line=kernel_places[1].split(":")[1]))
+            kernel_profiler_objects.append(ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True,
+                                                              kernel_name=kernel_places[0].split(":")[0],
+                                                              kernel_line=kernel_places[0].split(":")[1],
+                                                              kernel_end_line=kernel_places[1].split(":")[1]))
 
-            # kernel_info_list.append(kernel_info)
-
-    return kernel_profiler_objs
+    return kernel_profiler_objects
 
 
 """
@@ -57,33 +55,29 @@ def main():
     # Profiler has two steps
     # First: getting kernel information
     # Run app for the first time
-    kludge_breakpoint = None
-    kernel_profiler_objects = None
+    kernel_profiler_objects = []
 
     if not time_profiler:
         kernel_profiler_objects = set_breakpoints(kernel_conf_string)
-        # for kernel_info in kernel_info_list:
-        #     kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
 
         if kludge != 'None':
-            kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, kludge=True, temporary=True)
+            kernel_profiler_objects.append(
+                ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, kludge=True, temporary=True))
 
     gdb.execute("r")
 
-    if kludge_breakpoint:
-        del kludge_breakpoint
-        gdb.execute("c")
+    i = 0
+    try:
+        while 'The program' not in gdb.execute('c', to_string=True):
+            i += 1
+    except:
+        if cp.DEBUG_PROFILER:
+            print("CONTINUED {} times".format(i))
 
-    # Second: save the retrieved information on a txt file
-    # Save the information on file to the output
-    if not time_profiler:
-        gdb.execute("c")
-
-        for profile_objects in kernel_profiler_objects:
-            del profile_objects
+    for profile_objects in kernel_profiler_objects:
+        del profile_objects
 
     if cp.DEBUG_PROFILER:
         print('FINISH PROFILER')
-
 
 main()
