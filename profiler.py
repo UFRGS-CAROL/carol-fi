@@ -31,6 +31,9 @@ def set_breakpoints(kernel_conf_string):
                 'kernel_end_line': kernel_places[1].split(":")[1]
             }
             kernel_info_list.append(kernel_info)
+
+    for i in kernel_info_list:
+        print(i['addresses'])
     return kernel_info_list
 
 

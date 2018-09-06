@@ -98,7 +98,7 @@ def main():
         kernel_dict['max_time'] = max_time_app
     cf.save_file(file_path=cp.KERNEL_INFO_DIR, data=kernel_list)
 
-    print("1 - Profile finished, \n###################################################")
+    print("1 - Profile finished\n###################################################")
 
 
 if __name__ == '__main__':

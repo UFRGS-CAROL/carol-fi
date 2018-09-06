@@ -46,7 +46,6 @@ class ProfilerBreakpoint(gdb.Breakpoint):
             else:
                 source_list.append([[l], assemble_lines[:]])
                 assemble_lines = []
-            print(l)
 
         last_not_zero_size = None
         ret_source = []
