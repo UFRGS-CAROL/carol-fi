@@ -58,10 +58,10 @@ def main():
     # First: getting kernel information
     # Run app for the first time
     kludge_breakpoint = None
-    kernel_profiler_objs = None
+    kernel_profiler_objects = None
 
     if not time_profiler:
-        kernel_profiler_objs = set_breakpoints(kernel_conf_string)
+        kernel_profiler_objects = set_breakpoints(kernel_conf_string)
         # for kernel_info in kernel_info_list:
         #     kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
 
@@ -79,8 +79,8 @@ def main():
     if not time_profiler:
         gdb.execute("c")
 
-        for profile_objs in kernel_profiler_objs:
-            del profile_objs
+        for profile_objects in kernel_profiler_objects:
+            del profile_objects
 
     if cp.DEBUG_PROFILER:
         print('FINISH PROFILER')
