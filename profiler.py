@@ -24,8 +24,7 @@ def set_breakpoints(kernel_conf_string):
             kernel_places = kernel_line.split("-")
             k_l = kernel_places[0]
             kernel_info = {
-                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True,
-                                                 kernel_info_list=kernel_info_list, list_index=i),
+                'breakpoint': ProfilerBreakpoint(spec=str(k_l), type=gdb.BP_BREAKPOINT, temporary=True, list_index=i),
                 'kernel_name': kernel_places[0].split(":")[0],
                 'kernel_line': kernel_places[0].split(":")[1],
                 'kernel_end_line': kernel_places[1].split(":")[1]
@@ -64,8 +63,9 @@ def main():
 
     if not time_profiler:
         kernel_info_list = set_breakpoints(kernel_conf_string)
-        # for kernel_info in kernel_info_list:
-        #     kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
+        for kernel_info in kernel_info_list:
+            kernel_info['breakpoint'].set_kernel_info_list(kernel_info_list=kernel_info_list)
+
         if kludge != 'None':
             kludge_breakpoint = ProfilerBreakpoint(spec=kludge, type=gdb.BP_BREAKPOINT, kludge=True, temporary=True)
 
