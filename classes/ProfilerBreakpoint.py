@@ -34,5 +34,34 @@ class ProfilerBreakpoint(gdb.Breakpoint):
                     print("FOUND A KERNEL LINE {}".format(kernel_info["breakpoint"].__kernel_line))
                 #
                 # kernel_info["threads"] = cf.execute_command(gdb, "info cuda threads")
-                # kernel_info["addresses"] = cf.execute_command(gdb, "disassemble")
-        return True
+                kernel_info["addresses"] = self.__generate_source_ass_list()
+
+    """
+    inject faults only on the resources used at that source line
+    """
+    @staticmethod
+    def __generate_source_ass_list():
+        source_list = []
+        assemble_lines = []
+        disassemble_gdb = cf.execute_command(gdb, "disassemble /m")
+        for l in disassemble_gdb:
+            if '0x' in l:
+                assemble_lines.append(l)
+            else:
+                source_list.append([[l], assemble_lines[:]])
+                assemble_lines = []
+
+        last_not_zero_size = None
+        ret_source = []
+        for l, ass_line in source_list:
+
+            # I have to merge with
+            if len(ass_line) is not 0:
+                last_not_zero_size = l
+                ret_source.append([l, ass_line])
+            else:
+                last_not_zero_size.append(l)
+
+        for t in ret_source:
+            print(t[0])
+        return source_list
