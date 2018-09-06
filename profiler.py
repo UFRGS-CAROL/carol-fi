@@ -84,8 +84,8 @@ def main():
             print("PRINTING KERNEL ADDRESSES\n\n")
             print(kernel_info['addresses'])
 
-            del kernel_info['breakpoint']
-            kernel_info['breakpoint'] = None
+            # del kernel_info['breakpoint']
+            # kernel_info['breakpoint'] = None
 
         cf.save_file(cp.KERNEL_INFO_DIR, kernel_info_list)
         del kernel_info_list
