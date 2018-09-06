@@ -62,6 +62,4 @@ class ProfilerBreakpoint(gdb.Breakpoint):
             else:
                 last_not_zero_size.append(l)
 
-        for t in ret_source:
-            print(t[0])
-        return source_list
+        return ret_source
