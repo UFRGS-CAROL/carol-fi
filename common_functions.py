@@ -52,11 +52,9 @@ return a dictionary
 
 
 def load_file(file_path):
-    f_in = open(file_path, "rb")
-    data = pickle.load(f_in)
-    f_in.close()
-    return data
-
+    with open(file_path, "rb") as f_in:
+        data = pickle.load(f_in)
+        return data
 
 """
 Read configuration file

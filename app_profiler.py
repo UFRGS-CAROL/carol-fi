@@ -70,6 +70,7 @@ def generate_gold(conf):
 
 
 def main():
+    os.system("rm -f {}".format(cp.KERNEL_INFO_DIR))
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
 
