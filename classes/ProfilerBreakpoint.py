@@ -29,7 +29,14 @@ class ProfilerBreakpoint(gdb.Breakpoint):
 
         print("FOUND A KERNEL LINE {}".format(self.__kernel_line))
         self.__generate_source_ass_list()
-        self.__append_to_file()
+        kernel_info = {
+            'addresses': self.__addresses,
+            'kernel_name': self.__kernel_name,
+            'kernel_line': self.__kernel_line,
+            'kernel_end_line': self.__kernel_end_line
+        }
+
+        cf.append_file(file_path=cp.KERNEL_INFO_DIR, data=kernel_info)
 
     """
     inject faults only on the resources used at that source line
@@ -55,17 +62,3 @@ class ProfilerBreakpoint(gdb.Breakpoint):
                 self.__addresses.append([l, ass_line])
             else:
                 last_not_zero_size.append(l)
-
-
-    """
-    set kernel_info list
-    """
-
-    def __append_to_file(self):
-        kernel_info = {
-            'addresses': self.__addresses,
-            'kernel_name': self.__kernel_name,
-            'kernel_line': self.__kernel_line,
-            'kernel_end_line': self.__kernel_end_line
-        }
-        cf.append_file(cp.KERNEL_INFO_DIR, kernel_info)
