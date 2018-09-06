@@ -28,9 +28,21 @@ file path using pickle.
 
 
 def save_file(file_path, data):
-    f_out = open(file_path, "wb")
-    pickle.dump(data, f_out)
-    f_out.close()
+    with open(file_path, "wb") as f_out:
+        pickle.dump(data, f_out)
+        f_out.close()
+
+
+"""
+Serialize a dictionary into a
+file path using pickle.
+"""
+
+
+def append_file(file_path, data):
+    with open(file_path, "ab") as f_out:
+        pickle.dump(data, f_out)
+        f_out.close()
 
 
 """
@@ -67,12 +79,11 @@ Kill all remaining processes
 """
 
 
-def kill_all(conf, logging = None):
+def kill_all(conf, logging=None):
     for cmd in str(conf.get("DEFAULT", "killStrs")).split(";"):
         os.system(cmd)
         if logging:
             logging.debug("kill cmd: {}".format(cmd))
-
 
 
 """
