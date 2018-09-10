@@ -52,7 +52,7 @@ def generate_gold(conf):
 
     # This run is to get carol-fi-kernel-info.txt
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-        "DEFAULT", "kernelBreaks") + "|" + "False" + "|" + str(kludge)
+        "DEFAULT", "kernelBreaks") + "|" + "True" + "|" + str(kludge)
 
     if cp.DEBUG:
         print(os.environ['CAROL_FI_INFO'])
@@ -91,7 +91,7 @@ def main():
     max_time_app = profiler_caller(conf=conf)
 
     # saving gold
-    # generate_gold(conf=conf)
+    generate_gold(conf=conf)
 
     # Load and re-save the kernel configuration txt file
     # kernel_list = cf.load_file(file_path=cp.KERNEL_INFO_DIR)
