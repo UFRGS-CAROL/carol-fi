@@ -91,7 +91,7 @@ def main():
     max_time_app = profiler_caller(conf=conf)
 
     # saving gold
-    generate_gold(conf=conf)
+    # generate_gold(conf=conf)
 
     # Load and re-save the kernel configuration txt file
     # kernel_list = cf.load_file(file_path=cp.KERNEL_INFO_DIR)

@@ -1,5 +1,6 @@
 import os
 import gdb
+from classes.BitFlip import BitFlip
 from classes.FaultInjectionBreakpoint import FaultInjectionBreakpoint
 from classes.Logging import Logging
 
@@ -34,11 +35,10 @@ def set_event(event):
         global_logging.info("EVENT: {}".format(event.stop_signal))
 
         if was_hit is False:
-            breakpoint_kernel_line = FaultInjectionBreakpoint(register=register,
-                                                              bits_to_flip=bits_to_flip, fault_model=fault_model,
-                                                              logging=global_logging, spec=breakpoint_location,
-                                                              type=gdb.BP_BREAKPOINT, temporary=True,
-                                                              injection_mode=injection_mode)
+            bit_lip = BitFlip(register=register, bits_to_flip=bits_to_flip, fault_model=fault_model,
+                              logging=global_logging, injection_mode=injection_mode)
+            bit_lip.single_event()
+
             global_logging.info("BREAKPOINT SET ON SIGNAL")
             was_hit = True
     except Exception as err:
@@ -88,9 +88,9 @@ def main():
     bits_to_flip = [i for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
 
-    if kludge != 'None':
-        kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
-                                                     temporary=True)
+    # if kludge != 'None':
+    #     kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
+    #                                                  temporary=True)
 
     # Start app execution
     gdb.execute("r")

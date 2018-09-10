@@ -70,9 +70,9 @@ def main():
     try:
         while 'The program' not in gdb.execute('c', to_string=True):
             i += 1
-    except:
+    except Exception as err:
         if cp.DEBUG_PROFILER:
-            print("CONTINUED {} times".format(i))
+            print("CONTINUED {} times. Format {}".format(i, err))
 
     for profile_objects in kernel_profiler_objects:
         del profile_objects
