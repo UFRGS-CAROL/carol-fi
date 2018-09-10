@@ -95,9 +95,10 @@ def main():
 
     # Load and re-save the kernel configuration txt file
     # kernel_list = cf.load_file(file_path=cp.KERNEL_INFO_DIR)
-    # for kernel_dict in kernel_list:
-    #     kernel_dict['max_time'] = max_time_app
-    # cf.save_file(file_path=cp.KERNEL_INFO_DIR, data=kernel_list)
+    kernel_list = {}
+    for kernel_dict in kernel_list:
+        kernel_dict['max_time'] = max_time_app
+    cf.save_file(file_path=cp.KERNEL_INFO_DIR, data=kernel_list)
 
     print("1 - Profile finished\n###################################################")
 
