@@ -16,7 +16,8 @@ class SignalApp(Thread):
         super(SignalApp, self).__init__()
         self.__signal_cmd = signal_cmd
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
-        self.__init_wait_time = uniform(0, float(max_wait_time) * cp.TIME_BEFORE_FIRST_SIGNAL)
+        self.__init_wait_time = uniform(float(max_wait_time) * cp.TIME_WAIT_START_SIGNAL,
+                                        float(max_wait_time) * cp.TIME_BEFORE_FIRST_SIGNAL)
         self.__signals_to_send = int(signals_to_send)
 
     def run(self):
