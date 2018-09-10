@@ -470,11 +470,11 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                                                                 fault_model=fault_model)
 
                 # Selects the random line to inject
-                kernel_begin = kernel_info_dict["kernel_line"]
-                kernel_end = kernel_info_dict["kernel_end_line"]
-                rand_line = random.randint(int(kernel_begin), int(kernel_end))
-                break_line = str(kernel_info_dict["kernel_name"] + ":"
-                                 + str(rand_line))
+                # kernel_begin = kernel_info_dict["kernel_line"]
+                # kernel_end = kernel_info_dict["kernel_end_line"]
+                # rand_line = random.randint(int(kernel_begin), int(kernel_end))
+                break_line = '300'  # str(kernel_info_dict["kernel_name"] + ":"
+                # + str(rand_line))
 
                 # max time that app can run
                 max_time = kernel_info_dict["max_time"]
