@@ -10,15 +10,31 @@ import re
 import shutil
 import time
 import datetime
-import traceback
-
+import signal
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
-
+import sys
 from classes.RunGDB import RunGDB
 from classes.SummaryFile import SummaryFile
 from classes.Logging import Logging
 from classes.SignalApp import SignalApp
+
+"""
+CTRL + C event
+"""
+
+
+def signal_handler(sig, frame):
+    global kill_strings
+    print("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
+    kill_cmds = kill_strings.split(";")
+    for cmd in kill_cmds:
+        try:
+            os.system(cmd)
+        except Exception as err:
+            print("Command err: {}".format(str(err)))
+    sys.exit(0)
+
 
 """
 Check if app stops execution (otherwise kill it after a time)
@@ -521,6 +537,7 @@ Main function
 
 
 def main():
+    global kill_strings
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
@@ -536,6 +553,9 @@ def main():
 
     # Read the configuration file with data for all the apps that will be executed
     conf = cf.load_config_file(args.config_file)
+    # Connect signal SIGINT to stop application
+    kill_strings = conf.get("DEFAULT", "killStrs")
+    signal.signal(signal.SIGINT, signal_handler)
 
     # First set env vars
     current_path = cf.set_python_env()
@@ -570,6 +590,7 @@ def main():
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")
+    signal.pause()
     ########################################################################
 
 
