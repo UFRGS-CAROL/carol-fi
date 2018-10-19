@@ -173,9 +173,9 @@ def saveOutput(section, isHang):
 
     dt = datetime.datetime.fromtimestamp(time.time())
     ymd = dt.strftime('%Y_%m_%d')
-    ymdhms = dt.strftime('%Y_%m_%d_%H_%M_%S')
-    ymdhms = uniqueID+"-"+ymdhms
-    dirDT = os.path.join(ymd,ymdhms)
+    timestamp = dt.strftime('%Y_%m_%d_%H_%M_%S_%f')
+    uniqueFolder = uniqueID+"-"+timestamp
+    dirDT = os.path.join(ymd,uniqueFolder)
     if not fiSucc:
         cpDir = os.path.join('logs',section,'failed-injection',dirDT)
         logging.summary(section+" - Fault Injection Failed")
