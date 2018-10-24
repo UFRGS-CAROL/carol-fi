@@ -54,7 +54,7 @@ char signalcmd_key[] = "signalcmd";
 #ifdef MIC_NATIVE
 char config_file[] = "/micNfs/radiation-benchmarks.conf";
 #else
-char config_file[] = "/etc/radiation-benchmarks.conf";
+char config_file[] = "/home/ffsantos/radiation-benchmarks.conf";
 #endif
 
 // Used to print the log only for some iterations, equal 1 means print every iteration
