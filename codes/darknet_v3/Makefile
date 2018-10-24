@@ -3,16 +3,16 @@ CUDNN=0
 OPENCV?=0
 OPENMP=0
 DEBUG?=0
-REAL_TYPE?=float
-LOGS?=0
-OPENGEMM?=0
+REAL_TYPE?=half
+LOGS?=1
+OPENGEMM?=1
 
 RADIATIONDIR=/home/ffsantos/fernando_rad_dir/radiation-benchmarks/
 
-ARCH= -gencode arch=compute_60,code=sm_60 \
-      -gencode arch=compute_61,code=sm_61 \
-      -gencode arch=compute_62,code=[sm_62,compute_62] \
-      -gencode arch=compute_70,code=[sm_70,compute_70] 
+ARCH= -gencode arch=compute_60,code=sm_60 
+#      -gencode arch=compute_61,code=sm_61 \
+ #     -gencode arch=compute_62,code=[sm_62,compute_62] \
+  #    -gencode arch=compute_70,code=[sm_70,compute_70] 
 
 # This is what I use, uncomment if you know your arch and want to specify
 # ARCH= -gencode arch=compute_52,code=compute_52
@@ -79,8 +79,8 @@ LDFLAGS+= -lcudnn
 endif
 
 ifeq ($(LOGS), 1)
-COMMON += -DLOGS -I$(RADIATIONDIR)/src/include
-COMMON += -L$(RADIATIONDIR)/src/include 
+COMMON += -DLOGS -I../include
+COMMON += -L../include 
 LDFLAGS += -lLogHelper
 endif
 
