@@ -148,9 +148,9 @@ demo:
 generate:
 	./$(EXEC) detector test_radiation cfg/coco.data $(RADIATIONDIR)/data/darknet/yolov3.cfg $(RADIATIONDIR)/data/darknet/yolov3.weights \
 			$(RADIATIONDIR)/data/networks_img_list/caltech.pedestrians.10.txt \
-			-generate 1 -gold ./test.csv -tensor_cores 0
+			-generate 1 -gold $(RADIATIONDIR)/data/darknet/fi_gold.csv -tensor_cores 0
 
 test:
 	./$(EXEC) detector test_radiation cfg/coco.data $(RADIATIONDIR)/data/darknet/yolov3.cfg $(RADIATIONDIR)/data/darknet/yolov3.weights \
 			$(RADIATIONDIR)/data/networks_img_list/caltech.pedestrians.10.txt \
-			-generate 0 -gold ./test.csv -iterations 1 -norm_coord 0 -tensor_cores 0 -smx_redundancy 1
+			-generate 0 -gold $(RADIATIONDIR)/data/darknet/fi_gold.csv -iterations 1 -norm_coord 0 -tensor_cores 0 -smx_redundancy 1
