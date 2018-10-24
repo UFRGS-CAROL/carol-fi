@@ -94,7 +94,7 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
     if os.path.isfile(flip_log_file):
         fp = open(flip_log_file, "r")
         content = fp.read()
-        if re.search("Fault Injection Successful", content):
+        if re.search('Fault Injection Successful', content):
             fi_injected = True
         fp.close()
 
