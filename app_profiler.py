@@ -13,16 +13,17 @@ Function that calls the profiler based on the injection mode
 def profiler_caller(conf):
     acc_time = 0
 
-    # kludge
-    if conf.has_option("DEFAULT", "kludge"):
-        kludge = conf.get("DEFAULT", "kludge")
-    else:
-        kludge = None
+    # # kludge
+    # if conf.has_option("DEFAULT", "kludge"):
+    #     kludge = conf.get("DEFAULT", "kludge")
+    # else:
+    #     kludge = None
 
     # First MAX_TIMES_TO_PROFILE is necessary to measure the application running time
-    os.environ['CAROL_FI_INFO'] = conf.get(
-        "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-                                                      "kernelBreaks") + "|" + "True" + "|" + str(kludge)
+    # os.environ['CAROL_FI_INFO'] = conf.get(
+    #     "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
+    #                                                   "kernelBreaks") + "|" + "True" + "|" + str(kludge)
+    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings")
 
     if cp.DEBUG:
         print(os.environ['CAROL_FI_INFO'])
