@@ -46,7 +46,11 @@ class RunGDB(Thread):
             (out, err) = process.communicate()
 
             # Matheus complains
-            process.kill()
+            try:
+                process.kill()
+            except:
+                pass
+            
             del process
 
             if search(exe, str(out)):
