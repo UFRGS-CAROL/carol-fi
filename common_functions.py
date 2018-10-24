@@ -93,7 +93,7 @@ It makes standart gdb script calls
 def run_gdb_python(gdb_name, script):
     # cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
     os.environ['CUDA_VISIBLE_DEVICES'] = cp.GPU_INDEX
-    cmd = gdb_name + ' -n -batch -x ' + script  # -batch-silent
+    cmd = gdb_name + ' --return-child-result -n -batch -x ' + script  # -batch-silent
     # -n --nh --nx -q --return-child-result -x
     return cmd
 

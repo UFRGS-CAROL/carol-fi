@@ -12,17 +12,6 @@ Function that calls the profiler based on the injection mode
 
 def profiler_caller(conf):
     acc_time = 0
-
-    # # kludge
-    # if conf.has_option("DEFAULT", "kludge"):
-    #     kludge = conf.get("DEFAULT", "kludge")
-    # else:
-    #     kludge = None
-
-    # First MAX_TIMES_TO_PROFILE is necessary to measure the application running time
-    # os.environ['CAROL_FI_INFO'] = conf.get(
-    #     "DEFAULT", "gdbInitStrings") + "|" + conf.get("DEFAULT",
-    #                                                   "kernelBreaks") + "|" + "True" + "|" + str(kludge)
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings")
 
     if cp.DEBUG:
@@ -45,15 +34,6 @@ Function to generate the gold execution
 
 
 def generate_gold(conf):
-    # # kludge
-    # if conf.has_option("DEFAULT", "kludge"):
-    #     kludge = conf.get("DEFAULT", "kludge")
-    # else:
-    #     kludge = None
-    #
-    # # This run is to get carol-fi-kernel-info.txt
-    # os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-    #     "DEFAULT", "kernelBreaks") + "|" + "True" + "|" + str(kludge)
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings")
 
     if cp.DEBUG:
@@ -64,11 +44,7 @@ def generate_gold(conf):
                                      script=profiler_script)
 
     # Execute and save gold file
-    start = time.time()
     os.system(profiler_cmd)
-    end = time.time()
-
-    return end - start
 
 
 def main():
