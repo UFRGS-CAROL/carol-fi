@@ -45,15 +45,16 @@ Function to generate the gold execution
 
 
 def generate_gold(conf):
-    # kludge
-    if conf.has_option("DEFAULT", "kludge"):
-        kludge = conf.get("DEFAULT", "kludge")
-    else:
-        kludge = None
-
-    # This run is to get carol-fi-kernel-info.txt
-    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
-        "DEFAULT", "kernelBreaks") + "|" + "True" + "|" + str(kludge)
+    # # kludge
+    # if conf.has_option("DEFAULT", "kludge"):
+    #     kludge = conf.get("DEFAULT", "kludge")
+    # else:
+    #     kludge = None
+    #
+    # # This run is to get carol-fi-kernel-info.txt
+    # os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings") + "|" + conf.get(
+    #     "DEFAULT", "kernelBreaks") + "|" + "True" + "|" + str(kludge)
+    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings")
 
     if cp.DEBUG:
         print(os.environ['CAROL_FI_INFO'])
