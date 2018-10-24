@@ -1,6 +1,6 @@
 import os
 import gdb
-import common_functions as cf  # All common functions will be at common_functions module
+# import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will bet at common_parameters module
 from classes.ProfilerBreakpoint import ProfilerBreakpoint
 
