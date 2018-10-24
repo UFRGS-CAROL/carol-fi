@@ -44,6 +44,11 @@ class RunGDB(Thread):
             check_running = "ps -e | grep -i " + exe
             process = Popen(check_running, stdout=PIPE, shell=True)
             (out, err) = process.communicate()
+
+            # Matheus complains
+            process.kill()
+            del process
+
             if search(exe, str(out)):
                 return True
 
