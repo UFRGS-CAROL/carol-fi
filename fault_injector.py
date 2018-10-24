@@ -33,6 +33,7 @@ def signal_handler(sig, frame):
             os.system(cmd)
         except Exception as err:
             print("Command err: {}".format(str(err)))
+
     sys.exit(0)
 
 
@@ -555,7 +556,7 @@ def main():
     conf = cf.load_config_file(args.config_file)
     # Connect signal SIGINT to stop application
     kill_strings = conf.get("DEFAULT", "killStrs")
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.CTRL_C_EVENT, signal_handler)
 
     # First set env vars
     current_path = cf.set_python_env()
@@ -590,7 +591,6 @@ def main():
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")
-    signal.pause()
     ########################################################################
 
 
