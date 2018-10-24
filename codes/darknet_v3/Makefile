@@ -7,7 +7,7 @@ REAL_TYPE?=float
 LOGS?=0
 OPENGEMM?=0
 
-RADIATIONDIR=/home/carol/radiation-benchmarks/
+RADIATIONDIR=/home/ffsantos/fernando_rad_dir/radiation-benchmarks/
 
 ARCH= -gencode arch=compute_60,code=sm_60 \
       -gencode arch=compute_61,code=sm_61 \
@@ -146,11 +146,11 @@ demo:
 	./$(EXEC) detector test cfg/coco.data cfg/yolov3-spp.cfg data/yolov3-spp.weights data/dog.jpg
 
 generate:
-	./$(EXEC) detector test_radiation cfg/coco.data ../../../data/darknet/yolov3.cfg ../../../data/darknet/yolov3.weights \
-			../../../data/networks_img_list/caltech.pedestrians.100.txt \
-			-generate 1 -gold ./test.csv -tensor_cores 1
+	./$(EXEC) detector test_radiation cfg/coco.data $(RADIATIONDIR)/data/darknet/yolov3.cfg $(RADIATIONDIR)/data/darknet/yolov3.weights \
+			$(RADIATIONDIR)/data/networks_img_list/caltech.pedestrians.10.txt \
+			-generate 1 -gold ./test.csv -tensor_cores 0
 
 test:
-	./$(EXEC) detector test_radiation cfg/coco.data ../../../data/darknet/yolov3.cfg ../../../data/darknet/yolov3.weights \
-			../../../data/networks_img_list/caltech.pedestrians.100.txt \
-			-generate 0 -gold ./test.csv -iterations 1 -norm_coord 0 -tensor_cores 1 -smx_redundancy 1
+	./$(EXEC) detector test_radiation cfg/coco.data $(RADIATIONDIR)/data/darknet/yolov3.cfg $(RADIATIONDIR)/data/darknet/yolov3.weights \
+			$(RADIATIONDIR)/data/networks_img_list/caltech.pedestrians.10.txt \
+			-generate 0 -gold ./test.csv -iterations 1 -norm_coord 0 -tensor_cores 0 -smx_redundancy 1
