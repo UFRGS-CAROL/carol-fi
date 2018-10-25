@@ -13,7 +13,7 @@ to implement the bit flip process
 class BitFlip:
     def __init__(self, **kwargs):
         # If kernel is not accessible it must return
-        self.__register = kwargs.pop('register') if 'register' in kwargs else None
+        # self.__register = kwargs.pop('register') if 'register' in kwargs else None
         self.__bits_to_flip = kwargs.pop('bits_to_flip') if 'bits_to_flip' in kwargs else None
         self.__fault_model = kwargs.pop('fault_model') if 'fault_model' in kwargs else None
         self.__logging = kwargs.pop('logging') if 'logging' in kwargs else None
@@ -34,6 +34,12 @@ class BitFlip:
         except Exception as err:
             # Even if CUDA focus was not successful we keep going
             self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED. KEEP GOING, with error {}".format(err))
+
+        try:
+            self.__select_register()
+        except Exception as err:
+            err_str = "CANNOT SELECT THE REGISTER, PROBABLY FAULT WILL NOT BE INJECTED. Error {}".format(err)
+            self.__logging.exception(err_str)
 
         try:
             # Register if fault was injected or not
@@ -160,3 +166,21 @@ class BitFlip:
         new_bit = '0' if reg_content[bit_to_flip] == '1' else '1'
         reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
         return reg_content
+
+    """
+    Runtime select register
+    """
+
+    def __select_register(self):
+        info_reg_cmd = cf.execute_command(gdb=gdb, to_execute="info registers")
+        last_valid_register_i = 0
+        pattern = ".*R(\d+).*0x(\S+).*"
+        m = re.match(pattern, info_reg_cmd[0])
+        reg_content = int(m.group(2))
+
+        while reg_content != 0:
+            m = re.match(pattern, info_reg_cmd[last_valid_register_i])
+            reg_content = int(m.group(2))
+            last_valid_register_i += 1
+
+        self.__register = "R{}".format(random.randint(0, last_valid_register_i))

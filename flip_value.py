@@ -29,15 +29,13 @@ def set_event(event):
         # Accessing global vars
         global global_logging, register, injection_mode, was_hit, bits_to_flip, fault_model
 
-        # Just checking if
-        global_logging.info("EVENT: {}".format(event.stop_signal))
-
+        # Just checking if it was hit
         if was_hit is False:
             bit_lip = BitFlip(register=register, bits_to_flip=bits_to_flip, fault_model=fault_model,
                               logging=global_logging, injection_mode=injection_mode)
             bit_lip.single_event()
 
-            global_logging.info("BREAKPOINT SET ON SIGNAL")
+            global_logging.info("BIT FLIP SET ON SIGNAL {}".format(event.stop_signal))
             was_hit = True
     except Exception as err:
         global_logging.exception("EVENT DIFFERENT FROM STOP SIGNAL: {}".format(str(err)))

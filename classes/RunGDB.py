@@ -22,8 +22,6 @@ class RunGDB(Thread):
         self.__unique_id = unique_id
 
     def run(self):
-        # system("stty tostop")
-
         if cp.DEBUG:
             print("GDB Thread run, section and id: {}".format(self.__unique_id))
 
