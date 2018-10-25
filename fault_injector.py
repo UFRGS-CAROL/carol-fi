@@ -221,12 +221,10 @@ The default parameters are necessary for break and signal mode differentiations
 """
 
 
-def gen_env_string(valid_register, bits_to_flip, fault_model,
-                   breakpoint_location, flip_log_file, gdb_init_strings, kludge, injection_mode):
+def gen_env_string(valid_register, bits_to_flip, fault_model, flip_log_file, gdb_init_strings, injection_mode):
     # Block and thread
     env_string = valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
-    env_string += "|" + str(fault_model) + "|" + breakpoint_location
-    env_string += "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(kludge) + "|" + str(injection_mode)
+    env_string += "|" + str(fault_model) + "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(injection_mode)
 
     if cp.DEBUG:
         print("ENV STRING:{}".format(env_string))
@@ -251,7 +249,7 @@ def gdb_inject_fault(**kwargs):
     kludge = kwargs.get('kludge')
 
     # Parameters for thread selection
-    breakpoint_location = kwargs.get('break_line')
+    # breakpoint_location = kwargs.get('break_line')
 
     # Logging file
     flip_log_file = cp.LOG_DEFAULT_NAME.format(unique_id)
@@ -268,9 +266,7 @@ def gdb_inject_fault(**kwargs):
                    valid_register=valid_register,
                    bits_to_flip=bits_to_flip,
                    fault_model=fault_model,
-                   breakpoint_location=breakpoint_location,
                    flip_log_file=flip_log_file,
-                   kludge=kludge,
                    injection_mode=conf.get("DEFAULT", "injectionSite"))
 
     if cp.DEBUG:
@@ -487,13 +483,6 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                                                                 injection_site=conf.get("DEFAULT", "injectionSite"),
                                                                 fault_model=fault_model)
 
-                # Selects the random line to inject
-                # kernel_begin = kernel_info_dict["kernel_line"]
-                # kernel_end = kernel_info_dict["kernel_end_line"]
-                # rand_line = random.randint(int(kernel_begin), int(kernel_end))
-                break_line = '300'  # str(kernel_info_dict["kernel_name"] + ":"
-                # + str(rand_line))
-
                 # max time that app can run
                 max_time = kernel_info_dict["max_time"]
 
@@ -507,7 +496,6 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                     valid_register=register,
                     bits_to_flip=bits_to_flip,
                     fault_model=fault_model,
-                    break_line=break_line,
                     max_time=max_time,
                     current_path=current_path,
                     kludge=kludge)

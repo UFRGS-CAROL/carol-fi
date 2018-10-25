@@ -1,7 +1,6 @@
 import os
 import gdb
 from classes.BitFlip import BitFlip
-from classes.FaultInjectionBreakpoint import FaultInjectionBreakpoint
 from classes.Logging import Logging
 
 """
@@ -28,8 +27,7 @@ signal
 def set_event(event):
     try:
         # Accessing global vars
-        global global_logging, register, injection_mode, was_hit
-        global bits_to_flip, fault_model, breakpoint_location, breakpoint_kernel_line
+        global global_logging, register, injection_mode, was_hit, bits_to_flip, fault_model
 
         # Just checking if
         global_logging.info("EVENT: {}".format(event.stop_signal))
@@ -51,8 +49,7 @@ Main function
 
 
 def main():
-    global global_logging, register, kludge_breakpoint, injection_mode
-    global bits_to_flip, fault_model, breakpoint_location, kludge, breakpoint_kernel_line, was_hit
+    global global_logging, register, injection_mode, bits_to_flip, fault_model, was_hit
 
     was_hit = False
 
@@ -70,8 +67,8 @@ def main():
 
     # Get variables values from environment
     # First parse line
-    [register, bits_to_flip, fault_model, breakpoint_location,
-     flip_log_file, gdb_init_strings, kludge, injection_mode] = str(os.environ['CAROL_FI_INFO']).split('|')
+    [register, bits_to_flip, fault_model, flip_log_file,
+     gdb_init_strings, injection_mode] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Logging
     global_logging = Logging(log_file=flip_log_file)
@@ -88,10 +85,6 @@ def main():
     bits_to_flip = [i for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
 
-    # if kludge != 'None':
-    #     kludge_breakpoint = FaultInjectionBreakpoint(kludge=True, spec=kludge, type=gdb.BP_BREAKPOINT,
-    #                                                  temporary=True)
-
     # Start app execution
     gdb.execute("r")
 
@@ -103,19 +96,12 @@ def main():
         global_logging.info("CONTINUED {} times".format(i))
         global_logging.exception("IGNORED CONTINUE ERROR: {}".format(str(err)))
 
-    # Delete the breakpoint
-    del breakpoint_kernel_line, kludge
-
 
 # Call main execution
 global_logging = None
 register = None
 bits_to_flip = None
 fault_model = None
-breakpoint_location = None
-breakpoint_kernel_line = None
-kludge = None
-kludge_breakpoint = None
 was_hit = False
 injection_mode = None
 
