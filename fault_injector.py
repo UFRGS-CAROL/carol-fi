@@ -512,7 +512,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
                     # 'register', 'breakpoint_location', 'fault_successful',
                     # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip', 'log_file'
                     # Write a row to summary file
-                    row = [num_rounds, fault_model, thread, block, old_val, new_val, 0, register, break_line,
+                    row = [num_rounds, fault_model, thread, block, old_val, new_val, 0, register,
                            fault_injected, hang, crash, sdc, injection_time,
                            signal_init_time, bits_to_flip, only_for_radiation_benchs()]
                     print(row)
@@ -560,7 +560,7 @@ def main():
     # Csv log
     fieldnames = ['iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
                   'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
-                  'register', 'breakpoint_location', 'fault_successful', 'hang',
+                  'register', 'fault_successful', 'hang',
                   'crash', 'sdc', 'time', 'inj_time_location', 'bits_flipped', 'log_file']
 
     ########################################################################
