@@ -176,11 +176,11 @@ class BitFlip:
         last_valid_register_i = 0
         pattern = ".*R(\d+).*0x(\S+).*"
         m = re.match(pattern, info_reg_cmd[0])
-        reg_content = int(m.group(2))
+        reg_content = int(m.group(2), 16)
 
         while reg_content != 0:
             m = re.match(pattern, info_reg_cmd[last_valid_register_i])
-            reg_content = int(m.group(2))
+            reg_content = int(m.group(2), 16)
             last_valid_register_i += 1
 
         self.__register = "R{}".format(random.randint(0, last_valid_register_i))
