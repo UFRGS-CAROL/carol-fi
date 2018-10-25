@@ -27,16 +27,12 @@ signal
 def set_event(event):
     try:
         # Accessing global vars
-        global global_logging, register, injection_mode, was_hit, bits_to_flip, fault_model
+        global global_logging, was_hit, bit_lip
 
         # Just checking if it was hit
-        if was_hit is False:
-            bit_lip = BitFlip(register=register, bits_to_flip=bits_to_flip, fault_model=fault_model,
-                              logging=global_logging, injection_mode=injection_mode)
+        if bit_lip.fault_injected is False:
             bit_lip.single_event()
-
             global_logging.info("BIT FLIP SET ON SIGNAL {}".format(event.stop_signal))
-            was_hit = True
     except Exception as err:
         global_logging.exception("EVENT DIFFERENT FROM STOP SIGNAL: {}".format(str(err)))
 
@@ -47,7 +43,7 @@ Main function
 
 
 def main():
-    global global_logging, register, injection_mode, bits_to_flip, fault_model, was_hit
+    global global_logging, register, injection_mode, bits_to_flip, fault_model, was_hit, bit_lip
 
     was_hit = False
 
@@ -82,6 +78,8 @@ def main():
     # Set Breakpoint attributes to be use
     bits_to_flip = [i for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
+    bit_lip = BitFlip(register=register, bits_to_flip=bits_to_flip, fault_model=fault_model,
+                      logging=global_logging, injection_mode=injection_mode)
 
     # Start app execution
     gdb.execute("r")
@@ -102,5 +100,6 @@ bits_to_flip = None
 fault_model = None
 was_hit = False
 injection_mode = None
+bit_lip = None
 
 main()

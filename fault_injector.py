@@ -246,10 +246,6 @@ def gdb_inject_fault(**kwargs):
     valid_register = kwargs.get('valid_register')
     conf = kwargs.get('conf')
     max_time = float(kwargs.get('max_time'))
-    kludge = kwargs.get('kludge')
-
-    # Parameters for thread selection
-    # breakpoint_location = kwargs.get('break_line')
 
     # Logging file
     flip_log_file = cp.LOG_DEFAULT_NAME.format(unique_id)

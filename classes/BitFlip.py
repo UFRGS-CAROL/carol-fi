@@ -18,6 +18,7 @@ class BitFlip:
         self.__fault_model = kwargs.pop('fault_model') if 'fault_model' in kwargs else None
         self.__logging = kwargs.pop('logging') if 'logging' in kwargs else None
         self.__injection_mode = kwargs.pop('injection_mode') if 'injection_mode' in kwargs else None
+        self.fault_injected = False
 
     """
     TODO: Describe the method
@@ -41,20 +42,20 @@ class BitFlip:
             err_str = "CANNOT SELECT THE REGISTER, PROBABLY FAULT WILL NOT BE INJECTED. Error {}".format(err)
             self.__logging.exception(err_str)
 
+        # Register if fault was injected or not
+        self.fault_injected = False
         try:
-            # Register if fault was injected or not
-            fault_injected = False
             # Do the fault injection magic
             # RF is the default mode of injection
             if 'RF' in self.__injection_mode or self.__injection_mode is None:
-                fault_injected = self.__rf_generic_injector()
+                self.fault_injected = self.__rf_generic_injector()
             elif 'VARS' in self.__injection_mode:
                 pass
             elif 'INST' in self.__injection_mode:
                 pass
 
             # Test fault injection result
-            if fault_injected:
+            if self.fault_injected:
                 self.__logging.info("Fault Injection Successful")
             else:
                 self.__logging.info("Fault Injection Went Wrong")
@@ -62,7 +63,6 @@ class BitFlip:
         except Exception as err:
             self.__logging.exception("fault_injection_python_exception: {}".format(err))
             self.__logging.exception("Fault Injection Went Wrong")
-        return True
 
     """
     Selects a valid thread for a specific
@@ -173,14 +173,14 @@ class BitFlip:
 
     def __select_register(self):
         info_reg_cmd = cf.execute_command(gdb=gdb, to_execute="info registers")
-        last_valid_register_i = 0
         pattern = ".*R(\d+).*0x(\S+).*"
-        m = re.match(pattern, info_reg_cmd[0])
-        reg_content = int(m.group(2), 16)
+        valid_registers = []
 
-        while reg_content != 0:
-            m = re.match(pattern, info_reg_cmd[last_valid_register_i])
-            reg_content = int(m.group(2), 16)
-            last_valid_register_i += 1
+        for reg in info_reg_cmd:
+            m = re.match(pattern, reg)
+            if m:
+                reg_content = int(m.group(2), 16)
+                if reg_content != 0:
+                    valid_registers.append(m.group(1))
 
-        self.__register = "R{}".format(random.randint(0, last_valid_register_i))
+        self.__register = "R{}".format(random.choice(valid_registers))
