@@ -7,8 +7,10 @@ from collections import Counter
 varSDCList = list()
 varSDCDetectList = list()
 varCrashList = list()
+varHangList = list()
 flipList = list()
 faultModelCrash = list()
+faultModelHang = list()
 faultModelSDC = list()
 faultModelSDCDetect = list()
 
@@ -16,10 +18,11 @@ flipCount = 0
 sdcCount = 0
 sdcDetectCount = 0
 crashCount = 0
-sdcCrashCount = 0
+hangCount = 0
 
 sdcFilename = "sdc.csv"
 crashFilename = "crash.csv"
+hangFilename = "hang.csv"
 summFilename = "summary.csv"
 
 def processDirectory(dirName, fileList):
@@ -29,6 +32,7 @@ def processDirectory(dirName, fileList):
     sdc=0
     sdcDetect=0
     crash=0
+    hang=0
     var = ""
     varFile = ""
     varLine = ""
@@ -49,7 +53,11 @@ def processDirectory(dirName, fileList):
             else:
                 sdc = 0
                 sdcDetect = 0
-            if re.search("hangs",dirName) or re.search("noOutputGenerated",dirName):
+            if re.search("hangs",dirName):
+                hang = 1
+            else:
+                hang = 0
+            if re.search("crashes",dirName) or re.search("noOutputGenerated",dirName):
                 crash = 1
             else:
                 crash = 0
@@ -58,25 +66,24 @@ def processDirectory(dirName, fileList):
         global sdcCount
         global sdcDetectCount
         global crashCount
-        global sdcCrashCount
+        global hangCount
         if var != "":
             flipCount += 1
             varInfo = var+";"+varFile+";"+str(varLine)
             flipList.append(varInfo)
             if sdc == 1:
                 sdcCount += 1
+                varSDCList.append(varInfo)
+                faultModelSDC.append(faultModel)
                 if sdcDetect == 1:
                     sdcDetectCount += 1
                     varSDCDetectList.append(varInfo)
                     faultModelSDCDetect.append(faultModel)
-                else:
-                    varSDCList.append(varInfo)
-                    faultModelSDC.append(faultModel)
                 csvWFP = open(current_folder_name+"_"+sdcFilename, "a")
                 writer = csv.writer(csvWFP, delimiter=';')
                 writer.writerow([var,varFile,str(varLine),str(faultTime),str(signalTime),str(faultModel),str(sdcDetect)])
                 csvWFP.close()
-            if crash == 1:
+            elif crash == 1:
                 crashCount += 1
                 varCrashList.append(varInfo)
                 faultModelCrash.append(faultModel)
@@ -84,8 +91,14 @@ def processDirectory(dirName, fileList):
                 writer = csv.writer(csvWFP, delimiter=';')
                 writer.writerow([var,varFile,str(varLine),str(faultTime),str(signalTime),str(faultModel)])
                 csvWFP.close()
-            if sdc == 1 and crash == 1:
-                sdcCrashCount += 1
+            elif hang == 1:
+                hangCount += 1
+                varHangList.append(varInfo)
+                faultModelHang.append(faultModel)
+                csvWFP = open(current_folder_name+"_"+hangFilename, "a")
+                writer = csv.writer(csvWFP, delimiter=';')
+                writer.writerow([var,varFile,str(varLine),str(faultTime),str(signalTime),str(faultModel)])
+                csvWFP.close()
 
 
 def getSDCCrashInfo(dirName, fname):
@@ -183,6 +196,10 @@ csvWFP = open(current_folder_name+"_"+crashFilename, "w")
 writer = csv.writer(csvWFP, delimiter=';')
 writer.writerow(["Variable Name","Variable File","Variable Line","Fault Injection Time(s)","Injection Time Interval","Fault Model"])
 csvWFP.close()
+csvWFP = open(current_folder_name+"_"+hangFilename, "w")
+writer = csv.writer(csvWFP, delimiter=';')
+writer.writerow(["Variable Name","Variable File","Variable Line","Fault Injection Time(s)","Injection Time Interval","Fault Model"])
+csvWFP.close()
 
 # Set the directory you want to start from
 rootDir = '.'
@@ -191,56 +208,119 @@ for dirName, subdirList, fileList in os.walk(rootDir):
 #print ("varCrashList: ", Counter(varCrashList).most_common(20))
 #print ("varSDCList: ", Counter(varSDCList).most_common(20))
 
+maskedCount = flipCount - sdcCount - crashCount - hangCount
+sdcPVF = "N/A"
+if sdcCount:
+    sdcPVF = sdcCount/flipCount
+crashPVF = "N/A"
+if crashCount:
+    crashPVF = crashCount/flipCount
+hangPVF = "N/A"
+if hangCount:
+    hangPVF = hangCount/flipCount
+maskedPVF = "N/A"
+if maskedCount:
+    maskedPVF = maskedCount/flipCount
 fp = open(current_folder_name+"_"+summFilename, "w")
-fp.write("bitflips:;"+str(flipCount))
-fp.write("\nTotal SDCs:;"+str(sdcCount))
+fp.write("Faults Injected:;"+str(flipCount))
+
+fp.write("\n\nFault Effect;#Effect;PVF")
+fp.write("\nMasked;"+str(maskedCount)+";"+str(maskedPVF))
+fp.write("\nSDCs;"+str(sdcCount)+";"+str(sdcPVF))
+fp.write("\nCrashes;"+str(crashCount)+";"+str(crashPVF))
+fp.write("\nHangs;"+str(hangCount)+";"+str(hangPVF))
+fp.write("\n\n")
 fp.write("\nDetected SDCs:;"+str(sdcDetectCount))
-fp.write("\nCrashes:;"+str(crashCount))
-fp.write("\nSimultaneous SDCs and Crashes:;"+str(sdcCrashCount))
+fp.write("\nSDC Coverage (%):;"+str((sdcDetectCount*100)/sdcCount))
 fp.write("\n\n")
 
 flips = Counter(flipList)
 
-fp.write("FaultModels Undetected SDCs:")
-fp.write("\nFaultModel ;#SDCs; percentage")
-for k,v in Counter(faultModelSDC).most_common():
-    per = float(v)/float(sdcCount) * 100
-    fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
+if faultModelSDC:
+    fp.write("FaultModels SDCs:")
+    fp.write("\nFaultModel ;#SDCs;percentage")
+    for k,v in Counter(faultModelSDC).most_common():
+        try:
+            per = float(v)/float(sdcCount) * 100
+        except:
+            per = "N/A"
+        fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
-fp.write("\n\n")
-fp.write("FaultModels Detected SDCs:")
-fp.write("\nFaultModel ;#SDCs Detected; percentage")
-for k,v in Counter(faultModelSDCDetect).most_common():
-    per = float(v)/float(sdcCount) * 100
-    fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
+if faultModelSDCDetect:
+    fp.write("\n\n")
+    fp.write("FaultModels Detected SDCs:")
+    fp.write("\nFaultModel ;#SDCs Detected; percentage")
+    for k,v in Counter(faultModelSDCDetect).most_common():
+        try:
+            per = float(v)/float(sdcCount) * 100
+        except:
+            per = "N/A"
+        fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
-fp.write("\n\n")
-fp.write("FaultModels Crashes:")
-fp.write("\nFaultModel ;#Crashes; percentage")
-for k,v in Counter(faultModelCrash).most_common():
-    per = float(v)/float(sdcCount) * 100
-    fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
+if faultModelCrash:
+    fp.write("\n\n")
+    fp.write("FaultModels Crashes:")
+    fp.write("\nFaultModel ;#Crashes;percentage")
+    for k,v in Counter(faultModelCrash).most_common():
+        try:
+            per = float(v)/float(crashCount) * 100
+        except:
+            per = "N/A"
+        fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
-fp.write("\n\n")
-fp.write("Variables that caused Undetected SDCs:")
-fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
-for k,v in Counter(varSDCList).most_common():
-    pvf = float(v)/float(flips[k]) * 100
-    fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
+if faultModelHang:
+    fp.write("\n\n")
+    fp.write("FaultModels Hangs:")
+    fp.write("\nFaultModel ;#Hangs;percentage")
+    for k,v in Counter(faultModelHang).most_common():
+        try:
+            per = float(v)/float(hangCount) * 100
+        except:
+            per = "N/A"
+        fp.write("\n"+str(k)+";"+str(v)+";"+str(per))
 
-fp.write("\n\n")
-fp.write("Variables that caused Detected SDCs:")
-fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
-for k,v in Counter(varSDCDetectList).most_common():
-    pvf = float(v)/float(flips[k]) * 100
-    fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
+if varSDCList:
+    fp.write("\n\n")
+    fp.write("Variables that caused SDCs:")
+    fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
+    for k,v in Counter(varSDCList).most_common():
+        try:
+            pvf = float(v)/float(flips[k]) * 100
+        except:
+            pvf = "N/A"
+        fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
 
-fp.write("\n")
-fp.write("\nVariables that caused Crash:")
-fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
-for k,v in Counter(varCrashList).most_common():
-    pvf = float(v)/float(flips[k]) * 100
-    fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
+if varSDCDetectList:
+    fp.write("\n\n")
+    fp.write("Variables that caused Detected SDCs:")
+    fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
+    for k,v in Counter(varSDCDetectList).most_common():
+        try:
+            pvf = float(v)/float(flips[k]) * 100
+        except:
+            pvf = "N/A"
+        fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
+
+if varCrashList:
+    fp.write("\n")
+    fp.write("\nVariables that caused Crash:")
+    fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
+    for k,v in Counter(varCrashList).most_common():
+        try:
+            pvf = float(v)/float(flips[k]) * 100
+        except:
+            pvf = "N/A"
+        fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
+
+if varHangList:
+    fp.write("\n")
+    fp.write("\nVariables that caused Hang:")
+    fp.write("\nPVF ;#flips ;#SDCs ;Var name ;file ;line number")
+    for k,v in Counter(varHangList).most_common():
+        try:
+            pvf = float(v)/float(flips[k]) * 100
+        except:
+            pvf = "N/A"
+        fp.write("\n"+str(pvf)+";"+str(flips[k])+";"+str(v)+";"+k)
 
 fp.close()
-
