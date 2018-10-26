@@ -8,9 +8,6 @@ DOUBLE_MAX_SIZE_REGISTER = 64
 # to profiler application
 MAX_TIMES_TO_PROFILE = 2
 
-# Max seconds to check process again
-MAX_TIME_TO_CHECK_PROCESS = 0.01
-
 # Temporary file to store kernel information
 KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
 
@@ -42,9 +39,7 @@ SIGNAL_APP_LOG = "/tmp/signal_app_thread.txt"
 # Time before first signal
 # Before the first signal we define the percentage of the overall time
 # to send the first signal (IT IS THE PERCENTAGE)
-# A value between 0.1 and 1
-TIME_BEFORE_FIRST_SIGNAL = 0.8
-
+# A value between 0.01 and 0.1 is desirable
 TIME_WAIT_START_SIGNAL = 0.1
 
 # Num of sleep time divisor
