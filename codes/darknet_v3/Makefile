@@ -34,7 +34,7 @@ LDFLAGS +=  -L/usr/local/cuda/lib64 -lcudart -lcublas -lcurand
 COMMON= -Iinclude/ -Isrc/
 CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -Wno-write-strings -Werror -fPIC 
 
-NVCCFLAGS=  --std=c++11 
+NVCCFLAGS=  --std=c++11  -Xptxas -v
 #-disable-warnings 
 
 ifeq ($(OPENMP), 1) 
