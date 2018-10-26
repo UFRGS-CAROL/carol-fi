@@ -20,6 +20,7 @@ def profiler_caller(conf):
 
     for i in range(0, cp.MAX_TIMES_TO_PROFILE):
         profiler_cmd = cf.run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
+        print(profiler_cmd)
         start = time.time()
         os.system(profiler_cmd)
         end = time.time()
