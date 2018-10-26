@@ -13,7 +13,7 @@ else:
     import ConfigParser # python 2
 
 ### Script version
-VERSION = "1.0"
+VERSION = "1.1"
 
 flipConfigFile = "<conf-location>"
 
@@ -564,11 +564,9 @@ except gdb.error as err:
 
 init = conf.get("DEFAULT","initSignal")
 end = conf.get("DEFAULT","endSignal")
-seqSignals = conf.get("DEFAULT","seqSignals")
 faultModel = conf.get("DEFAULT","faultModel")
 logging.info("initSignal:"+str(init))
 logging.info("endSignal:"+str(end))
-logging.info("seqSignal:"+str(seqSignals))
 logging.info("faultModel:"+str(faultModel))
 # Define which function to call when the execution stops, e.g. when a breakpoint is hit 
 # or a interruption signal is received
@@ -578,3 +576,4 @@ timestampStart = int(time.time())
 
 # Start app execution
 gdb.execute("r")
+
