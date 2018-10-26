@@ -13,7 +13,6 @@ Function that calls the profiler based on the injection mode
 def profiler_caller(conf):
     acc_time = 0
     os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings")
-    print("ENV VAR {}".format(os.environ['CAROL_FI_INFO']))
 
     if cp.DEBUG:
         print(os.environ['CAROL_FI_INFO'])
