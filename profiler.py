@@ -15,6 +15,8 @@ def main():
     gdb.execute("set non-stop off")
 
     gdb_init_strings = str(os.environ["CAROL_FI_INFO"])
+    print("ENV VAR INSIDE {}".format(os.environ['CAROL_FI_INFO']))
+
 
     try:
         for init_str in gdb_init_strings.split(";"):
