@@ -13,7 +13,7 @@ to implement the bit flip process
 class BitFlip:
     def __init__(self, **kwargs):
         # If kernel is not accessible it must return
-        # self.__register = kwargs.pop('register') if 'register' in kwargs else None
+        self.__kernel_registers = kwargs.pop('kernel_registers') if 'kernel_registers' in kwargs else None
         self.__bits_to_flip = kwargs.pop('bits_to_flip') if 'bits_to_flip' in kwargs else None
         self.__fault_model = kwargs.pop('fault_model') if 'fault_model' in kwargs else None
         self.__logging = kwargs.pop('logging') if 'logging' in kwargs else None
@@ -49,8 +49,6 @@ class BitFlip:
             # RF is the default mode of injection
             if 'RF' in self.__injection_mode or self.__injection_mode is None:
                 self.fault_injected = self.__rf_generic_injector()
-            elif 'VARS' in self.__injection_mode:
-                pass
             elif 'INST' in self.__injection_mode:
                 pass
 
@@ -172,15 +170,22 @@ class BitFlip:
     """
 
     def __select_register(self):
-        info_reg_cmd = cf.execute_command(gdb=gdb, to_execute="info registers")
-        pattern = ".*R(\d+).*0x(\S+).*"
-        valid_registers = []
-
-        for reg in info_reg_cmd:
-            m = re.match(pattern, reg)
-            if m:
-                reg_content = int(m.group(2), 16)
-                if reg_content != 0:
-                    valid_registers.append(m.group(1))
-
-        self.__register = "R{}".format(random.choice(valid_registers))
+        # info_reg_cmd = cf.execute_command(gdb=gdb, to_execute="info registers")
+        # pattern = ".*R(\d+).*0x(\S+).*"
+        # valid_registers = []
+        #
+        # for reg in info_reg_cmd:
+        #     m = re.match(pattern, reg)
+        #     if m:
+        #         reg_content = int(m.group(2), 16)
+        #         if reg_content != 0:
+        #             valid_registers.append(m.group(1))
+        #
+        # self.__register = "R{}".format(random.choice(valid_registers))
+        disassemble_array = cf.execute_command(gdb=gdb, to_execute="disassemble")
+        m = re.match(".*Dump of assembler code for function[ ]+(\S+)\:.*", disassemble_array[0])
+        max_num_register = 1
+        if m:
+            kernel = m.group(1)
+            max_num_register = self.__kernel_registers[kernel]
+        self.__register = "R{}".format(random.randint(0, max_num_register))
