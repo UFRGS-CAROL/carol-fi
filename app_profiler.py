@@ -1,11 +1,11 @@
 #!/usr/bin/python
 import argparse
 import os
+import signal
 import sys
 import time
 import common_functions as cf
 import common_parameters as cp
-
 
 """
 CTRL + C event
@@ -26,40 +26,28 @@ def signal_handler(sig, frame):
 
 
 def generate_dict(sm_version, input_file_name):
-    if len(sys.argv) != 4:
-        print "Usage: python extract_reg_numbers.py <application name> <sm version> <stderr file name>"
-        print "Example: python extract_reg_numbers.py simple_add sm_35 stderr"
-        print "It is prefered that you run this script from the application directory and store the pickle file there."
-        sys.exit(-1)
+    with open(input_file_name, "r") as f:
+        # dictionary to store the number of allocated registers per static
+        kernel_reg = {}
 
-    f = open(input_file_name, "r")
+        kname = ""  # temporary variable to store the kname
+        check_for_regcount = False
 
-    # dictionary to store the number of allocated registers per static
-    kernel_reg = {}
+        # process the input file created by capturing the stderr while compiling the
+        # application using -Xptxas -v options
+        for line in f:  # for each line in the file
+            if "Compiling entry function" in line:  # if line has this string
+                kname = line.split("'")[1].strip()  # extract kernel name
+                check_for_regcount = True if sm_version in line else False
+            if check_for_regcount and ": Used" in line and "registers, " in line:
+                reg_num = line.split(':')[1].split()[1]  # extract register number
+                if kname not in kernel_reg:
+                    # associate the extracted register number with the kernel name
+                    kernel_reg[kname] = int(reg_num.strip())
+                else:
+                    print "Warning: " + kname + " exists in the kernel_reg dictionary. Skipping this regcount."
 
-    kname = ""  # temporary variable to store the kname
-    check_for_regcount = False
-
-    # process the input file created by capturing the stderr while compiling the
-    # application using -Xptxas -v options
-    for line in f:  # for each line in the file
-        if "Compiling entry function" in line:  # if line has this string
-            kname = line.split("'")[1].strip()  # extract kernel name
-            check_for_regcount = True if sm_version in line else False
-        if check_for_regcount and ": Used" in line and "registers, " in line:
-            reg_num = line.split(':')[1].split()[1]  # extract register number
-            if kname not in kernel_reg:
-                kernel_reg[kname] = int(reg_num.strip())  # associate the extracted register number with the kernel name
-            else:
-                print "Warning: " + kname + " exists in the kernel_reg dictionary. Skipping this regcount."
-
-    # print the recorded kernel_reg dictionary
-    # pickle_filename = app + "_kernel_regcount.p"
-    # cPickle.dump(kernel_reg, open(pickle_filename, "wb"))
-    # print "Created the pickle file: " + os.getcwd() + "/" + pickle_filename
-    # print "Load it from the specific_params.py file"
     return kernel_reg
-    # print_dictionary(kernel_reg)
 
 
 """
@@ -106,6 +94,7 @@ def generate_gold(conf):
 
 
 def main():
+    global kill_strings
     os.system("rm -f {}".format(cp.KERNEL_INFO_DIR))
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
@@ -114,6 +103,10 @@ def main():
 
     # Read the configuration file with data for all the apps that will be executed
     conf = cf.load_config_file(args.config_file)
+
+    # Attach the signal to event
+    kill_strings = conf.get("DEFAULT", "killStrs")
+    signal.signal(signal.SIGINT, signal_handler)
 
     # First set env vars
     cf.set_python_env()
