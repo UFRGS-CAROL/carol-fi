@@ -78,7 +78,7 @@ def profiler_caller(conf):
         profiler_cmd = cf.run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
         print(profiler_cmd)
         start = time.time()
-        os.system(profiler_cmd)
+        # os.system(profiler_cmd)
         end = time.time()
         acc_time += end - start
         cf.kill_all(conf=conf)
@@ -102,7 +102,7 @@ def generate_gold(conf):
                                      script=profiler_script)
 
     # Execute and save gold file
-    os.system(profiler_cmd)
+    # os.system(profiler_cmd)
 
 
 def main():
