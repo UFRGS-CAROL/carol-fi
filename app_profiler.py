@@ -7,12 +7,22 @@ import common_functions as cf
 import common_parameters as cp
 
 
-# helper function, if you do not want to use the picke function
-# def print_dictionary(d):
-#     print "{"
-#     for key in d:
-#         print "\t'" + key + "': " + d[key] + ","
-#     print "}"
+"""
+CTRL + C event
+"""
+
+
+def signal_handler(sig, frame):
+    global kill_strings
+    print("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
+    kill_cmds = kill_strings.split(";")
+    for cmd in kill_cmds:
+        try:
+            os.system(cmd)
+        except Exception as err:
+            print("Command err: {}".format(str(err)))
+
+    sys.exit(0)
 
 
 def generate_dict(sm_version, input_file_name):
@@ -99,9 +109,6 @@ def main():
     os.system("rm -f {}".format(cp.KERNEL_INFO_DIR))
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
-    parser.add_argument('-s', '--sm', dest="sm_processor", help='Stream multiprocessor arch', required=True)
-    parser.add_argument('-m', '--stderr', dest="make_stderr", help='Makefile stderr file', required=True)
-
 
     args = parser.parse_args()
 
@@ -117,12 +124,15 @@ def main():
     # it will also get app output for golden copy
     # that is,
     print("###################################################\n1 - Profiling application")
-    # max_time_app = profiler_caller(conf=conf)
+    max_time_app = profiler_caller(conf=conf)
 
     # saving gold
     generate_gold(conf=conf)
 
-    kernel_regs = generate_dict(sm_version=args.sm_processor, input_file_name=args.stderr)
+    sm_processor = conf.get("DEFAULT", "smx")
+    stderr = conf.get("DEFAULT", "makeStderr")
+    kernel_regs = generate_dict(sm_version=sm_processor, input_file_name=stderr)
+
     # Load and re-save the kernel configuration txt file
     # kernel_list = cf.load_file(file_path=cp.KERNEL_INFO_DIR)
     cf.save_file(file_path=cp.KERNEL_INFO_DIR, data=[{'max_time': max_time_app, 'kernel_registers': kernel_regs}])
