@@ -2,6 +2,8 @@ import os
 import gdb
 from classes.BitFlip import BitFlip
 from classes.Logging import Logging
+import common_parameters as cp
+import common_functions as cf
 
 """
 Handler attached to exit event
@@ -43,7 +45,7 @@ Main function
 
 
 def main():
-    global global_logging, register, injection_mode, bits_to_flip, fault_model, was_hit, bit_lip, kernel_registers
+    global global_logging, register, injection_mode, bits_to_flip, fault_model, was_hit, bit_lip
 
     was_hit = False
 
@@ -62,7 +64,10 @@ def main():
     # Get variables values from environment
     # First parse line
     [register, bits_to_flip, fault_model, flip_log_file,
-     gdb_init_strings, injection_mode, kernel_registers] = str(os.environ['CAROL_FI_INFO']).split('|')
+     gdb_init_strings, injection_mode] = str(os.environ['CAROL_FI_INFO']).split('|')
+
+    # Load kernel registers
+    kernel_dict = cf.load_file(cf.cp.KERNEL_INFO_DIR)
 
     # Logging
     global_logging = Logging(log_file=flip_log_file)
@@ -79,7 +84,8 @@ def main():
     bits_to_flip = [i for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
     bit_lip = BitFlip(register=register, bits_to_flip=bits_to_flip, fault_model=fault_model,
-                      logging=global_logging, injection_mode=injection_mode, kernel_registers=kernel_registers)
+                      logging=global_logging, injection_mode=injection_mode,
+                      kernel_registers=kernel_dict["kernel_registers"])
 
     # Start app execution
     gdb.execute("r")
@@ -101,6 +107,5 @@ fault_model = None
 was_hit = False
 injection_mode = None
 bit_lip = None
-kernel_registers = None
 
 main()
