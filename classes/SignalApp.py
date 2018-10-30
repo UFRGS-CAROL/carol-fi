@@ -45,7 +45,7 @@ class SignalApp(Thread):
 
             # Mathews complains
             del process
-            self.__log.info("signal out: {} signal err: {}".format(out))
+            self.__log.info("signal out: {} signal err: {}".format(out, err))
             time.sleep(self.__time_to_sleep)
 
     def get_int_wait_time(self):
