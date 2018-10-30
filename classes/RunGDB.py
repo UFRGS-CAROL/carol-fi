@@ -25,6 +25,8 @@ class RunGDB(Thread):
         if cp.DEBUG:
             print("GDB Thread run, section and id: {}".format(self.__unique_id))
 
+        os.environ['OMP_NUM_THREADS'] = '1'
+
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
         system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &")
 
