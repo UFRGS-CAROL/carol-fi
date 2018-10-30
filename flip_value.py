@@ -64,7 +64,7 @@ def main():
 
     # Get variables values from environment
     # First parse line
-    [register, bits_to_flip, fault_model, flip_log_file,
+    [bits_to_flip, fault_model, flip_log_file,
      gdb_init_strings, injection_mode] = str(os.environ['CAROL_FI_INFO']).split('|')
 
     # Load kernel registers
@@ -84,7 +84,7 @@ def main():
     # Set Breakpoint attributes to be use
     bits_to_flip = [i for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
-    bit_lip = BitFlip(register=register, bits_to_flip=bits_to_flip, fault_model=fault_model,
+    bit_lip = BitFlip(bits_to_flip=bits_to_flip, fault_model=fault_model,
                       logging=global_logging, injection_mode=injection_mode,
                       kernel_registers=kernel_dict["kernel_registers"])
 
