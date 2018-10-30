@@ -1,7 +1,5 @@
 # Max size of register
-HALF_MAX_SIZE_REGISTER = 16
 SINGLE_MAX_SIZE_REGISTER = 32
-DOUBLE_MAX_SIZE_REGISTER = 64
 
 # Times to profile
 # this will be the max number of executions
@@ -52,7 +50,7 @@ TIME_TO_SLEEP = 0.01
 LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
 
 # If there are multiple GPUs set the one that will be used
-GPU_INDEX = '3'
+GPU_INDEX = '0'
 
 # MAX INT 32 bits
 MAX_INT_32 = 4294967295
