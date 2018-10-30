@@ -1,6 +1,4 @@
 import time
-from subprocess import Popen, PIPE
-
 from classes.Logging import Logging
 from threading import Thread
 from random import uniform
@@ -17,6 +15,7 @@ class SignalApp(Thread):
     def __init__(self, signal_cmd, max_wait_time, log_path, unique_id, signals_to_send):
         super(SignalApp, self).__init__()
         self.__signal_cmd = signal_cmd
+        os.system("rm -f {}".format(log_path))
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
         self.__init_wait_time = uniform(0, float(max_wait_time) * cp.TIME_WAIT_START_SIGNAL)
         self.__signals_to_send = int(signals_to_send)
@@ -40,12 +39,8 @@ class SignalApp(Thread):
             if os.environ['CAROL_FI_INJECTED'] == '1':
                 break
 
-            process = Popen(self.__signal_cmd, stdout=PIPE, shell=True)
-            (out, err) = process.communicate()
-
-            # Mathews complains
-            del process
-            self.__log.info("signal out: {} signal err: {}".format(out, err))
+            os.system("{} > /dev/null 2>/dev/null".format(self.__signal_cmd))
+            self.__log.info("sending signal {}".format(signals))
             time.sleep(self.__time_to_sleep)
 
     def get_int_wait_time(self):
