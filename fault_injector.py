@@ -457,7 +457,7 @@ by creating a breakpoint and steeping into it
 """
 
 
-def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_list, summary_file, current_path,
+def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_dict, summary_file, current_path,
                                   host_thread):
     # kludge
     if conf.has_option("DEFAULT", "kludge"):
@@ -469,51 +469,51 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_li
     for fault_model in fault_models:
         # Execute one fault injection for a specific app
         # For each kernel
-        for kernel_info_dict in kernel_info_list:
-            num_rounds = 1
-            while num_rounds <= iterations:
-                # Generate an unique id for this fault injection
-                # Thread is for multi gpu
-                unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
-                register, bits_to_flip = gen_injection_location(max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
-                                                                injection_site=conf.get("DEFAULT", "injectionSite"),
-                                                                fault_model=fault_model)
+        # for kernel_info_dict in kernel_info_list:
+        num_rounds = 1
+        while num_rounds <= iterations:
+            # Generate an unique id for this fault injection
+            # Thread is for multi gpu
+            unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
+            register, bits_to_flip = gen_injection_location(max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
+                                                            injection_site=conf.get("DEFAULT", "injectionSite"),
+                                                            fault_model=fault_model)
 
-                # max time that app can run
-                max_time = kernel_info_dict["max_time"]
+            # max time that app can run
+            max_time = kernel_info_dict["max_time"]
 
-                # inject one fault with an specified fault model, in a specific
-                # thread, in a bit flip pattern
-                fi_tic = int(time.time())
-                old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = gdb_inject_fault(
-                    section="DEFAULT",
-                    conf=conf,
-                    unique_id=unique_id,
-                    valid_register=register,
-                    bits_to_flip=bits_to_flip,
-                    fault_model=fault_model,
-                    max_time=max_time,
-                    current_path=current_path,
-                    kludge=kludge)
+            # inject one fault with an specified fault model, in a specific
+            # thread, in a bit flip pattern
+            fi_tic = int(time.time())
+            old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = gdb_inject_fault(
+                section="DEFAULT",
+                conf=conf,
+                unique_id=unique_id,
+                valid_register=register,
+                bits_to_flip=bits_to_flip,
+                fault_model=fault_model,
+                max_time=max_time,
+                current_path=current_path,
+                kludge=kludge)
 
-                # Time toc
-                fi_toc = int(time.time())
+            # Time toc
+            fi_toc = int(time.time())
 
-                # FI injection time
-                injection_time = fi_toc - fi_tic
+            # FI injection time
+            injection_time = fi_toc - fi_tic
 
-                if fault_injected:
-                    # 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
-                    # 'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
-                    # 'register', 'breakpoint_location', 'fault_successful',
-                    # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip', 'log_file'
-                    # Write a row to summary file
-                    row = [num_rounds, fault_model, thread, block, old_val, new_val, 0, register,
-                           fault_injected, hang, crash, sdc, injection_time,
-                           signal_init_time, bits_to_flip, only_for_radiation_benchs()]
-                    print(row)
-                    summary_file.write_row(row=row)
-                    num_rounds += 1
+            if fault_injected:
+                # 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
+                # 'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
+                # 'register', 'breakpoint_location', 'fault_successful',
+                # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip', 'log_file'
+                # Write a row to summary file
+                row = [num_rounds, fault_model, thread, block, old_val, new_val, 0, register,
+                       fault_injected, hang, crash, sdc, injection_time,
+                       signal_init_time, bits_to_flip, only_for_radiation_benchs()]
+                print(row)
+                summary_file.write_row(row=row)
+                num_rounds += 1
 
 
 """
@@ -567,10 +567,8 @@ def main():
     # Creating a summary csv file
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
 
-    # Load information file generated in profiler step
-    kernel_info_list = cf.load_file(cp.KERNEL_INFO_DIR)
     fault_injection_by_breakpoint(conf=conf, fault_models=fault_models, iterations=int(iterations),
-                                  kernel_info_list=kernel_info_list, summary_file=summary_file,
+                                  kernel_info_dict=cf.load_file(cp.KERNEL_INFO_DIR), summary_file=summary_file,
                                   current_path=current_path, host_thread=0)
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))

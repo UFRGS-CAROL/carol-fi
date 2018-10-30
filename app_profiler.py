@@ -128,7 +128,7 @@ def main():
 
     # Load and re-save the kernel configuration txt file
     # kernel_list = cf.load_file(file_path=cp.KERNEL_INFO_DIR)
-    cf.save_file(file_path=cp.KERNEL_INFO_DIR, data=[{'max_time': max_time_app, 'kernel_registers': kernel_regs}])
+    cf.save_file(file_path=cp.KERNEL_INFO_DIR, data={'max_time': max_time_app, 'kernel_registers': kernel_regs})
 
     print("1 - Profile finished\n###################################################")
 
