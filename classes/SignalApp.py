@@ -20,6 +20,9 @@ class SignalApp(Thread):
         self.__signals_to_send = int(signals_to_send)
         self.__time_to_sleep = (float(max_wait_time) - self.__init_wait_time) / float(self.__signals_to_send)
 
+        # Avoid multiple signals
+        os.environ['CAROL_FI_INJECTED'] = '0'
+
     def run(self):
         # Send a series of signal to make sure gdb will flip a value in one of the interrupt signals
         log_string = "Sending a signal using command: {} after {}s.".format(self.__signal_cmd, self.__init_wait_time)
@@ -32,6 +35,9 @@ class SignalApp(Thread):
 
         self.__log.info(log_string)
         for signals in range(0, self.__signals_to_send):
+            if os.environ['CAROL_FI_INJECTED'] == '1':
+                break
+
             os.system(self.__signal_cmd)
             time.sleep(self.__time_to_sleep)
 

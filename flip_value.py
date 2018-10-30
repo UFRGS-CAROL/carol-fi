@@ -35,6 +35,8 @@ def set_event(event):
         if bit_lip.fault_injected is False:
             bit_lip.single_event()
             global_logging.info("BIT FLIP SET ON SIGNAL {}".format(event.stop_signal))
+        else:
+            os.environ['CAROL_FI_INJECTED'] = '1'
     except Exception as err:
         global_logging.exception("EVENT DIFFERENT FROM STOP SIGNAL: {}".format(str(err)))
 
