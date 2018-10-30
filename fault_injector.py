@@ -92,11 +92,11 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
     # FI successful
     fi_injected = False
     if os.path.isfile(flip_log_file):
-        fp = open(flip_log_file, "r")
-        content = fp.read()
-        if re.search('Fault Injection Successful', content):
-            fi_injected = True
-        fp.close()
+        with open(flip_log_file, "r") as fp:
+            content = fp.read()
+            if re.search('Fault Injection Successful', content):
+                fi_injected = True
+            fp.close()
 
     dt = datetime.datetime.fromtimestamp(time.time())
     ymd = dt.strftime('%Y_%m_%d')
@@ -374,30 +374,6 @@ def only_for_radiation_benchs():
 
 
 """
-Randomly selects a thread, address and a bit location
-to inject a fault.
-"""
-
-
-def gen_injection_location(injection_site, fault_model):
-    # Randomly choose a place to inject a fault
-    bits_to_flip = bit_flip_selection(fault_model=fault_model)
-
-    # Select INST_OUT, INST_ADD, and RF
-    # instruction output
-    if injection_site == 'INST_OUT':
-        raise NotImplementedError
-    # instruction address
-    elif injection_site == 'INST_ADD':
-        raise NotImplementedError
-    # Register file
-    # elif injection_site == 'RF':
-    #     valid_register = 'R' + str(random.randint(0, max_num_regs))
-
-    return bits_to_flip
-
-
-"""
 This function will select the bits that will be flipped
 if it is least significant bits it will reduce the starting bit range
 """
@@ -453,24 +429,15 @@ by creating a breakpoint and steeping into it
 
 def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_dict, summary_file, current_path,
                                   host_thread):
-    # kludge
-    if conf.has_option("DEFAULT", "kludge"):
-        kludge = conf.get("DEFAULT", "kludge")
-    else:
-        kludge = None
-
     # Execute the fault injector for each one of the sections(apps) of the configuration file
     for fault_model in fault_models:
-        # Execute one fault injection for a specific app
-        # For each kernel
-        # for kernel_info_dict in kernel_info_list:
+        # Execute iterations number of fault injection for a specific app
         num_rounds = 1
         while num_rounds <= iterations:
             # Generate an unique id for this fault injection
             # Thread is for multi gpu
             unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
-            bits_to_flip = gen_injection_location(injection_site=conf.get("DEFAULT", "injectionSite"),
-                                                  fault_model=fault_model)
+            bits_to_flip = bit_flip_selection(fault_model=fault_model)
 
             # max time that app can run
             max_time = kernel_info_dict["max_time"]
@@ -478,15 +445,12 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_di
             # inject one fault with an specified fault model, in a specific
             # thread, in a bit flip pattern
             fi_tic = int(time.time())
-            register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = gdb_inject_fault(
-                section="DEFAULT",
-                conf=conf,
-                unique_id=unique_id,
-                bits_to_flip=bits_to_flip,
-                fault_model=fault_model,
-                max_time=max_time,
-                current_path=current_path,
-                kludge=kludge)
+            ret = gdb_inject_fault(section="DEFAULT", conf=conf, unique_id=unique_id, bits_to_flip=bits_to_flip,
+                                   fault_model=fault_model,
+                                   max_time=max_time,
+                                   current_path=current_path)
+
+            register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = ret
 
             # Time toc
             fi_toc = int(time.time())
@@ -495,11 +459,6 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_di
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                # 'iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
-                # 'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
-                # 'register', 'breakpoint_location', 'fault_successful',
-                # 'crash', 'sdc', 'time', 'inj_time_location', 'bits_to_flip', 'log_file'
-                # Write a row to summary file
                 row = [num_rounds, fault_model, thread, block, old_val, new_val, 0, register,
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, only_for_radiation_benchs()]
