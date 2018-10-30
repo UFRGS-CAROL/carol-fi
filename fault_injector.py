@@ -221,9 +221,9 @@ The default parameters are necessary for break and signal mode differentiations
 """
 
 
-def gen_env_string(valid_register, bits_to_flip, fault_model, flip_log_file, gdb_init_strings, injection_mode):
+def gen_env_string(bits_to_flip, fault_model, flip_log_file, gdb_init_strings, injection_mode):
     # Block and thread
-    env_string = valid_register + "|" + ",".join(str(i) for i in bits_to_flip)
+    env_string = ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(injection_mode)
 
     if cp.DEBUG:
@@ -243,7 +243,6 @@ def gdb_inject_fault(**kwargs):
     fault_model = kwargs.get('fault_model')
     section = kwargs.get('section')
     unique_id = kwargs.get('unique_id')
-    valid_register = kwargs.get('valid_register')
     conf = kwargs.get('conf')
     max_time = float(kwargs.get('max_time'))
 
@@ -259,7 +258,6 @@ def gdb_inject_fault(**kwargs):
 
     # Generate configuration file for specific test
     gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
-                   valid_register=valid_register,
                    bits_to_flip=bits_to_flip,
                    fault_model=fault_model,
                    flip_log_file=flip_log_file,
@@ -362,7 +360,8 @@ def gdb_inject_fault(**kwargs):
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
 
-    return old_value, new_value, fi_successful, is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread
+    register = "R0"
+    return register, old_value, new_value, fi_successful, is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread
 
 
 # TODO: REMOVE THIS FUNCTION
@@ -380,10 +379,9 @@ to inject a fault.
 """
 
 
-def gen_injection_location(max_num_regs, injection_site, fault_model):
+def gen_injection_location(injection_site, fault_model):
     # Randomly choose a place to inject a fault
     bits_to_flip = bit_flip_selection(fault_model=fault_model)
-    valid_register = None
 
     # Select INST_OUT, INST_ADD, and RF
     # instruction output
@@ -393,14 +391,10 @@ def gen_injection_location(max_num_regs, injection_site, fault_model):
     elif injection_site == 'INST_ADD':
         raise NotImplementedError
     # Register file
-    elif injection_site == 'RF':
-        valid_register = 'R' + str(random.randint(0, max_num_regs))
+    # elif injection_site == 'RF':
+    #     valid_register = 'R' + str(random.randint(0, max_num_regs))
 
-    # Variables
-    elif injection_site == 'VARS':
-        valid_register = 'R0'
-
-    return valid_register, bits_to_flip
+    return bits_to_flip
 
 
 """
@@ -475,9 +469,8 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_di
             # Generate an unique id for this fault injection
             # Thread is for multi gpu
             unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
-            register, bits_to_flip = gen_injection_location(max_num_regs=int(conf.get("DEFAULT", "maxNumRegs")),
-                                                            injection_site=conf.get("DEFAULT", "injectionSite"),
-                                                            fault_model=fault_model)
+            bits_to_flip = gen_injection_location(injection_site=conf.get("DEFAULT", "injectionSite"),
+                                                  fault_model=fault_model)
 
             # max time that app can run
             max_time = kernel_info_dict["max_time"]
@@ -485,11 +478,10 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_di
             # inject one fault with an specified fault model, in a specific
             # thread, in a bit flip pattern
             fi_tic = int(time.time())
-            old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = gdb_inject_fault(
+            register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = gdb_inject_fault(
                 section="DEFAULT",
                 conf=conf,
                 unique_id=unique_id,
-                valid_register=register,
                 bits_to_flip=bits_to_flip,
                 fault_model=fault_model,
                 max_time=max_time,
