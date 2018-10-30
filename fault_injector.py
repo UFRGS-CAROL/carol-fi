@@ -19,13 +19,16 @@ from classes.SummaryFile import SummaryFile
 from classes.Logging import Logging
 from classes.SignalApp import SignalApp
 
+
+created_threads = []
+
 """
 CTRL + C event
 """
 
 
 def signal_handler(sig, frame):
-    global kill_strings
+    global kill_strings, created_threads
     print("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
@@ -33,6 +36,10 @@ def signal_handler(sig, frame):
             os.system(cmd)
         except Exception as err:
             print("Command err: {}".format(str(err)))
+
+    # Finish all threads
+    for th in created_threads:
+        th.join()
 
     sys.exit(0)
 
@@ -238,6 +245,8 @@ return old register value, new register value
 
 
 def gdb_inject_fault(**kwargs):
+    global created_threads
+    
     # These are the mandatory parameters
     bits_to_flip = kwargs.get('bits_to_flip')
     fault_model = kwargs.get('fault_model')
@@ -282,6 +291,10 @@ def gdb_inject_fault(**kwargs):
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
                         flip_script=cp.FLIP_SCRIPT)
+
+    # Add the created threads to the variable
+    # to kill it if it is needed
+    created_threads.extend([fi_process, signal_app_thread])
 
     if cp.DEBUG:
         print("STARTING PROCESS")
