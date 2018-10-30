@@ -48,11 +48,11 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
     # Wait maxWaitTimes the normal duration of the program before killing it
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
 
-    p_is_alive = p.is_alive()
     if cp.DEBUG:
         print("MAX_WAIT_TIME {}".format(max_wait_time))
 
     # Watchdog to avoid hangs
+    p_is_alive = p.is_alive()
     now = int(time.time())
     diff_time = now - timestamp_start
     while diff_time < max_wait_time and p_is_alive:

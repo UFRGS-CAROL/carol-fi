@@ -38,7 +38,7 @@ class SignalApp(Thread):
             if os.environ['CAROL_FI_INJECTED'] == '1':
                 break
 
-            os.system(self.__signal_cmd)
+            os.system("{} > /dev/null 2>/dev/null".format(self.__signal_cmd))
             time.sleep(self.__time_to_sleep)
 
     def get_int_wait_time(self):

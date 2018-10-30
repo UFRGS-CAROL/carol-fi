@@ -43,13 +43,7 @@ class RunGDB(Thread):
             process = Popen(check_running, stdout=PIPE, shell=True)
             (out, err) = process.communicate()
 
-            # Matheus complains
-            try:
-                process.kill()
-            except Exception as err:
-                if cp.DEBUG:
-                    print("Process kill not availiable {}".format(err))
-
+            # Mathews complains
             del process
 
             if search(exe, str(out)):
