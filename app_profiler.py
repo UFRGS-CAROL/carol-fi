@@ -71,7 +71,7 @@ def profiler_caller(conf):
         print("\n{}\n".format(end-start))
         acc_time += end - start
         cf.kill_all(conf=conf)
-
+    print(cp.MAX_TIMES_TO_PROFILE)
     return acc_time / cp.MAX_TIMES_TO_PROFILE
 
 
