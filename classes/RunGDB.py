@@ -46,8 +46,9 @@ class RunGDB(Thread):
             # Matheus complains
             try:
                 process.kill()
-            except:
-                pass
+            except Exception as err:
+                if cp.DEBUG:
+                    print("Process kill not availiable {}".format(err))
 
             del process
 
