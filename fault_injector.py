@@ -59,7 +59,6 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
         time.sleep(sleep_time)
         p_is_alive = p.is_alive()
         now = int(time.time())
-        print(p_is_alive)
         diff_time = now - timestamp_start
 
     # Process finished ok
