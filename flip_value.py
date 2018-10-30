@@ -2,7 +2,6 @@ import os
 import gdb
 from classes.BitFlip import BitFlip
 from classes.Logging import Logging
-import common_parameters as cp
 import common_functions as cf
 
 """

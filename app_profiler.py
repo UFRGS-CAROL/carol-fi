@@ -30,22 +30,23 @@ def generate_dict(sm_version, input_file_name):
         # dictionary to store the number of allocated registers per static
         kernel_reg = {}
 
-        kname = ""  # temporary variable to store the kname
-        check_for_regcount = False
+        kernel_name = ""  # temporary variable to store the kernel_name
+        check_for_register_count = False
 
         # process the input file created by capturing the stderr while compiling the
         # application using -Xptxas -v options
         for line in f:  # for each line in the file
             if "Compiling entry function" in line:  # if line has this string
-                kname = line.split("'")[1].strip()  # extract kernel name
-                check_for_regcount = True if sm_version in line else False
-            if check_for_regcount and ": Used" in line and "registers, " in line:
+                kernel_name = line.split("'")[1].strip()  # extract kernel name
+                check_for_register_count = True if sm_version in line else False
+            if check_for_register_count and ": Used" in line and "registers, " in line:
                 reg_num = line.split(':')[1].split()[1]  # extract register number
-                if kname not in kernel_reg:
+                if kernel_name not in kernel_reg:
                     # associate the extracted register number with the kernel name
-                    kernel_reg[kname] = int(reg_num.strip())
+                    kernel_reg[kernel_name] = int(reg_num.strip())
                 else:
-                    print "Warning: " + kname + " exists in the kernel_reg dictionary. Skipping this regcount."
+                    print("Warning: {} exists in the kernel_reg dictionary. "
+                          "Skipping this register count.".format(kernel_name))
 
     return kernel_reg
 
@@ -64,10 +65,10 @@ def profiler_caller(conf):
 
     for i in range(0, cp.MAX_TIMES_TO_PROFILE):
         profiler_cmd = cf.run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
-        print(profiler_cmd)
         start = time.time()
         os.system(profiler_cmd)
         end = time.time()
+        print(end-start)
         acc_time += end - start
         cf.kill_all(conf=conf)
 
