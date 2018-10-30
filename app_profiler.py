@@ -68,10 +68,9 @@ def profiler_caller(conf):
         start = time.time()
         os.system(profiler_cmd)
         end = time.time()
-        print("\n{}\n".format(end-start))
         acc_time += end - start
         cf.kill_all(conf=conf)
-    print(cp.MAX_TIMES_TO_PROFILE)
+
     return acc_time / cp.MAX_TIMES_TO_PROFILE
 
 
