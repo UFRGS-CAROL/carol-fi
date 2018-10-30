@@ -1,4 +1,6 @@
 import time
+from subprocess import Popen, PIPE
+
 from classes.Logging import Logging
 from threading import Thread
 from random import uniform
@@ -38,7 +40,12 @@ class SignalApp(Thread):
             if os.environ['CAROL_FI_INJECTED'] == '1':
                 break
 
-            os.system("{} > /dev/null 2>/dev/null".format(self.__signal_cmd))
+            process = Popen(self.__signal_cmd, stdout=PIPE, shell=True)
+            (out, err) = process.communicate()
+
+            # Mathews complains
+            del process
+            self.__log.info("signal out: {} signal err: {}".format(out))
             time.sleep(self.__time_to_sleep)
 
     def get_int_wait_time(self):
