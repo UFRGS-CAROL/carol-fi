@@ -183,6 +183,7 @@ class BitFlip:
         #
         # self.__register = "R{}".format(random.choice(valid_registers))
         disassemble_array = cf.execute_command(gdb=gdb, to_execute="disassemble")
+        self.__logging.debug("error on select register {}".format(disassemble_array[0]))
         m = re.match(".*Dump of assembler code for function[ ]+(\S+)\:.*", disassemble_array[0])
         max_num_register = 1
         if m:
