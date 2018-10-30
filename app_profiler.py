@@ -68,7 +68,7 @@ def profiler_caller(conf):
         start = time.time()
         os.system(profiler_cmd)
         end = time.time()
-        print(end-start)
+        print("\n{}\n".format(end-start))
         acc_time += end - start
         cf.kill_all(conf=conf)
 
