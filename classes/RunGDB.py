@@ -45,7 +45,7 @@ class RunGDB(Thread):
 
             # Mathews complains
             del process
-
+            print(exe, out)
             if search(exe, str(out)):
                 return True
 
