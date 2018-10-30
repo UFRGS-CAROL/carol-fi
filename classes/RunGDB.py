@@ -27,7 +27,6 @@ class RunGDB(Thread):
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
         system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &")
-        print(start_cmd)
 
     """
     Check if the process is still alive
@@ -46,7 +45,6 @@ class RunGDB(Thread):
 
             # Mathews complains
             del process
-            print(exe, out, err, check_running)
             if search(exe, str(out)):
                 return True
 
