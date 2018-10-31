@@ -394,7 +394,7 @@ def gdb_inject_fault(**kwargs):
 
 
 def only_for_radiation_benchs():
-    list_of_files = glob.glob('/home/ffsantos/radiation-benchmarks/log/*.log')
+    list_of_files = glob.glob('/home/carol/radiation-benchmarks/log/*.log')
     latest_file = max(list_of_files, key=os.path.getctime)
     return os.path.basename(latest_file)
 
@@ -545,7 +545,9 @@ def main():
 
     fault_injection_by_breakpoint(conf=conf, fault_models=fault_models, iterations=int(iterations),
                                   kernel_info_dict=cf.load_file(cp.KERNEL_INFO_DIR), summary_file=summary_file,
-                                  current_path=current_path, host_thread=0)
+                                  current_path=current_path, host_thread=0,
+                                  injection_site=conf.get("DEFAULT", "injectionSite"))
+
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
     print("###################################################")
