@@ -246,7 +246,7 @@ return old register value, new register value
 
 def gdb_inject_fault(**kwargs):
     global created_threads
-    
+
     # These are the mandatory parameters
     bits_to_flip = kwargs.get('bits_to_flip')
     fault_model = kwargs.get('fault_model')
