@@ -19,7 +19,6 @@ from classes.SummaryFile import SummaryFile
 from classes.Logging import Logging
 from classes.SignalApp import SignalApp
 
-
 created_threads = []
 
 """
@@ -340,7 +339,7 @@ def gdb_inject_fault(**kwargs):
     # Search for set values for register
     # Must be done before save output
     # Was fault injected?
-    block = thread = "___"
+    kernel = register = block = thread = "___"
     try:
         old_value = re.findall("old_value:(\S+)", logging.search("old_value"))[0]
         new_value = re.findall("new_value:(\S+)", logging.search("new_value"))[0]
@@ -359,6 +358,18 @@ def gdb_inject_fault(**kwargs):
             if m:
                 thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
+        register_selected = logging.search("SELECTED_REGISTER")
+        if register_selected:
+            m = re.search("SELECTED_REGISTER:(\S+).*", register_selected)
+            if m:
+                register = m.group(1)
+
+        kernel_selected = logging.search("SELECTED_REGISTER")
+        if kernel_selected:
+            m = re.search("SELECTED_KERNEL:(\S+).*", kernel_selected)
+            if m:
+                kernel = m.group(1)
+
         fi_successful = True
     except Exception as e:
         new_value = old_value = None
@@ -374,8 +385,9 @@ def gdb_inject_fault(**kwargs):
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
 
-    register = "R0"
-    return register, old_value, new_value, fi_successful, is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread
+    return_list = [kernel, register, old_value, new_value, fi_successful,
+                   is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread]
+    return return_list
 
 
 # TODO: REMOVE THIS FUNCTION
@@ -442,7 +454,7 @@ by creating a breakpoint and steeping into it
 
 
 def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_dict, summary_file, current_path,
-                                  host_thread):
+                                  host_thread, injection_site):
     # Execute the fault injector for each one of the sections(apps) of the configuration file
     for fault_model in fault_models:
         # Execute iterations number of fault injection for a specific app
@@ -464,7 +476,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_di
                                    max_time=max_time,
                                    current_path=current_path)
 
-            register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = ret
+            kernel, register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = ret
 
             # Time toc
             fi_toc = int(time.time())
@@ -473,7 +485,7 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_di
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                row = [num_rounds, fault_model, thread, block, old_val, new_val, 0, register,
+                row = [kernel, register, num_rounds, fault_model, thread, block, old_val, new_val, injection_site,
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, only_for_radiation_benchs()]
                 print(row)
@@ -519,10 +531,9 @@ def main():
     fault_models = [int(i) for i in str(conf.get('DEFAULT', 'faultModel')).split(',')]
 
     # Csv log
-    fieldnames = ['iteration', 'fault_model', 'thread_x', 'thread_y', 'thread_z',
-                  'block_x', 'block_y', 'block_z', 'old_value', 'new_value', 'inj_mode',
-                  'register', 'fault_successful', 'hang',
-                  'crash', 'sdc', 'time', 'inj_time_location', 'bits_flipped', 'log_file']
+    fieldnames = ['kernel', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
+                  'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
+                  'inj_time_location', 'bits_flipped', 'log_file']
 
     ########################################################################
     # Fault injection

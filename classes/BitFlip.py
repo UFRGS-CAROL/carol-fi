@@ -86,7 +86,7 @@ class BitFlip:
         block_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_block_cmd)
         # Thread focus return information
         self.__logging.info(
-            "CUDA_BLOCK_FOCUS: " + str(block_focus).replace("[", "").replace("]", "").strip())
+            "CUDA_BLOCK_FOCUS:{}".format(str(block_focus).replace("[", "").replace("]", "").strip()))
 
         # Selecting the thread
         threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
@@ -105,7 +105,7 @@ class BitFlip:
 
         # Thread focus return information
         self.__logging.info(
-            "CUDA_THREAD_FOCUS: " + str(thread_focus).replace("[", "").replace("]", "").strip())
+            "CUDA_THREAD_FOCUS:{}".format(str(thread_focus).replace("[", "").replace("]", "").strip()))
 
     """
     Flip a bit or multiple bits based on a fault model
@@ -170,23 +170,14 @@ class BitFlip:
     """
 
     def __select_register(self):
-        # info_reg_cmd = cf.execute_command(gdb=gdb, to_execute="info registers")
-        # pattern = ".*R(\d+).*0x(\S+).*"
-        # valid_registers = []
-        #
-        # for reg in info_reg_cmd:
-        #     m = re.match(pattern, reg)
-        #     if m:
-        #         reg_content = int(m.group(2), 16)
-        #         if reg_content != 0:
-        #             valid_registers.append(m.group(1))
-        #
-        # self.__register = "R{}".format(random.choice(valid_registers))
         disassemble_array = cf.execute_command(gdb=gdb, to_execute="disassemble")
         self.__logging.debug("error on select register {}".format(disassemble_array[0]))
         m = re.match(".*Dump of assembler code for function[ ]+(\S+)\:.*", disassemble_array[0])
         max_num_register = 1
+        kernel = ''
         if m:
             kernel = m.group(1)
             max_num_register = self.__kernel_registers[kernel]
         self.__register = "R{}".format(random.randint(0, max_num_register))
+        self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
+        self.__logging.info("SELECTED_KERNEL:{}".format(kernel))
