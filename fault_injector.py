@@ -364,7 +364,7 @@ def gdb_inject_fault(**kwargs):
             if m:
                 register = m.group(1)
 
-        kernel_selected = logging.search("SELECTED_REGISTER")
+        kernel_selected = logging.search("SELECTED_KERNEL")
         if kernel_selected:
             m = re.search("SELECTED_KERNEL:(\S+).*", kernel_selected)
             if m:
