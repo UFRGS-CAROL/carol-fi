@@ -52,8 +52,12 @@ LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
 # If there are multiple GPUs set the one that will be used
 GPU_INDEX = '0'
 
+# Multiple gpus execution
+PROCESS_ID = "/tmp/carol_fi_process_id_{}.txt"
+
 # MAX INT 32 bits
 MAX_INT_32 = 4294967295
+
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
 SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes

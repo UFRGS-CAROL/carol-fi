@@ -21,6 +21,7 @@ class RunGDB(Thread):
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
+        self.__process_file = cp.PROCESS_ID.format(unique_id)
 
     def run(self):
         if cp.DEBUG:
@@ -29,7 +30,17 @@ class RunGDB(Thread):
         os.environ['OMP_NUM_THREADS'] = '1'
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
-        system(start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &")
+        script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
+        to_execute = """from subprocess import Popen
+                with open({}, "w") as fp:
+                    fp.write(str(Popen({}).pid))"""
+
+        exec(to_execute.format(self.__process_file, script))
+
+    def kill_subprocess(self):
+        with open(self.__process_file, "r") as fi:
+            id = int(fi.read())
+            system("kill -9 {}".format(id))
 
     """
     Check if the process is still alive
