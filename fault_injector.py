@@ -48,7 +48,7 @@ Check if app stops execution (otherwise kill it after a time)
 """
 
 
-def check_finish(section, conf, logging, timestamp_start, end_time, p):
+def check_finish(section, conf, logging, timestamp_start, end_time, thread):
     is_hang = False
 
     # Wait maxWaitTimes the normal duration of the program before killing it
@@ -58,12 +58,12 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
         print("MAX_WAIT_TIME {} SLEEP_TIME {}".format(max_wait_time, sleep_time))
 
     # Watchdog to avoid hangs
-    p_is_alive = p.is_alive()
+    p_is_alive = thread.is_alive()
     now = int(time.time())
     diff_time = now - timestamp_start
     while diff_time < max_wait_time and p_is_alive:
         time.sleep(sleep_time)
-        p_is_alive = p.is_alive()
+        p_is_alive = thread.is_alive()
         now = int(time.time())
         diff_time = now - timestamp_start
 
@@ -85,6 +85,9 @@ def check_finish(section, conf, logging, timestamp_start, end_time, p):
 
     # Kill all the processes to make sure the machine is clean for another test
     cf.kill_all(conf=conf, logging=logging)
+
+    # Also kill the subprocess
+    thread.kill_subprocess()
 
     return is_hang
 
@@ -310,7 +313,7 @@ def gdb_inject_fault(**kwargs):
 
     # Check if app stops execution (otherwise kill it after a time)
     is_hang = check_finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-                           end_time=max_time, p=fi_process)
+                           end_time=max_time, thread=fi_process)
     if cp.DEBUG:
         print("FINISH CHECK OK")
 
