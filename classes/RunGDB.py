@@ -31,7 +31,7 @@ class RunGDB(Thread):
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
         script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
-        to_execute = "python ./process_start.py {} {}"
+        to_execute = 'python ./process_start.py {} "{}"'
         print(to_execute.format(self.__process_file, script))
         os.system(to_execute.format(self.__process_file, script))
 
