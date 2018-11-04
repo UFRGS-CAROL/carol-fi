@@ -32,14 +32,16 @@ class RunGDB(Thread):
         os.environ['OMP_NUM_THREADS'] = '1'
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__base_path + "/" + self.__flip_script)
-        script = "{} > {} 2>{} &".format(start_cmd, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH)
+        script = "env OMP_NUM_THREADS=1 CUDA_VISIBLE_DEVICES={} PYTHONPATH=$PYTHONPATH:{}:{}/classes {} > {} 2>{} &"
+        script = script.format(cp.GPU_INDEX, self.__base_path, self.__base_path, start_cmd, cp.INJ_OUTPUT_PATH,
+                               cp.INJ_ERR_PATH)
         print(script)
         # script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
         # os.system(to_execute.format(self.__process_file, script))
-        self.__process = Popen(script, shell=True)
+        self.__process = Popen(script)
 
     def kill_subprocess(self):
-        system("kill -9 {}".format(self.__process.id))
+        system("kill -9 {}".format(self.__process.pid))
         self.__process.terminate()
         self.__process.kill()
 
