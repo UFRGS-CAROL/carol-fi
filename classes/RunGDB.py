@@ -31,14 +31,14 @@ class RunGDB(Thread):
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
         script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
-        to_execute = """from subprocess import Popen\nwith open("{}", "w") as fp:\n    fp.write(str(Popen("{}").pid))"""
+        to_execute = "python ./process_start.py {} {}  &"
         print(to_execute.format(self.__process_file, script))
-        exec(to_execute.format(self.__process_file, script))
+        os.system(to_execute.format(self.__process_file, script))
 
     def kill_subprocess(self):
         with open(self.__process_file, "r") as fi:
-            id = int(fi.read())
-            system("kill -9 {}".format(id))
+            process_id = int(fi.read())
+            system("kill -9 {}".format(process_id))
 
     """
     Check if the process is still alive
