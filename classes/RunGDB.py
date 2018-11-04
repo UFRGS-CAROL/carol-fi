@@ -18,7 +18,7 @@ this thread will be killed
 class RunGDB(Thread):
     def __init__(self, unique_id, gdb_exec_name, flip_script, carol_fi_base_path):
         super(RunGDB, self).__init__()
-        self.__process_id = ''
+        self.__process = None
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
@@ -35,24 +35,12 @@ class RunGDB(Thread):
         script = "{} > {} 2>{} &".format(start_cmd, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH)
         # script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
         # os.system(to_execute.format(self.__process_file, script))
-        with self.run_and_terminate_process(script) as run_p:
-            self.__process_id = run_p.pid
-
-    from contextlib import contextmanager
-    @contextmanager
-    def run_and_terminate_process(self, *args, **kwargs):
-        p = None
-        try:
-            p = Popen(*args, **kwargs)
-            yield p
-        finally:
-            p.terminate()  # send sigterm, or ...
-            p.kill()
+        self.__process = Popen(script)
 
     def kill_subprocess(self):
-        with open(self.__process_file, "r") as fi:
-            # process_id = int(fi.read())
-            system("kill -9 {}".format(self.__process_id))
+        system("kill -9 {}".format(self.__process.id))
+        self.__process.terminate()
+        self.__process.kill()
 
     """
     Check if the process is still alive
