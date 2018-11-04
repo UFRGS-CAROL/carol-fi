@@ -45,7 +45,7 @@ class RunGDB(Thread):
         # script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
         # os.system(to_execute.format(self.__process_file, script))
         print(my_env)
-        self.__process = Popen(script, env=my_env)
+        self.__process = Popen(script, shell=True, env=my_env)
 
     def kill_subprocess(self):
         system("kill -9 {}".format(self.__process.pid))
