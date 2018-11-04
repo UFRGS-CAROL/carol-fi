@@ -256,6 +256,7 @@ def gdb_inject_fault(**kwargs):
     unique_id = kwargs.get('unique_id')
     conf = kwargs.get('conf')
     max_time = float(kwargs.get('max_time'))
+    current_path = kwargs.get('current_path')
 
     # Logging file
     flip_log_file = cp.LOG_DEFAULT_NAME.format(unique_id)
@@ -292,7 +293,7 @@ def gdb_inject_fault(**kwargs):
     # Create one thread to start gdb script
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
-                        flip_script=cp.FLIP_SCRIPT)
+                        flip_script=cp.FLIP_SCRIPT, carol_fi_base_path=current_path)
 
     # Add the created threads to the variable
     # to kill it if it is needed
