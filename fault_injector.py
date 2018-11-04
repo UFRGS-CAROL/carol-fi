@@ -27,9 +27,10 @@ CTRL + C event
 
 
 def signal_handler(sig, frame):
-    global kill_strings, created_threads
+    global kill_strings, created_threads, cuda_gdb
     print("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
+    kill_cmds.append("killall -9 {}".format(cuda_gdb))
     for cmd in kill_cmds:
         try:
             os.system(cmd)
@@ -248,7 +249,7 @@ return old register value, new register value
 
 
 def gdb_inject_fault(**kwargs):
-    global created_threads
+    global created_threads, cuda_gdb
 
     # These are the mandatory parameters
     bits_to_flip = kwargs.get('bits_to_flip')
@@ -258,6 +259,8 @@ def gdb_inject_fault(**kwargs):
     conf = kwargs.get('conf')
     max_time = float(kwargs.get('max_time'))
     current_path = kwargs.get('current_path')
+
+    cuda_gdb = os.path.basename(conf.get("DEFAULT", "gdbExecName"))
 
     # Logging file
     flip_log_file = cp.LOG_DEFAULT_NAME.format(unique_id)
