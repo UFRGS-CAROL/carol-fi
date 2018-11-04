@@ -18,7 +18,6 @@ this thread will be killed
 class RunGDB(Thread):
     def __init__(self, unique_id, gdb_exec_name, flip_script, carol_fi_base_path, gdb_env_string):
         super(RunGDB, self).__init__()
-        self.__process = None
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
@@ -30,27 +29,15 @@ class RunGDB(Thread):
         if cp.DEBUG:
             print("GDB Thread run, section and id: {}".format(self.__unique_id))
 
-        # os.environ['OMP_NUM_THREADS'] = '1'
+        os.environ['OMP_NUM_THREADS'] = '1'
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__base_path + "/" + self.__flip_script)
-        script = '{} > {} 2>{}'
-        my_env = os.environ
-        my_env['CAROL_FI_INFO'] = self.__gdb_env_string
-        my_env['OMP_NUM_THREADS'] = '1'
-        my_env['CUDA_VISIBLE_DEVICES'] = cp.GPU_INDEX
-        my_env['PYTHONPATH'] = '$PYTHONPATH:{}:{}/classes'.format(self.__base_path, self.__base_path)
-
+        script = '{} > {} 2>{} &'
         script = script.format(start_cmd, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH)
-        print(script)
-        # script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
-        # os.system(to_execute.format(self.__process_file, script))
-        print(my_env)
-        self.__process = Popen(script, shell=True, env=my_env)
+        os.system(script)
 
     def kill_subprocess(self):
-        system("kill -9 {}".format(self.__process.pid))
-        self.__process.terminate()
-        self.__process.kill()
+        os.system("killall -9 {}".format(os.path.basename(self.__gdb_exe_name)))
 
     """
     Check if the process is still alive
