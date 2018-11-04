@@ -33,12 +33,12 @@ class RunGDB(Thread):
         # os.environ['OMP_NUM_THREADS'] = '1'
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__base_path + "/" + self.__flip_script)
-        script = '{} > {} 2>{} &'
+        script = '{} > {} 2>{}'
         my_env = os.environ
         my_env['CAROL_FI_INFO'] = self.__gdb_env_string
         my_env['OMP_NUM_THREADS'] = '1'
-        my_env['CUDA_VISIBLE_DEVICES'] =  cp.GPU_INDEX
-        my_env['PYTHONPATH'] = '$PYTHONPATH:{}:{}/classes'.format(self.__base_path,self.__base_path)
+        my_env['CUDA_VISIBLE_DEVICES'] = cp.GPU_INDEX
+        my_env['PYTHONPATH'] = '$PYTHONPATH:{}:{}/classes'.format(self.__base_path, self.__base_path)
 
         script = script.format(start_cmd, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH)
         print(script)
