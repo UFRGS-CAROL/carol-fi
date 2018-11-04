@@ -33,6 +33,7 @@ class RunGDB(Thread):
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__base_path + "/" + self.__flip_script)
         script = "{} > {} 2>{} &".format(start_cmd, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH)
+        print(script)
         # script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
         # os.system(to_execute.format(self.__process_file, script))
         self.__process = Popen(script)
