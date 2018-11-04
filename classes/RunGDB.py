@@ -32,9 +32,22 @@ class RunGDB(Thread):
         os.environ['OMP_NUM_THREADS'] = '1'
 
         start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__base_path + "/" + self.__flip_script)
-        script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
-        os.spawnl(os.P_NOWAIT, script)
+        script = "{} > {} 2>{} &".format(start_cmd, cp.INJ_OUTPUT_PATH, cp.INJ_ERR_PATH)
+        # script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
         # os.system(to_execute.format(self.__process_file, script))
+        with self.run_and_terminate_process(script) as run_p:
+            self.__process_id = run_p.pid
+
+    from contextlib import contextmanager
+    @contextmanager
+    def run_and_terminate_process(self, *args, **kwargs):
+        p = None
+        try:
+            p = Popen(*args, **kwargs)
+            yield p
+        finally:
+            p.terminate()  # send sigterm, or ...
+            p.kill()
 
     def kill_subprocess(self):
         with open(self.__process_file, "r") as fi:
