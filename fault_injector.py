@@ -238,6 +238,7 @@ def gen_env_string(bits_to_flip, fault_model, flip_log_file, gdb_init_strings, i
     if cp.DEBUG:
         print("ENV STRING:{}".format(env_string))
     os.environ['CAROL_FI_INFO'] = env_string
+    return env_string
 
 
 """
@@ -269,11 +270,11 @@ def gdb_inject_fault(**kwargs):
     logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
-    gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
-                   bits_to_flip=bits_to_flip,
-                   fault_model=fault_model,
-                   flip_log_file=flip_log_file,
-                   injection_mode=conf.get("DEFAULT", "injectionSite"))
+    gdb_env_string = gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
+                                    bits_to_flip=bits_to_flip,
+                                    fault_model=fault_model,
+                                    flip_log_file=flip_log_file,
+                                    injection_mode=conf.get("DEFAULT", "injectionSite"))
 
     if cp.DEBUG:
         print("ENV GENERATE FINISHED")
@@ -293,7 +294,7 @@ def gdb_inject_fault(**kwargs):
     # Create one thread to start gdb script
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
-                        flip_script=cp.FLIP_SCRIPT, carol_fi_base_path=current_path)
+                        flip_script=cp.FLIP_SCRIPT, carol_fi_base_path=current_path, gdb_env_string=gdb_env_string)
 
     # Add the created threads to the variable
     # to kill it if it is needed
