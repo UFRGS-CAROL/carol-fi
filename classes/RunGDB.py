@@ -16,12 +16,14 @@ this thread will be killed
 
 
 class RunGDB(Thread):
-    def __init__(self, unique_id, gdb_exec_name, flip_script):
+    def __init__(self, unique_id, gdb_exec_name, flip_script, carol_fi_base_path):
         super(RunGDB, self).__init__()
+        self.__process_id = ''
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
         self.__process_file = cp.PROCESS_ID.format(unique_id)
+        self.__base_path = carol_fi_base_path
 
     def run(self):
         if cp.DEBUG:
@@ -29,16 +31,15 @@ class RunGDB(Thread):
 
         os.environ['OMP_NUM_THREADS'] = '1'
 
-        start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__flip_script)
+        start_cmd = cf.run_gdb_python(gdb_name=self.__gdb_exe_name, script=self.__base_path + "/" + self.__flip_script)
         script = start_cmd + " >" + cp.INJ_OUTPUT_PATH + " 2>" + cp.INJ_ERR_PATH + " &"
-        to_execute = 'python ./process_start.py {} "{}"'
-        print(to_execute.format(self.__process_file, script))
-        os.system(to_execute.format(self.__process_file, script))
+        os.spawnl(os.P_NOWAIT, script)
+        # os.system(to_execute.format(self.__process_file, script))
 
     def kill_subprocess(self):
         with open(self.__process_file, "r") as fi:
-            process_id = int(fi.read())
-            system("kill -9 {}".format(process_id))
+            # process_id = int(fi.read())
+            system("kill -9 {}".format(self.__process_id))
 
     """
     Check if the process is still alive
