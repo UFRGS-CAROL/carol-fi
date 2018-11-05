@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import argparse
 import os
+import re
 import signal
 import sys
 import time
@@ -36,20 +37,34 @@ def generate_dict(sm_version, input_file_name):
         # process the input file created by capturing the stderr while compiling the
         # application using -Xptxas -v options
         for line in f:  # for each line in the file
-            print(line)
-            if "Compiling entry function" in line:  # if line has this string
-                kernel_name = line.split("'")[1].strip()  # extract kernel name
-                check_for_register_count = True if sm_version in line else False
+            # if "Compiling entry function" in line:  # if line has this string
+            #     kernel_name = line.split("'")[1].strip()  # extract kernel name
+            #     check_for_register_count = True if sm_version in line else False
+            # if check_for_register_count and ": Used" in line and "registers, " in line:
+            #     reg_num = line.split(':')[1].split()[1]  # extract register number
+            #     print(reg_num)
+            #     if kernel_name not in kernel_reg:
+            #         # associate the extracted register number with the kernel name
+            #         kernel_reg[kernel_name] = int(reg_num.strip())
+            #     else:
+            #         print("Warning: {} exists in the kernel_reg dictionary. "
+            #               "Skipping this register count.".format(kernel_name))
 
-            if check_for_register_count and ": Used" in line and "registers, " in line:
-                reg_num = line.split(':')[1].split()[1]  # extract register number
-                print(reg_num)
+            m = re.match(".*Compiling entry function.*'(\S+)'.*for.*'{}'.*".format(sm_version), line)
+            if m:
+                kernel_name = m.group(1)
+                check_for_register_count = True
+
+            m = re.match(".*Used[ ]+(\d+)[ ]+registers.*", line)
+            if check_for_register_count and m:
+                reg_num = m.group(1)  # extract register number
                 if kernel_name not in kernel_reg:
                     # associate the extracted register number with the kernel name
                     kernel_reg[kernel_name] = int(reg_num.strip())
                 else:
                     print("Warning: {} exists in the kernel_reg dictionary. "
                           "Skipping this register count.".format(kernel_name))
+                check_for_register_count = False
 
     return kernel_reg
 
