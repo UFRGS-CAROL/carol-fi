@@ -1,6 +1,7 @@
 # carol-fi
 
-CAROL-FI GDB Fault Injector should work on any recent machine with gdb.
+CAROL-FI CUDA is an cuda-gdb based fault injector. 
+CAROL-FI GDB Fault Injector should work on any recent machine with cuda-gdb.
 
 # Requeriments
 
