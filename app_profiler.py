@@ -143,7 +143,6 @@ def main():
     sm_processor = conf.get("DEFAULT", "smx")
     stderr = conf.get("DEFAULT", "makeStderr")
     kernel_regs = generate_dict(sm_version=sm_processor, input_file_name=stderr)
-    print(kernel_regs)
 
     # Save the kernel configuration txt file
     cf.save_file(file_path=cp.KERNEL_INFO_DIR, data={'max_time': max_time_app, 'kernel_registers': kernel_regs})
