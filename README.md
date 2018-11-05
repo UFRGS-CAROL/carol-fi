@@ -2,6 +2,13 @@
 
 CAROL-FI GDB Fault Injector should work on any recent machine with gdb.
 
+# Requeriments
+
+- NVIDIA GPU, tested with Kepler, Maxwell, Pascal, and Volta architectures 
+- CUDA GDB (installed with CUDA drivers)
+- Python 2.7
+- Libpython2.7 sudo apt install libpython2.7
+
 
 # How to run a simple test
 
