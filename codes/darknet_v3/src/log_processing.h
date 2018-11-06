@@ -34,7 +34,7 @@ struct Log {
 		+ std::to_string(smx_red);
 
 
-		set_iter_interval_print(10);
+//		set_iter_interval_print(10);
 
 		start_log_file(const_cast<char*>(app.c_str()),
 				const_cast<char*>(test_info.c_str()));
