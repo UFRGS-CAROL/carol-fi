@@ -355,14 +355,14 @@ def gdb_inject_fault(**kwargs):
         block_focus = logging.search("CUDA_BLOCK_FOCUS")
         if block_focus:
             # Search for block
-            m = re.search("CUDA_BLOCK_FOCUS:.*block.*\((\d+),(\d+),(\d+)\).*", block_focus)
+            m = re.search("CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", block_focus)
             if m:
                 block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
-        thread_focus = logging.search("CUDA_BLOCK_FOCUS")
+        thread_focus = logging.search("CUDA_THREAD_FOCUS")
         if thread_focus:
             # Search for thread
-            m = re.search("CUDA_THREAD_FOCUS:.*thread.*\((\d+),(\d+),(\d+)\).*", thread_focus)
+            m = re.search("CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", thread_focus)
             if m:
                 thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
