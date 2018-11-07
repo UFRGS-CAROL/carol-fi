@@ -56,7 +56,7 @@ def check_finish(section, conf, logging, timestamp_start, end_time, thread):
     max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     sleep_time = max_wait_time / cp.NUM_DIVISION_TIMES
     if cp.DEBUG:
-        print("MAX_WAIT_TIME {} SLEEP_TIME {}".format(max_wait_time, sleep_time))
+        print("MAX_WAIT_TIME {} CHECK FINISH SLEEP_TIME {}".format(max_wait_time, sleep_time))
 
     # Watchdog to avoid hangs
     p_is_alive = thread.is_alive()
