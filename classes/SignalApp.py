@@ -12,14 +12,15 @@ Signal the app to stop so GDB can execute the script to flip a value
 
 
 class SignalApp(Thread):
-    def __init__(self, signal_cmd, max_wait_time, log_path, unique_id, signals_to_send, perncentage_time_to_wait):
+    def __init__(self, signal_cmd, max_wait_time, log_path, unique_id, signals_to_send, init_sleep=0.0):
         super(SignalApp, self).__init__()
         self.__signal_cmd = signal_cmd
         os.system("rm -f {}".format(log_path))
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
-        self.__init_wait_time = uniform(0, float(max_wait_time) * perncentage_time_to_wait)
-        self.__signals_to_send = int(signals_to_send)
-        self.__time_to_sleep = (float(max_wait_time) - self.__init_wait_time) / float(self.__signals_to_send)
+
+        self.__init_wait_time = uniform(init_sleep, max_wait_time)
+        self.__signals_to_send = signals_to_send
+        self.__time_to_sleep = (max_wait_time - self.__init_wait_time) / self.__signals_to_send
 
         # Avoid multiple signals
         os.environ['CAROL_FI_INJECTED'] = '0'
