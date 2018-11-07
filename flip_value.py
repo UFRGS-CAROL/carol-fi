@@ -74,7 +74,6 @@ def main():
     # Logging
     global_logging = Logging(log_file=flip_log_file)
     global_logging.info("Starting flip_value script")
-    global_logging.debug("CAROL_FI_INFO {}".format(os.environ['CAROL_FI_INFO']))
     try:
         for init_str in gdb_init_strings.split(";"):
             gdb.execute(init_str)
