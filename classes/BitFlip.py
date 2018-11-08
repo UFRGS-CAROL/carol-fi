@@ -3,6 +3,7 @@ import gdb
 import re
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
+from collections import deque
 
 """
 BitFlip class
@@ -29,38 +30,42 @@ class BitFlip:
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
         self.__logging.debug("Trying Fault Injection with {} mode".format(self.__injection_mode))
+
+        # Register if fault was injected or not
+        self.fault_injected = False
+
         try:
             # Focusing the thread
             self.__thread_focus()
         except Exception as err:
             # Even if CUDA focus was not successful we keep going
             self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED. KEEP GOING, with error {}".format(err))
+            return
 
         try:
             self.__select_register()
         except Exception as err:
             err_str = "CANNOT SELECT THE REGISTER, PROBABLY FAULT WILL NOT BE INJECTED. Error {}".format(err)
             self.__logging.exception(err_str)
+            return
 
-        # Register if fault was injected or not
-        self.fault_injected = False
         try:
             # Do the fault injection magic
             # RF is the default mode of injection
             if 'RF' in self.__injection_mode or self.__injection_mode is None:
                 self.fault_injected = self.__rf_generic_injector()
             elif 'INST' in self.__injection_mode:
-                pass
-
-            # Test fault injection result
-            if self.fault_injected:
-                self.__logging.info("Fault Injection Successful")
-            else:
-                self.__logging.info("Fault Injection Went Wrong")
-
+                raise NotImplemented("INST MODE NOT IMPLEMENTED YET")
         except Exception as err:
             self.__logging.exception("fault_injection_python_exception: {}".format(err))
             self.__logging.exception("Fault Injection Went Wrong")
+
+        # Test fault injection result
+        if self.fault_injected:
+            self.__logging.info("Fault Injection Successful")
+        else:
+            self.__logging.info("Fault Injection Went Wrong")
+
 
     """
     Selects a valid thread for a specific
@@ -170,14 +175,17 @@ class BitFlip:
     """
 
     def __select_register(self):
-        disassemble_array = cf.execute_command(gdb=gdb, to_execute="disassemble")
-        self.__logging.debug("error on select register {}".format(disassemble_array[0]))
-        m = re.match(".*Dump of assembler code for function[ ]+(\S+)\:.*", disassemble_array[0])
+        # disassemble_array = cf.execute_command(gdb=gdb, to_execute="disassemble")
+        # self.__logging.debug("error on select register {}".format(disassemble_array[0]))
+        # m = re.match(".*Dump of assembler code for function[ ]+(\S+)\:.*", disassemble_array[0])
+        registers_list = deque(cf.execute_command(gdb=gdb, to_execute="info registers"))
         max_num_register = 1
-        kernel = ''
-        if m:
-            kernel = m.group(1)
-            max_num_register = self.__kernel_registers[kernel]
+        registers_list.popleft()
+        for line in registers_list:
+            m = re.match(".*R.*0x([0-9a-fA-F]+).*", line)
+            if m and m.group(1) != '0':
+                max_num_register += 1
+
         self.__register = "R{}".format(random.randint(0, max_num_register))
         self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
-        self.__logging.info("SELECTED_KERNEL:{}".format(kernel))
+        # self.__logging.info("SELECTED_KERNEL:{}".format(kernel))
