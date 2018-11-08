@@ -92,12 +92,8 @@ def main():
 
     i = 0
     try:
-        command = gdb.execute('c', to_string=True)
-        while 'The program' not in command:
+        while 'The program' not in gdb.execute('c', to_string=True):
             i += 1
-            command = gdb.execute('c', to_string=True)
-            global_logging.info(command)
-
     except Exception as err:
         global_logging.info("CONTINUED {} times".format(i))
         err_str = str(err).rstrip()
@@ -106,6 +102,7 @@ def main():
         # Make sure that it is going to finish
         if 'Failed' in err_str:
             gdb.execute('quit')
+            global_logging.exception("QUIT REQUIRED")
 
 
 # Call main execution
