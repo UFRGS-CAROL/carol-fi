@@ -96,6 +96,7 @@ def main():
         while 'The program' not in command:
             i += 1
             command = gdb.execute('c', to_string=True)
+            global_logging.info(command)
 
     except Exception as err:
         global_logging.info("CONTINUED {} times".format(i))
