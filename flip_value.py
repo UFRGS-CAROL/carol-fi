@@ -92,11 +92,19 @@ def main():
 
     i = 0
     try:
-        while 'The program' not in gdb.execute('c', to_string=True):
+        command = gdb.execute('c', to_string=True)
+        while 'The program' not in command:
             i += 1
+            command = gdb.execute('c', to_string=True)
+
     except Exception as err:
         global_logging.info("CONTINUED {} times".format(i))
-        global_logging.exception("IGNORED CONTINUE ERROR: {}".format(str(err)))
+        err_str = str(err).rstrip()
+        global_logging.exception("IGNORED CONTINUE ERROR: {}".format(err_str))
+
+        # Make sure that it is going to finish
+        if 'Failed' in err_str:
+            gdb.execute('quit')
 
 
 # Call main execution
