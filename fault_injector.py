@@ -238,7 +238,7 @@ def gdb_inject_fault(**kwargs):
     logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
-    gdb_env_string = "{}|{}|{}|{};{}|{}|{}".format(",".join(str(i) for i in bits_to_flip), fault_model,
+    gdb_env_string = "{}|{}|{}|file {}; {}|{}|{}".format(",".join(str(i) for i in bits_to_flip), fault_model,
                                                    flip_log_file, benchmark_binary, benchmark_args,
                                                    injection_site, host_thread)
 

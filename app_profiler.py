@@ -3,27 +3,9 @@ import argparse
 import os
 import re
 import signal
-import sys
 import time
 import common_functions as cf
 import common_parameters as cp
-
-"""
-CTRL + C event
-"""
-
-
-def signal_handler(sig, frame):
-    global kill_strings
-    print("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
-    kill_cmds = kill_strings.split(";")
-    for cmd in kill_cmds:
-        try:
-            os.system(cmd)
-        except Exception as err:
-            print("Command err: {}".format(str(err)))
-
-    sys.exit(0)
 
 
 def generate_dict(sm_version, input_file_name):
@@ -61,20 +43,21 @@ Function that calls the profiler based on the injection mode
 """
 
 
-def profiler_caller(conf):
+def profiler_caller(gdb_exec, benchmark_binary, benchmark_args):
     acc_time = 0
-    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings")
-
+    script = '{} -ex "py arg0 = {}" -n -batch -x {}'
+    init_string = "file {}; set args {}".format(benchmark_binary, benchmark_args)
+    profiler_cmd = script.format(gdb_exec, init_string, cp.PROFILER_SCRIPT)
     if cp.DEBUG:
-        print(os.environ['CAROL_FI_INFO'])
+        print("PROFILER CMD: {}".format(profiler_cmd))
 
     for i in range(0, cp.MAX_TIMES_TO_PROFILE):
-        profiler_cmd = cf.run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"), script=cp.PROFILER_SCRIPT)
         start = time.time()
         os.system(profiler_cmd)
         end = time.time()
         acc_time += end - start
-        cf.kill_all(conf=conf)
+        cf.kill_all("killall -9 {}; killall -9 {}".format(
+            os.path.basename(gdb_exec), os.path.basename(benchmark_binary)))
 
     return acc_time / cp.MAX_TIMES_TO_PROFILE
 
@@ -84,15 +67,12 @@ Function to generate the gold execution
 """
 
 
-def generate_gold(conf):
-    os.environ['CAROL_FI_INFO'] = conf.get("DEFAULT", "gdbInitStrings")
-
+def generate_gold(gdb_exec, benchmark_binary, benchmark_args):
+    script = '{} -ex "py arg0 = {}" -n -batch -x {} > {} 2> {}'
+    init_string = "file {}; set args {}".format(benchmark_binary, benchmark_args)
+    profiler_cmd = script.format(gdb_exec, init_string, cp.PROFILER_SCRIPT,  cp.GOLD_OUTPUT_PATH , cp.GOLD_ERR_PATH)
     if cp.DEBUG:
-        print(os.environ['CAROL_FI_INFO'])
-
-    profiler_script = cp.PROFILER_SCRIPT + " > " + cp.GOLD_OUTPUT_PATH + " 2> " + cp.GOLD_ERR_PATH
-    profiler_cmd = cf.run_gdb_python(gdb_name=conf.get("DEFAULT", "gdbExecName"),
-                                     script=profiler_script)
+        print("PROFILER CMD: {}".format(profiler_cmd))
 
     # Execute and save gold file
     os.system(profiler_cmd)
@@ -109,10 +89,6 @@ def main():
     # Read the configuration file with data for all the apps that will be executed
     conf = cf.load_config_file(args.config_file)
 
-    # Attach the signal to event
-    kill_strings = conf.get("DEFAULT", "killStrs")
-    signal.signal(signal.SIGINT, signal_handler)
-
     # First set env vars
     cf.set_python_env()
 
@@ -122,10 +98,14 @@ def main():
     # it will also get app output for golden copy
     # that is,
     print("###################################################\n1 - Profiling application")
-    max_time_app = profiler_caller(conf=conf)
+    benchmark_binary = conf.get('DEFAULT', 'benchmarkBinary')
+    benchmark_args = conf.get('DEFAULT', 'benchmarkArgs')
+    gdb_exec = conf.get("DEFAULT", "gdbExecName")
+
+    max_time_app = profiler_caller(gdb_exec=gdb_exec, benchmark_binary=benchmark_binary, benchmark_args=benchmark_args)
 
     # saving gold
-    generate_gold(conf=conf)
+    generate_gold(gdb_exec=gdb_exec, benchmark_binary=benchmark_binary, benchmark_args=benchmark_args)
 
     sm_processor = conf.get("DEFAULT", "smx")
     stderr = conf.get("DEFAULT", "makeStderr")

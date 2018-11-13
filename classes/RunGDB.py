@@ -31,13 +31,12 @@ class RunGDB(Thread):
         if cp.DEBUG:
             print("GDB Thread run, section and id: {}".format(self.__unique_id))
 
-        start_cmd = self.__base_path + "/" + self.__flip_script
+        start_cmd = "{}/{}".format(self.__base_path, self.__flip_script)
         script = '{} -ex "py arg0 = {}" -n -batch -x {} > {} 2>{} &'
-        script = script.format(self.__gdb_exe_name, self.__gdb_env_string,
-                               start_cmd,
-                               cp.INJ_OUTPUT_PATH.format(self.__unique_id),
-                               cp.INJ_ERR_PATH.format(self.__unique_id))
-        os.system(script)
+
+        os.system(script.format(self.__gdb_exe_name, self.__gdb_env_string,
+                                start_cmd, cp.INJ_OUTPUT_PATH.format(self.__unique_id),
+                                cp.INJ_ERR_PATH.format(self.__unique_id)))
 
     def kill_subprocess(self):
         os.system("killall -9 {}".format(os.path.basename(self.__gdb_exe_name)))
