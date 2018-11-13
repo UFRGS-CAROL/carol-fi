@@ -10,7 +10,7 @@ MAX_REGISTER_NUMBER = 255
 
 
 def check_sdc_and_crash(log_file):
-    with open("/tmp/darknet_v3/radiation-benchmarks/log/{}".format(log_file), "r") as fp:
+    with open("/tmp/var/radiation-benchmarks/log/{}".format(log_file), "r") as fp:
         data = fp.read()
         return "SDC" in data, "END" not in data
 

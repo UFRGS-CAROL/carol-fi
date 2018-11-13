@@ -49,11 +49,11 @@ Check if app stops execution (otherwise kill it after a time)
 """
 
 
-def check_finish(section, conf, logging, timestamp_start, end_time, thread):
+def check_finish(max_wait_time, logging, timestamp_start, thread, kill_string):
     is_hang = False
 
     # Wait maxWaitTimes the normal duration of the program before killing it
-    max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
+    # max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     sleep_time = max_wait_time / cp.NUM_DIVISION_TIMES
     if cp.DEBUG:
         print("MAX_WAIT_TIME {} CHECK FINISH SLEEP_TIME {}".format(max_wait_time, sleep_time))
@@ -85,7 +85,7 @@ def check_finish(section, conf, logging, timestamp_start, end_time, thread):
     logging.debug("timestampStart: {}".format(timestamp_start))
 
     # Kill all the processes to make sure the machine is clean for another test
-    cf.kill_all(conf=conf, logging=logging)
+    cf.kill_all(kill_string=kill_string, logging=logging)
 
     # Also kill the subprocess
     thread.kill_subprocess()
@@ -142,28 +142,6 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
         except Exception as err:
             if cp.DEBUG:
                 print("ERROR ON MOVING {} -- {}".format(file_to_move, str(err)))
-
-
-"""
-Pre execution commands
-"""
-
-
-def pre_execution(conf, section):
-    if conf.has_option(section, "preExecScript"):
-        script = conf.get(section, "preExecScript")
-        os.system(script)
-
-
-"""
-Pos execution commands
-"""
-
-
-def pos_execution(conf, section):
-    if conf.has_option(section, "posExecScript"):
-        script = conf.get(section, "posExecScript")
-        os.system(script)
 
 
 """
@@ -231,8 +209,8 @@ The default parameters are necessary for break and signal mode differentiations
 """
 
 
-def gen_env_string(bits_to_flip, fault_model, flip_log_file, gdb_init_strings, injection_mode):
-    # Block and thread
+def gen_env_string(bits_to_flip, fault_model, flip_log_file, benchmark_binary, benchmark_args, injection_mode):
+    gdb_init_strings = "file {};{}".format(benchmark_binary, benchmark_args)
     env_string = ",".join(str(i) for i in bits_to_flip)
     env_string += "|" + str(fault_model) + "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(injection_mode)
 
@@ -240,6 +218,10 @@ def gen_env_string(bits_to_flip, fault_model, flip_log_file, gdb_init_strings, i
         print("ENV STRING:{}".format(env_string))
     os.environ['CAROL_FI_INFO'] = env_string
     return env_string
+
+
+
+def gen_thread_info_file()
 
 
 """
@@ -256,11 +238,20 @@ def gdb_inject_fault(**kwargs):
     fault_model = kwargs.get('fault_model')
     section = kwargs.get('section')
     unique_id = kwargs.get('unique_id')
-    conf = kwargs.get('conf')
+    # conf = kwargs.get('conf')
     max_time = float(kwargs.get('max_time'))
     current_path = kwargs.get('current_path')
 
-    cuda_gdb = os.path.basename(conf.get("DEFAULT", "gdbExecName"))
+    # cuda_gdb = os.path.basename(conf.get("DEFAULT", "gdbExecName"))
+    cuda_gdb = os.path.basename(kwargs.get('gdb_path'))
+
+    # injection site
+    injection_site = kwargs.get('injection_site')
+
+    benchmark_args = kwargs.get('benchmark_args')
+    benchmark_binary = kwargs.get('benchmark_binary')
+
+    executing_thread = kwargs.get('executing_thread')
 
     # Logging file
     flip_log_file = cp.LOG_DEFAULT_NAME.format(unique_id)
@@ -273,20 +264,15 @@ def gdb_inject_fault(**kwargs):
     logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
-    gdb_env_string = gen_env_string(gdb_init_strings=conf.get(section, "gdbInitStrings"),
-                                    bits_to_flip=bits_to_flip,
+    gdb_env_string = gen_env_string(bits_to_flip=bits_to_flip,
                                     fault_model=fault_model,
                                     flip_log_file=flip_log_file,
-                                    injection_mode=conf.get("DEFAULT", "injectionSite"))
+                                    benchmark_args=benchmark_args,
+                                    benchmark_binary=benchmark_binary,
+                                    injection_mode=injection_site)
 
     if cp.DEBUG:
         print("ENV GENERATE FINISHED")
-
-    # Run pre execution function
-    pre_execution(conf=conf, section=section)
-
-    if cp.DEBUG:
-        print("PRE EXECUTION")
 
     # First we have to start the SignalApp thread
     signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),

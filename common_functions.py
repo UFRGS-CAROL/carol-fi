@@ -56,6 +56,7 @@ def load_file(file_path):
         data = pickle.load(f_in)
         return data
 
+
 """
 Read configuration file
 """
@@ -77,8 +78,8 @@ Kill all remaining processes
 """
 
 
-def kill_all(conf, logging=None):
-    for cmd in str(conf.get("DEFAULT", "killStrs")).split(";"):
+def kill_all(kill_string, logging=None):
+    for cmd in kill_string.split(";"):
         os.system(cmd)
         if logging:
             logging.debug("kill cmd: {}".format(cmd))
@@ -90,9 +91,9 @@ It makes standart gdb script calls
 """
 
 
-def run_gdb_python(gdb_name, script):
+def run_gdb_python(gdb_name, script, gpu_index):
     # cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
-    os.environ['CUDA_VISIBLE_DEVICES'] = cp.GPU_INDEX
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
     cmd = gdb_name + ' -n -batch -x ' + script  # -batch-silent
     # -n --nh --nx -q --return-child-result -x
     return cmd
