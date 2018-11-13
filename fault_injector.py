@@ -14,6 +14,8 @@ import signal
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 import sys
+from threading import Thread
+
 from classes.RunGDB import RunGDB
 from classes.SummaryFile import SummaryFile
 from classes.Logging import Logging
@@ -37,10 +39,6 @@ def signal_handler(sig, frame):
         except Exception as err:
             print("Command err: {}".format(str(err)))
 
-    # Finish all threads
-    for th in created_threads:
-        th.join()
-
     sys.exit(0)
 
 
@@ -49,7 +47,7 @@ Check if app stops execution (otherwise kill it after a time)
 """
 
 
-def check_finish(max_wait_time, logging, timestamp_start, thread, kill_string):
+def check_finish(max_wait_time, logging, timestamp_start, process, thread, kill_string):
     is_hang = False
 
     # Wait maxWaitTimes the normal duration of the program before killing it
@@ -59,12 +57,12 @@ def check_finish(max_wait_time, logging, timestamp_start, thread, kill_string):
         print("MAX_WAIT_TIME {} CHECK FINISH SLEEP_TIME {}".format(max_wait_time, sleep_time))
 
     # Watchdog to avoid hangs
-    p_is_alive = thread.is_alive()
+    p_is_alive = process.is_alive()
     now = int(time.time())
     diff_time = now - timestamp_start
     while diff_time < max_wait_time and p_is_alive:
         time.sleep(sleep_time)
-        p_is_alive = thread.is_alive()
+        p_is_alive = process.is_alive()
         now = int(time.time())
         diff_time = now - timestamp_start
 
@@ -76,9 +74,9 @@ def check_finish(max_wait_time, logging, timestamp_start, thread, kill_string):
 
     # check execution finished before or after waitTime
     if diff_time < max_wait_time:
-        logging.info("Execution finished before waitTime. {} seconds.".format(diff_time))
+        logging.info("Execution on thread {} finished before waitTime. {} seconds.".format(thread, diff_time))
     else:
-        logging.info("Execution did not finish before waitTime {} seconds.".format(diff_time))
+        logging.info("Execution on thread {} finished before waitTime. {} seconds.".format(thread, diff_time))
         is_hang = True
 
     logging.debug("now: {}".format(now))
@@ -88,7 +86,7 @@ def check_finish(max_wait_time, logging, timestamp_start, thread, kill_string):
     cf.kill_all(kill_string=kill_string, logging=logging)
 
     # Also kill the subprocess
-    thread.kill_subprocess()
+    process.kill_subprocess()
 
     return is_hang
 
@@ -202,59 +200,35 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
 
 
 """
-Generate environment string for cuda-gdb
-valid_block, valid_thread, valid_register, bits_to_flip, fault_model, injection_site, breakpoint_location,
-    flip_log_file, debug, gdb_init_strings
-The default parameters are necessary for break and signal mode differentiations
-"""
-
-
-def gen_env_string(bits_to_flip, fault_model, flip_log_file, benchmark_binary, benchmark_args, injection_mode):
-    gdb_init_strings = "file {};{}".format(benchmark_binary, benchmark_args)
-    env_string = ",".join(str(i) for i in bits_to_flip)
-    env_string += "|" + str(fault_model) + "|" + flip_log_file + "|" + gdb_init_strings + "|" + str(injection_mode)
-
-    if cp.DEBUG:
-        print("ENV STRING:{}".format(env_string))
-    os.environ['CAROL_FI_INFO'] = env_string
-    return env_string
-
-
-
-def gen_thread_info_file()
-
-
-"""
 Function to run one execution of the fault injector
 return old register value, new register value
 """
 
 
 def gdb_inject_fault(**kwargs):
-    global created_threads, cuda_gdb
-
     # These are the mandatory parameters
     bits_to_flip = kwargs.get('bits_to_flip')
     fault_model = kwargs.get('fault_model')
-    section = kwargs.get('section')
     unique_id = kwargs.get('unique_id')
-    # conf = kwargs.get('conf')
-    max_time = float(kwargs.get('max_time'))
+    max_time = kwargs.get('max_time')
     current_path = kwargs.get('current_path')
-
-    # cuda_gdb = os.path.basename(conf.get("DEFAULT", "gdbExecName"))
-    cuda_gdb = os.path.basename(kwargs.get('gdb_path'))
 
     # injection site
     injection_site = kwargs.get('injection_site')
-
     benchmark_args = kwargs.get('benchmark_args')
     benchmark_binary = kwargs.get('benchmark_binary')
-
-    executing_thread = kwargs.get('executing_thread')
+    host_thread = kwargs.get('host_thread')
+    seq_signals = kwargs.get('seq_signals')
+    init_sleep = kwargs.get('init_sleep')
+    sdc_check_script = kwargs.get('gold_check_script')
 
     # Logging file
     flip_log_file = cp.LOG_DEFAULT_NAME.format(unique_id)
+
+    # signalCmd
+    signal_cmd = kwargs.get("signal_cmd")
+    cuda_gdb = os.path.basename(kwargs.get('gdb_path'))
+    gdb_exec_name = kwargs.get('gdb_path')
 
     # Starting FI process
     if cp.DEBUG:
@@ -264,30 +238,23 @@ def gdb_inject_fault(**kwargs):
     logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
-    gdb_env_string = gen_env_string(bits_to_flip=bits_to_flip,
-                                    fault_model=fault_model,
-                                    flip_log_file=flip_log_file,
-                                    benchmark_args=benchmark_args,
-                                    benchmark_binary=benchmark_binary,
-                                    injection_mode=injection_site)
+    gdb_env_string = "{}|{}|{}|{};{}|{}|{}".format(",".join(str(i) for i in bits_to_flip), fault_model,
+                                                   flip_log_file, benchmark_binary, benchmark_args,
+                                                   injection_site, host_thread)
 
     if cp.DEBUG:
         print("ENV GENERATE FINISHED")
 
     # First we have to start the SignalApp thread
-    signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=conf.get("DEFAULT", "signalCmd"),
+    signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=signal_cmd,
                                   log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id,
-                                  signals_to_send=int(conf.get("DEFAULT", "seqSignals")),
-                                  init_sleep=float(conf.get("DEFAULT", "initSleep")))
+                                  signals_to_send=seq_signals,
+                                  init_sleep=init_sleep)
 
     # Create one thread to start gdb script
     # Start fault injection process
-    fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=conf.get("DEFAULT", "gdbExecName"),
+    fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=gdb_exec_name,
                         flip_script=cp.FLIP_SCRIPT, carol_fi_base_path=current_path, gdb_env_string=gdb_env_string)
-
-    # Add the created threads to the variable
-    # to kill it if it is needed
-    created_threads.extend([fi_process, signal_app_thread])
 
     if cp.DEBUG:
         print("STARTING PROCESS")
@@ -303,8 +270,10 @@ def gdb_inject_fault(**kwargs):
     timestamp_start = int(time.time())
 
     # Check if app stops execution (otherwise kill it after a time)
-    is_hang = check_finish(section=section, conf=conf, logging=logging, timestamp_start=timestamp_start,
-                           end_time=max_time, thread=fi_process)
+    # max_wait_time, logging, timestamp_start, thread, kill_string
+    is_hang = check_finish(max_wait_time=max_time, logging=logging, timestamp_start=timestamp_start,
+                           process=fi_process, thread=host_thread,
+                           kill_string="killall -9 {}; killall -9 {}".format(benchmark_binary, cuda_gdb))
     if cp.DEBUG:
         print("FINISH CHECK OK")
 
@@ -321,10 +290,6 @@ def gdb_inject_fault(**kwargs):
     if cp.DEBUG:
         print("PROCESS JOINED")
 
-    # Run pos execution function
-    pos_execution(conf=conf, section=section)
-    sdc_check_script = conf.get('DEFAULT', 'goldenCheckScript')
-    #
     # # Check output files for SDCs
     is_sdc, is_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
     if cp.DEBUG:
@@ -447,8 +412,16 @@ by creating a breakpoint and steeping into it
 """
 
 
-def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_dict, summary_file, current_path,
-                                  host_thread, injection_site):
+def fault_injection_by_breakpoint(**kwargs):
+    # Global rows list
+    global summary_file_rows
+    benchmark_binary = kwargs.get('benchmark_binary')
+    kwargs['signal_cmd'] = "killall -2 {}".format(benchmark_binary)
+    fault_models = kwargs.get('fault_models')
+    iterations = kwargs.get('iterations')
+    host_thread = kwargs.get('host_thread')
+    injection_site = kwargs.get('injection_site')
+
     # Execute the fault injector for each one of the sections(apps) of the configuration file
     for fault_model in fault_models:
         # Execute iterations number of fault injection for a specific app
@@ -458,20 +431,11 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_di
             # Thread is for multi gpu
             unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
             bits_to_flip = bit_flip_selection(fault_model=fault_model)
+            kwargs['unique_id'] = unique_id
 
-            # max time that app can run
-            max_time = kernel_info_dict["max_time"]
-
-            # inject one fault with an specified fault model, in a specific
-            # thread, in a bit flip pattern
             fi_tic = int(time.time())
-            ret = gdb_inject_fault(section="DEFAULT", conf=conf, unique_id=unique_id, bits_to_flip=bits_to_flip,
-                                   fault_model=fault_model,
-                                   max_time=max_time,
-                                   current_path=current_path)
-
+            ret = gdb_inject_fault(**kwargs)
             kernel, register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = ret
-
             # Time toc
             fi_toc = int(time.time())
 
@@ -479,11 +443,12 @@ def fault_injection_by_breakpoint(conf, fault_models, iterations, kernel_info_di
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                row = [kernel, register, num_rounds, fault_model, thread, block, old_val, new_val, injection_site,
-                       fault_injected, hang, crash, sdc, injection_time,
-                       signal_init_time, bits_to_flip, only_for_radiation_benchs()]
-                print(row)
-                summary_file.write_row(row=row)
+                summary_file_rows.append(
+                    [unique_id, kernel, register, num_rounds, fault_model, thread,
+                     block, old_val, new_val, injection_site,
+                     fault_injected, hang, crash, sdc, injection_time,
+                     signal_init_time, bits_to_flip, only_for_radiation_benchs()])
+
                 num_rounds += 1
 
 
@@ -493,11 +458,14 @@ Main function
 
 
 def main():
-    global kill_strings
+    global kill_strings, summary_file_rows
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
                         help='How many times to repeat the programs in the configuration file', required=True)
+
+    parser.add_argument('-n', '--n_gpus', dest="n_threads", help="The number of availiable GPUs to perform FI."
+                                                                 " Default is 1.", required=False, default=1)
 
     args = parser.parse_args()
     if args.iterations < 1:
@@ -520,30 +488,71 @@ def main():
     print("2 - {} faults will be injected".format(args.iterations))
     print("###################################################")
     ########################################################################
-    # Injector setup
-    # Get fault models
-    fault_models = [int(i) for i in str(conf.get('DEFAULT', 'faultModel')).split(',')]
+    summary_file_rows = []
+
+    # Define the number of threads tha will execute
+    num_gpus = args.n_gpus
+    iterations = args.iterations
+    if args.n_gpus > args.iterations:
+        num_gpus = args.iterations
+
+    os.system('mkdir -p {}/bin'.format(current_path))
+    # Set binaries for the injection
+    benchmark_binary_default = conf.get('DEFAULT', 'benchmarkBinary')
+    gdb_path_default = conf.get('DEFAULT', 'gdbExecName')
+
+    each_thread_iterations = iterations / num_gpus
+
+    gpus_threads = []
+    kernel_info_dict = cf.load_file(cp.KERNEL_INFO_DIR)
+
+    for thread_id in range(0, num_gpus):
+        gdb = "{}/bin/{}_{}".format(current_path, os.path.basename(gdb_path_default), thread_id)
+        benchmark_binary = "{}/bin/{}_{}".format(current_path, os.path.basename(benchmark_binary_default), thread_id)
+
+        os.system("ln -s {} {}".format(gdb_path_default, gdb))
+        os.system("ln -s {} {}".format(benchmark_binary_default, benchmark_binary))
+        # These are the mandatory parameters
+        kwargs = {
+            'injection_site': conf.get('DEFAULT', 'injectionSite'),
+            'fault_models': [int(i) for i in str(conf.get('DEFAULT', 'faultModel')).split(',')],
+            'max_time': float(kernel_info_dict['max_time']) * float(conf.get('DEFAULT', 'maxWaitTimes')),
+            'iterations': each_thread_iterations,
+            'benchmark_binary': benchmark_binary,
+            'benchmark_args': conf.get('DEFAULT', 'benchmarkArgs'),
+            'host_thread': thread_id,
+            'gdb_path': gdb,
+            'current_path':current_path,
+            'seq_signals': conf.get('DEFAULT', 'seqSignals'),
+            'init_sleep': conf.get('DEFAULT', 'initSleep'),
+            'sdc_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript'))
+        }
+
+        fi_master_thread = Thread(target=fault_injection_by_breakpoint, args=(kwargs,))
+        gpus_threads.append(fi_master_thread)
+
+    for thread in gpus_threads:
+        thread.start()
+
+    for thread in gpus_threads:
+        thread.join()
+
+    # Logging all results (DANGEROUS)
+    # Creating a summary csv file
+    csv_file = conf.get("DEFAULT", "csvFile")
 
     # Csv log
     fieldnames = ['kernel', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
                   'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
                   'inj_time_location', 'bits_flipped', 'log_file']
-
-    ########################################################################
-    # Fault injection
-    iterations = args.iterations
-    csv_file = conf.get("DEFAULT", "csvFile")
-
-    # Creating a summary csv file
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
 
-    fault_injection_by_breakpoint(conf=conf, fault_models=fault_models, iterations=int(iterations),
-                                  kernel_info_dict=cf.load_file(cp.KERNEL_INFO_DIR), summary_file=summary_file,
-                                  current_path=current_path, host_thread=0,
-                                  injection_site=conf.get("DEFAULT", "injectionSite"))
+    # Writing everything to file
+    summary_file.write_rows(summary_file_rows)
 
+    os.system("rm -f {}/bin/*".format(current_path))
     print("###################################################")
-    print("2 - Fault injection finished, results can be found in {}".format(conf.get("DEFAULT", "csvFile")))
+    print("2 - Fault injection finished, results can be found in {}".format(csv_file))
     print("###################################################")
     ########################################################################
 
@@ -551,6 +560,8 @@ def main():
 ########################################################################
 #                                   Main                               #
 ########################################################################
+
+summary_file_rows = None
 
 if __name__ == "__main__":
     main()

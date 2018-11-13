@@ -88,3 +88,14 @@ class SummaryFile:
         rows = [row for row in self.__dict_buff]
         self.__close_csv()
         return rows
+
+    """
+    Write series of rows to csv
+    """
+
+    def write_rows(self, rows_list):
+        if isinstance(rows_list, list):
+            self.__open_csv()
+            for row in rows_list:
+                self.__dict_buff.writerow(row)
+            self.__close_csv()

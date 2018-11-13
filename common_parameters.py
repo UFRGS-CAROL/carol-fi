@@ -14,8 +14,8 @@ GOLD_ERR_PATH = "/tmp/carol_fi_golden_bench_err.txt"
 GOLD_OUTPUT_PATH = "/tmp/carol_fi_golden_bench_output.txt"
 
 # Files that will be compared to golden ones
-INJ_OUTPUT_PATH = "/tmp/carol_fi_inj_bench_output.txt"
-INJ_ERR_PATH = "/tmp/carol_fi_inj_bench_err.txt"
+INJ_OUTPUT_PATH = "/tmp/carol_fi_inj_bench_output_{}.txt"
+INJ_ERR_PATH = "/tmp/carol_fi_inj_bench_err_{}.txt"
 
 # Internal python scripts
 FLIP_SCRIPT = 'flip_value.py'

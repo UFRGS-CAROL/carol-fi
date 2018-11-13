@@ -86,20 +86,6 @@ def kill_all(kill_string, logging=None):
 
 
 """
-Run gdb python script with specific parameters
-It makes standart gdb script calls
-"""
-
-
-def run_gdb_python(gdb_name, script, gpu_index):
-    # cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
-    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
-    cmd = gdb_name + ' -n -batch -x ' + script  # -batch-silent
-    # -n --nh --nx -q --return-child-result -x
-    return cmd
-
-
-"""
 GDB python cannot find common_functions.py, so I added this directory to PYTHONPATH
 """
 

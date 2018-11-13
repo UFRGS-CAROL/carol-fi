@@ -45,7 +45,7 @@ Main function
 
 
 def main():
-    global global_logging, register, injection_mode, bits_to_flip, fault_model, was_hit, bit_lip
+    global global_logging, register, injection_mode, bits_to_flip, fault_model, was_hit, bit_lip, arg0
 
     was_hit = False
 
@@ -63,8 +63,10 @@ def main():
 
     # Get variables values from environment
     # First parse line
+    # [bits_to_flip, fault_model, flip_log_file,
+    #  gdb_init_strings, injection_mode] = str(os.environ['CAROL_FI_INFO']).split('|')
     [bits_to_flip, fault_model, flip_log_file,
-     gdb_init_strings, injection_mode] = str(os.environ['CAROL_FI_INFO']).split('|')
+     gdb_init_strings, injection_mode] = arg0.split('|')
 
     # Load kernel registers
     kernel_dict = cf.load_file(cf.cp.KERNEL_INFO_DIR)
