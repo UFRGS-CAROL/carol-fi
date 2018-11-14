@@ -540,10 +540,11 @@ def main():
             'init_sleep': float(conf.get('DEFAULT', 'initSleep')),
             'sdc_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript'))
         }
-        kill_strings += "{};{};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
+        kill_strings += "killall -9 {};killall -9 {};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
 
         fi_master_thread = Thread(target=fault_injection_by_breakpoint, kwargs=kwargs)
         gpus_threads.append(fi_master_thread)
+
     print(kill_strings)
     for thread in gpus_threads:
         thread.start()
