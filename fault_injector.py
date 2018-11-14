@@ -443,7 +443,8 @@ def fault_injection_by_breakpoint(**kwargs):
             # Thread is for multi gpu
             kwargs['unique_id'] = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
             kwargs['bits_to_flip'] = bit_flip_selection(fault_model=fault_model)
-
+            kwargs['fault_model'] = fault_model
+            
             fi_tic = int(time.time())
             ret = gdb_inject_fault(**kwargs)
             kernel, register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = ret
