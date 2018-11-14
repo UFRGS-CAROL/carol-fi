@@ -46,7 +46,8 @@ Function that calls the profiler based on the injection mode
 def profiler_caller(gdb_exec, benchmark_binary, benchmark_args):
     acc_time = 0
     script = '{} -ex "py arg0 = {}" -n -batch -x {}'
-    init_string = "file {}; set args {}".format(benchmark_binary, benchmark_args)
+    benchmark_args_striped = benchmark_args.replace('\\n', '').replace('\\', '')
+    init_string = "file {}; set args {}".format(benchmark_binary, benchmark_args_striped)
     profiler_cmd = script.format(gdb_exec, init_string, cp.PROFILER_SCRIPT)
     if cp.DEBUG:
         print("PROFILER CMD: {}".format(profiler_cmd))
