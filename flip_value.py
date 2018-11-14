@@ -65,8 +65,9 @@ def main():
     # First parse line
     # [bits_to_flip, fault_model, flip_log_file,
     #  gdb_init_strings, injection_mode] = str(os.environ['CAROL_FI_INFO']).split('|')
+
     [bits_to_flip, fault_model, flip_log_file,
-     gdb_init_strings, injection_mode] = arg0.split('|')
+     gdb_init_strings, injection_mode, host_thread] = arg0.split('|')
 
     # Load kernel registers
     kernel_dict = cf.load_file(cf.cp.KERNEL_INFO_DIR)
