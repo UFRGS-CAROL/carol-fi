@@ -29,7 +29,7 @@ CTRL + C event
 
 
 def signal_handler(sig, frame):
-    global kill_strings
+    global kill_strings, current_path
     print("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
@@ -37,6 +37,8 @@ def signal_handler(sig, frame):
             os.system(cmd)
         except Exception as err:
             print("Command err: {}".format(str(err)))
+
+    os.system("rm -f {}/bin/*".format(current_path))
 
     sys.exit(0)
 
@@ -298,7 +300,9 @@ def gdb_inject_fault(**kwargs):
         print("PROCESS JOINED")
 
     # # Check output files for SDCs
-    is_sdc, is_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script)
+    is_sdc, is_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script,
+                                                inj_output_path=inj_output_path, inj_err_path=inj_err_path,
+                                                diff_log_path=diff_log_path, diff_err_path=diff_err_path)
     if cp.DEBUG:
         print("CHECK SDCs OK")
 
@@ -465,7 +469,7 @@ Main function
 
 
 def main():
-    global kill_strings, summary_file_rows
+    global kill_strings, summary_file_rows, current_path
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
@@ -491,7 +495,8 @@ def main():
     # First set env vars
     current_path = cf.set_python_env()
 
-    print("2 - Starting fault injection\n###################################################")
+    print("2 - Starting fault injection")
+    print("###################################################")
     print("2 - {} faults will be injected".format(args.iterations))
     print("###################################################")
     ########################################################################
@@ -571,5 +576,6 @@ def main():
 
 summary_file_rows = None
 kill_strings = None
+current_path = None
 if __name__ == "__main__":
     main()
