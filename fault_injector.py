@@ -272,8 +272,8 @@ def gdb_inject_fault(**kwargs):
         print("STARTING PROCESS")
 
     # Starting both threads
-    fi_process.start()
     signal_app_thread.start()
+    fi_process.start()
 
     if cp.DEBUG:
         print("PROCESSES SPAWNED")
