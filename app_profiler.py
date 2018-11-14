@@ -69,8 +69,8 @@ Function to generate the gold execution
 
 
 def generate_gold(gdb_exec, benchmark_binary, benchmark_args):
-    script = '{} -ex "py arg0 = {}" -n -batch -x {} > {} 2> {}'
-    init_string = "file {}; set args {}".format(benchmark_binary, benchmark_args)
+    script = '{} -ex \'py arg0 = {}\' -n -batch -x {} > {} 2> {}'
+    init_string = '"file {}; set args {}"'.format(benchmark_binary, benchmark_args)
     profiler_cmd = script.format(gdb_exec, init_string, cp.PROFILER_SCRIPT,  cp.GOLD_OUTPUT_PATH , cp.GOLD_ERR_PATH)
     if cp.DEBUG:
         print("PROFILER CMD: {}".format(profiler_cmd))
