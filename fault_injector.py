@@ -367,7 +367,6 @@ def gdb_inject_fault(**kwargs):
 
 def only_for_radiation_benchs():
     list_of_files = glob.glob('/home/carol/radiation-benchmarks/log/*.log')
-    print("{} files".format(list_of_files[0]))
     latest_file = max(list_of_files, key=os.path.getctime)
     return os.path.basename(latest_file)
 
