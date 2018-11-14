@@ -462,7 +462,7 @@ def fault_injection_by_breakpoint(**kwargs):
                      fault_injected, hang, crash, sdc, injection_time,
                      signal_init_time, kwargs['bits_to_flip'], only_for_radiation_benchs()])
 
-                num_rounds += 1
+            num_rounds += 1
 
 
 """
