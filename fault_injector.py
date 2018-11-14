@@ -539,7 +539,7 @@ def main():
             'current_path': current_path,
             'seq_signals': int(conf.get('DEFAULT', 'seqSignals')),
             'init_sleep': float(conf.get('DEFAULT', 'initSleep')),
-            'sdc_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript'))
+            'gold_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript'))
         }
         kill_strings += "killall -9 {};killall -9 {};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
 
