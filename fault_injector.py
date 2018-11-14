@@ -38,7 +38,7 @@ def signal_handler(sig, frame):
         except Exception as err:
             print("Command err: {}".format(str(err)))
 
-    os.system("rm -f {}/bin/*".format(current_path))
+    # os.system("rm -f {}/bin/*".format(current_path))
 
     sys.exit(0)
 
