@@ -29,10 +29,9 @@ CTRL + C event
 
 
 def signal_handler(sig, frame):
-    global kill_strings, created_threads, cuda_gdb
+    global kill_strings
     print("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
-    kill_cmds.append("killall -9 {}".format(cuda_gdb))
     for cmd in kill_cmds:
         try:
             os.system(cmd)
@@ -571,6 +570,6 @@ def main():
 ########################################################################
 
 summary_file_rows = None
-
+kill_strings = None
 if __name__ == "__main__":
     main()
