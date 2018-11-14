@@ -34,23 +34,12 @@ DEBUG_PROFILER = True
 # Log file for SignalApp thread
 SIGNAL_APP_LOG = "/tmp/signal_app_thread_{}.txt"
 
-# Time before first signal
-# Before the first signal we define the percentage of the overall time
-# to send the first signal (IT IS THE PERCENTAGE)
-# A value between 0.01 and 0.1 is desirable
-TIME_WAIT_START_SIGNAL = 0.1
-
 # Num of sleep time divisor
 NUM_DIVISION_TIMES = 100.0
-
-# time to sleep between the signals
-TIME_TO_SLEEP = 0.01
 
 # Common body of log filename
 LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
 
-# If there are multiple GPUs set the one that will be used
-GPU_INDEX = '0'
 
 # MAX INT 32 bits
 MAX_INT_32 = 4294967295
