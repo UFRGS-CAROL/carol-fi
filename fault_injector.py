@@ -14,7 +14,8 @@ import signal
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 import sys
-from threading import Thread
+# from threading import Thread
+from multiprocessing import Process
 
 from classes.RunGDB import RunGDB
 from classes.SummaryFile import SummaryFile
@@ -215,7 +216,7 @@ def gdb_inject_fault(**kwargs):
     fault_model = kwargs.get('fault_model')
     unique_id = kwargs.get('unique_id')
     max_time = kwargs.get('max_time')
-    current_path = kwargs.get('current_path')
+    current_path_local = kwargs.get('current_path')
 
     # injection site
     injection_site = kwargs.get('injection_site')
@@ -263,7 +264,7 @@ def gdb_inject_fault(**kwargs):
     # Create one thread to start gdb script
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=gdb_exec_name, flip_script=cp.FLIP_SCRIPT,
-                        carol_fi_base_path=current_path, gdb_env_string=gdb_env_string, gpu_to_execute=host_thread,
+                        carol_fi_base_path=current_path_local, gdb_env_string=gdb_env_string, gpu_to_execute=host_thread,
                         inj_output_path=inj_output_path, inj_err_path=inj_err_path)
 
     if cp.DEBUG:
@@ -543,7 +544,7 @@ def main():
         }
         kill_strings += "killall -9 {};killall -9 {};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
 
-        fi_master_thread = Thread(target=fault_injection_by_breakpoint, kwargs=kwargs)
+        fi_master_thread = Process(target=fault_injection_by_breakpoint, kwargs=kwargs)
         gpus_threads.append(fi_master_thread)
 
     print(kill_strings)
