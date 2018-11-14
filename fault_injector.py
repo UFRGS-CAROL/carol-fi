@@ -30,7 +30,7 @@ CTRL + C event
 
 
 def signal_handler(sig, frame):
-    global kill_strings, current_path
+    global kill_strings, current_path, gpu_threads
     print("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
@@ -40,7 +40,8 @@ def signal_handler(sig, frame):
             print("Command err: {}".format(str(err)))
 
     # os.system("rm -f {}/bin/*".format(current_path))
-
+    for th in gpu_threads:
+        th.terminate()
     sys.exit(0)
 
 
@@ -472,7 +473,7 @@ Main function
 
 
 def main():
-    global kill_strings, summary_file_rows, current_path
+    global kill_strings, summary_file_rows, current_path, gpus_threads
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
