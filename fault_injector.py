@@ -438,9 +438,8 @@ def fault_injection_by_breakpoint(**kwargs):
         while num_rounds <= iterations:
             # Generate an unique id for this fault injection
             # Thread is for multi gpu
-            unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
-            bits_to_flip = bit_flip_selection(fault_model=fault_model)
-            kwargs['unique_id'] = unique_id
+            kwargs['unique_id'] = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
+            kwargs['bits_to_flip'] = bit_flip_selection(fault_model=fault_model)
 
             fi_tic = int(time.time())
             ret = gdb_inject_fault(**kwargs)
@@ -453,10 +452,10 @@ def fault_injection_by_breakpoint(**kwargs):
 
             if fault_injected:
                 summary_file_rows.append(
-                    [unique_id, kernel, register, num_rounds, fault_model, thread,
+                    [kwargs['unique_id'], kernel, register, num_rounds, fault_model, thread,
                      block, old_val, new_val, injection_site,
                      fault_injected, hang, crash, sdc, injection_time,
-                     signal_init_time, bits_to_flip, only_for_radiation_benchs()])
+                     signal_init_time, kwargs['bits_to_flip'], only_for_radiation_benchs()])
 
                 num_rounds += 1
 
