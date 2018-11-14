@@ -246,9 +246,9 @@ def gdb_inject_fault(**kwargs):
     logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
-    gdb_env_string = "{}|{}|{}|file {}; {}|{}|{}".format(",".join(str(i) for i in bits_to_flip), fault_model,
-                                                         flip_log_file, benchmark_binary, benchmark_args,
-                                                         injection_site, host_thread)
+    gdb_env_string = "{}|{}|{}|file {}; set args {}|{}|{}".format(",".join(str(i) for i in bits_to_flip), fault_model,
+                                                                  flip_log_file, benchmark_binary, benchmark_args,
+                                                                  injection_site, host_thread)
 
     if cp.DEBUG:
         print("ENV GENERATE FINISHED")
@@ -444,7 +444,7 @@ def fault_injection_by_breakpoint(**kwargs):
             kwargs['unique_id'] = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
             kwargs['bits_to_flip'] = bit_flip_selection(fault_model=fault_model)
             kwargs['fault_model'] = fault_model
-            
+
             fi_tic = int(time.time())
             ret = gdb_inject_fault(**kwargs)
             kernel, register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = ret
@@ -534,6 +534,7 @@ def main():
             'benchmark_binary': benchmark_binary,
             'benchmark_args': conf.get('DEFAULT', 'benchmarkArgs'),
             'host_thread': thread_id,
+            'gdb_path': gdb,
             'current_path': current_path,
             'seq_signals': int(conf.get('DEFAULT', 'seqSignals')),
             'init_sleep': float(conf.get('DEFAULT', 'initSleep')),
