@@ -471,10 +471,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
-                        help='How many times to repeat the programs in the configuration file', required=True)
+                        help='How many times to repeat the programs in the configuration file', required=True, type=int)
 
     parser.add_argument('-n', '--n_gpus', dest="n_gpus", help="The number of available GPUs to perform FI."
-                                                                 " Default is 1.", required=False, default=1)
+                                                              " Default is 1.", required=False, default=1, type=int)
 
     args = parser.parse_args()
     if args.iterations < 1:
