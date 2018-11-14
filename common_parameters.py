@@ -22,8 +22,8 @@ FLIP_SCRIPT = 'flip_value.py'
 PROFILER_SCRIPT = 'profiler.py'
 
 # Temporary difference logs
-DIFF_LOG = '/tmp/diff.log'
-DIFF_ERR_LOG = '/tmp/diff_err.log'
+DIFF_LOG = '/tmp/diff_{}.log'
+DIFF_ERR_LOG = '/tmp/diff_err_{}.log'
 
 # Debug env vars
 # Debug FI process
@@ -32,7 +32,7 @@ DEBUG = True
 DEBUG_PROFILER = True
 
 # Log file for SignalApp thread
-SIGNAL_APP_LOG = "/tmp/signal_app_thread.txt"
+SIGNAL_APP_LOG = "/tmp/signal_app_thread_{}.txt"
 
 # Time before first signal
 # Before the first signal we define the percentage of the overall time
@@ -51,9 +51,6 @@ LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
 
 # If there are multiple GPUs set the one that will be used
 GPU_INDEX = '0'
-
-# Multiple gpus execution
-PROCESS_ID = "/tmp/carol_fi_process_id_{}.txt"
 
 # MAX INT 32 bits
 MAX_INT_32 = 4294967295

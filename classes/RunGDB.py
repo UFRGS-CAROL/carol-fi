@@ -16,27 +16,29 @@ this thread will be killed
 
 
 class RunGDB(Thread):
-    def __init__(self, unique_id, gdb_exec_name, flip_script, carol_fi_base_path, gdb_env_string, gpu_to_execute=0):
+    def __init__(self, unique_id, gdb_exec_name, flip_script, carol_fi_base_path, gdb_env_string,
+                 inj_output_path, inj_err_path, gpu_to_execute):
         super(RunGDB, self).__init__()
         self.__gdb_exe_name = gdb_exec_name
         self.__flip_script = flip_script
         self.__unique_id = unique_id
-        self.__process_file = cp.PROCESS_ID.format(unique_id)
         self.__base_path = carol_fi_base_path
         self.__gdb_env_string = gdb_env_string
+        self.__inj_output_path = inj_output_path
+        self.__inj_err_path = inj_err_path
         os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_to_execute)
         os.environ['OMP_NUM_THREADS'] = '1'
 
     def run(self):
         if cp.DEBUG:
-            print("GDB Thread run, section and id: {}".format(self.__unique_id))
+            print("GDB Thread run, id: {}".format(self.__unique_id))
 
         start_cmd = "{}/{}".format(self.__base_path, self.__flip_script)
-        script = '{} -ex "py arg0 = {}" -n -batch -x {} > {} 2>{} &'
+        script = '{} -ex \'"py arg0 = {}"\' -n -batch -x {} > {} 2>{} &'
 
         os.system(script.format(self.__gdb_exe_name, self.__gdb_env_string,
-                                start_cmd, cp.INJ_OUTPUT_PATH.format(self.__unique_id),
-                                cp.INJ_ERR_PATH.format(self.__unique_id)))
+                                start_cmd, self.__inj_output_path,
+                                self.__inj_err_path))
 
     def kill_subprocess(self):
         os.system("killall -9 {}".format(os.path.basename(self.__gdb_exe_name)))

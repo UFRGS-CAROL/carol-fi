@@ -96,7 +96,8 @@ Copy the logs and output(if fault not masked) to a selected folder
 """
 
 
-def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file):
+def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, inj_output_path,
+                inj_err_path, diff_log_path, diff_err_path, signal_app_log_path):
     # FI successful
     fi_injected = False
     if os.path.isfile(flip_log_file):
@@ -122,7 +123,7 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
     elif is_sdc:
         cp_dir = os.path.join('logs', 'sdcs', dir_d_t)
         logging.summary("SDC")
-    elif not os.path.isfile(output_file):
+    elif not os.path.isfile(inj_output_path):
         cp_dir = os.path.join('logs', 'no_output_generated', dir_d_t)
         logging.summary("no_output_generated")
     else:
@@ -133,8 +134,8 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, output_file)
         os.makedirs(cp_dir)
 
     # Moving all necessary files
-    for file_to_move in [flip_log_file, cp.INJ_OUTPUT_PATH,
-                         cp.INJ_ERR_PATH, cp.DIFF_LOG, cp.DIFF_ERR_LOG, cp.SIGNAL_APP_LOG]:
+    for file_to_move in [flip_log_file, inj_output_path,
+                         inj_err_path, diff_log_path, diff_err_path, signal_app_log_path]:
         try:
             shutil.move(file_to_move, cp_dir)
         except Exception as err:
@@ -147,11 +148,11 @@ Check output files for SDCs
 """
 
 
-def check_sdcs_and_app_crash(logging, sdc_check_script):
+def check_sdcs_and_app_crash(logging, sdc_check_script, inj_output_path, inj_err_path, diff_log_path, diff_err_path):
     is_sdc = False
     is_app_crash = False
-    if not os.path.isfile(cp.INJ_OUTPUT_PATH):
-        logging.error("outputFile not found: " + cp.INJ_OUTPUT_PATH)
+    if not os.path.isfile(inj_output_path):
+        logging.error("outputFile not found: " + inj_output_path)
         is_app_crash = True
     elif not os.path.isfile(cp.GOLD_OUTPUT_PATH):
         logging.error("gold_file not found: " + cp.GOLD_OUTPUT_PATH)
@@ -159,25 +160,25 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
     elif not os.path.isfile(sdc_check_script):
         logging.error("sdc check script file not found: " + sdc_check_script)
         raise ValueError("SDC CHECK SCRIPT NOT FOUND")
-    elif not os.path.isfile(cp.INJ_ERR_PATH):
-        logging.error("possible crash, stderr not found: " + cp.INJ_OUTPUT_PATH)
+    elif not os.path.isfile(inj_err_path):
+        logging.error("possible crash, stderr not found: " + inj_output_path)
         is_app_crash = True
     elif not os.path.isfile(cp.GOLD_ERR_PATH):
         logging.error("gold_err_file not found: " + cp.GOLD_ERR_PATH)
         raise ValueError("GOLD ERR FILE NOT FOUND")
-    if os.path.isfile(cp.GOLD_OUTPUT_PATH) and os.path.isfile(cp.INJ_OUTPUT_PATH) and os.path.isfile(
-            cp.GOLD_ERR_PATH) and os.path.isfile(cp.INJ_ERR_PATH):
+    if os.path.isfile(cp.GOLD_OUTPUT_PATH) and os.path.isfile(inj_output_path) and os.path.isfile(
+            cp.GOLD_ERR_PATH) and os.path.isfile(inj_err_path):
         # Set environ variables for sdc_check_script
         os.environ['GOLD_OUTPUT_PATH'] = cp.GOLD_OUTPUT_PATH
-        os.environ['INJ_OUTPUT_PATH'] = cp.INJ_OUTPUT_PATH
+        os.environ['INJ_OUTPUT_PATH'] = inj_output_path
         os.environ['GOLD_ERR_PATH'] = cp.GOLD_ERR_PATH
-        os.environ['INJ_ERR_PATH'] = cp.INJ_ERR_PATH
-        os.environ['DIFF_LOG'] = cp.DIFF_LOG
-        os.environ['DIFF_ERR_LOG'] = cp.DIFF_ERR_LOG
+        os.environ['INJ_ERR_PATH'] = inj_err_path
+        os.environ['DIFF_LOG'] = diff_log_path
+        os.environ['DIFF_ERR_LOG'] = diff_err_path
         os.system("sh " + sdc_check_script)
 
         # Test if files are ok
-        with open(cp.DIFF_LOG, 'r') as fi:
+        with open(diff_log_path, 'r') as fi:
             out_lines = fi.readlines()
             if len(out_lines) != 0:
                 # Check if NVIDIA signals on output
@@ -191,7 +192,7 @@ def check_sdcs_and_app_crash(logging, sdc_check_script):
                 if not is_app_crash:
                     is_sdc = True
 
-        with open(cp.DIFF_ERR_LOG, 'r') as fi_err:
+        with open(diff_err_path, 'r') as fi_err:
             err_lines = fi_err.readlines()
             if len(err_lines) != 0:
                 is_app_crash = True
@@ -222,13 +223,19 @@ def gdb_inject_fault(**kwargs):
     init_sleep = kwargs.get('init_sleep')
     sdc_check_script = kwargs.get('gold_check_script')
 
-    # Logging file
-    flip_log_file = cp.LOG_DEFAULT_NAME.format(unique_id)
-
     # signalCmd
     signal_cmd = kwargs.get("signal_cmd")
     cuda_gdb = os.path.basename(kwargs.get('gdb_path'))
     gdb_exec_name = kwargs.get('gdb_path')
+
+    # Define all path to current thread execution
+    # Logging file
+    flip_log_file = cp.LOG_DEFAULT_NAME.format(unique_id)
+    inj_output_path = cp.INJ_OUTPUT_PATH.format(unique_id)
+    inj_err_path = cp.INJ_ERR_PATH.format(unique_id)
+    signal_app_log = cp.SIGNAL_APP_LOG.format(unique_id)
+    diff_log_path = cp.DIFF_LOG.format(unique_id)
+    diff_err_path = cp.DIFF_ERR_LOG.format(unique_id)
 
     # Starting FI process
     if cp.DEBUG:
@@ -239,22 +246,23 @@ def gdb_inject_fault(**kwargs):
 
     # Generate configuration file for specific test
     gdb_env_string = "{}|{}|{}|file {}; {}|{}|{}".format(",".join(str(i) for i in bits_to_flip), fault_model,
-                                                   flip_log_file, benchmark_binary, benchmark_args,
-                                                   injection_site, host_thread)
+                                                         flip_log_file, benchmark_binary, benchmark_args,
+                                                         injection_site, host_thread)
 
     if cp.DEBUG:
         print("ENV GENERATE FINISHED")
 
     # First we have to start the SignalApp thread
     signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=signal_cmd,
-                                  log_path=cp.SIGNAL_APP_LOG, unique_id=unique_id,
+                                  log_path=signal_app_log, unique_id=unique_id,
                                   signals_to_send=seq_signals,
                                   init_sleep=init_sleep)
 
     # Create one thread to start gdb script
     # Start fault injection process
-    fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=gdb_exec_name,
-                        flip_script=cp.FLIP_SCRIPT, carol_fi_base_path=current_path, gdb_env_string=gdb_env_string)
+    fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=gdb_exec_name, flip_script=cp.FLIP_SCRIPT,
+                        carol_fi_base_path=current_path, gdb_env_string=gdb_env_string, gpu_to_execute=host_thread,
+                        inj_output_path=inj_output_path, inj_err_path=inj_err_path)
 
     if cp.DEBUG:
         print("STARTING PROCESS")
@@ -339,7 +347,8 @@ def gdb_inject_fault(**kwargs):
 
     # Copy output files to a folder
     save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
-                flip_log_file=flip_log_file, output_file=cp.INJ_OUTPUT_PATH)
+                flip_log_file=flip_log_file, inj_output_path=inj_output_path, inj_err_path=inj_err_path,
+                diff_log_path=diff_log_path, diff_err_path=diff_err_path, signal_app_log_path=signal_app_log)
 
     if cp.DEBUG:
         print("SAVE OUTPUT AND RETURN")
@@ -522,7 +531,7 @@ def main():
             'benchmark_args': conf.get('DEFAULT', 'benchmarkArgs'),
             'host_thread': thread_id,
             'gdb_path': gdb,
-            'current_path':current_path,
+            'current_path': current_path,
             'seq_signals': conf.get('DEFAULT', 'seqSignals'),
             'init_sleep': conf.get('DEFAULT', 'initSleep'),
             'sdc_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript'))
