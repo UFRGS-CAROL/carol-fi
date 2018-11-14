@@ -531,8 +531,8 @@ def main():
             'host_thread': thread_id,
             'gdb_path': gdb,
             'current_path': current_path,
-            'seq_signals': conf.get('DEFAULT', 'seqSignals'),
-            'init_sleep': conf.get('DEFAULT', 'initSleep'),
+            'seq_signals': int(conf.get('DEFAULT', 'seqSignals')),
+            'init_sleep': float(conf.get('DEFAULT', 'initSleep')),
             'sdc_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript'))
         }
         kill_strings += "{};{};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
