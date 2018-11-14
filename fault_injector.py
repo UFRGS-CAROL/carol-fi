@@ -208,6 +208,7 @@ return old register value, new register value
 
 
 def gdb_inject_fault(**kwargs):
+    global kill_strings
     # These are the mandatory parameters
     bits_to_flip = kwargs.get('bits_to_flip')
     fault_model = kwargs.get('fault_model')
@@ -282,7 +283,7 @@ def gdb_inject_fault(**kwargs):
     # max_wait_time, logging, timestamp_start, thread, kill_string
     is_hang = check_finish(max_wait_time=max_time, logging=logging, timestamp_start=timestamp_start,
                            process=fi_process, thread=host_thread,
-                           kill_string="killall -9 {}; killall -9 {}".format(benchmark_binary, cuda_gdb))
+                           kill_string=kill_strings)
     if cp.DEBUG:
         print("FINISH CHECK OK")
 
