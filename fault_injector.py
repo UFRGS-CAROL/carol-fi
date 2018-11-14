@@ -538,7 +538,7 @@ def main():
         }
         kill_strings += "{};{};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
 
-        fi_master_thread = Thread(target=fault_injection_by_breakpoint, args=(kwargs,))
+        fi_master_thread = Thread(target=fault_injection_by_breakpoint, kwargs=kwargs)
         gpus_threads.append(fi_master_thread)
 
     for thread in gpus_threads:
