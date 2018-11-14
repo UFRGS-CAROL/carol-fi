@@ -487,7 +487,7 @@ def main():
     # Read the configuration file with data for all the apps that will be executed
     conf = cf.load_config_file(args.config_file)
     # Connect signal SIGINT to stop application
-    kill_strings = conf.get("DEFAULT", "killStrs")
+    kill_strings = ""
     signal.signal(signal.SIGINT, signal_handler)
 
     # First set env vars
@@ -536,6 +536,7 @@ def main():
             'init_sleep': conf.get('DEFAULT', 'initSleep'),
             'sdc_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript'))
         }
+        kill_strings += "{};{};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
 
         fi_master_thread = Thread(target=fault_injection_by_breakpoint, args=(kwargs,))
         gpus_threads.append(fi_master_thread)
