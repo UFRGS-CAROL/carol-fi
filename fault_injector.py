@@ -543,7 +543,7 @@ def main():
 
         fi_master_thread = Thread(target=fault_injection_by_breakpoint, kwargs=kwargs)
         gpus_threads.append(fi_master_thread)
-
+    print(kill_strings)
     for thread in gpus_threads:
         thread.start()
 
