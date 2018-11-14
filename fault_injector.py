@@ -227,7 +227,6 @@ def gdb_inject_fault(**kwargs):
 
     # signalCmd
     signal_cmd = kwargs.get("signal_cmd")
-    cuda_gdb = os.path.basename(kwargs.get('gdb_path'))
     gdb_exec_name = kwargs.get('gdb_path')
 
     # Define all path to current thread execution
@@ -429,7 +428,7 @@ def fault_injection_by_breakpoint(**kwargs):
     # Global rows list
     global summary_file_rows
     benchmark_binary = kwargs.get('benchmark_binary')
-    kwargs['signal_cmd'] = "killall -2 {}".format(benchmark_binary)
+    kwargs['signal_cmd'] = "killall -2 {}".format(os.path.basename(benchmark_binary))
     fault_models = kwargs.get('fault_models')
     iterations = kwargs.get('iterations')
     host_thread = kwargs.get('host_thread')
@@ -534,7 +533,6 @@ def main():
             'benchmark_binary': benchmark_binary,
             'benchmark_args': conf.get('DEFAULT', 'benchmarkArgs'),
             'host_thread': thread_id,
-            'gdb_path': gdb,
             'current_path': current_path,
             'seq_signals': int(conf.get('DEFAULT', 'seqSignals')),
             'init_sleep': float(conf.get('DEFAULT', 'initSleep')),
