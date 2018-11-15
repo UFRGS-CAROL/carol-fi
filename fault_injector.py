@@ -562,7 +562,7 @@ def main():
     csv_file = conf.get("DEFAULT", "csvFile")
 
     # Csv log
-    fieldnames = ['kernel', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
+    fieldnames = ['unique_id', 'kernel', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
                   'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
                   'inj_time_location', 'bits_flipped', 'log_file']
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
