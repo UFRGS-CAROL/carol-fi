@@ -562,6 +562,10 @@ def main():
     csv_file = conf.get("DEFAULT", "csvFile")
 
     # Csv log
+    # [unique_id, kernel, register, num_rounds, fault_model, thread,
+    #                  block, old_val, new_val, injection_site,
+    #                  fault_injected, hang, crash, sdc, injection_time,
+    #                  signal_init_time, bits_to_flip, only_for_radiation_benchs()]
     fieldnames = ['unique_id', 'kernel', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
                   'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
                   'inj_time_location', 'bits_flipped', 'log_file']

@@ -94,8 +94,13 @@ class SummaryFile:
     """
 
     def write_rows(self, rows_list):
-        if isinstance(rows_list, list):
-            self.__open_csv()
-            for row in rows_list:
-                self.__dict_buff.writerow(row)
-            self.__close_csv()
+        self.__open_csv()
+        for row in rows_list:
+            row_ready = {}
+            if isinstance(row, list):
+                for fields, data in zip(self.__fieldnames, row):
+                    row_ready[fields] = data
+            else:
+                row_ready = row
+            self.__dict_buff.writerow(row_ready)
+        self.__close_csv()
