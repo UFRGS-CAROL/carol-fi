@@ -217,6 +217,7 @@ def gdb_inject_fault(**kwargs):
     fault_model = kwargs.get('fault_model')
     unique_id = kwargs.get('unique_id')
     max_time = kwargs.get('max_time')
+    end_time = kwargs.get('end_time')
     current_path_local = kwargs.get('current_path')
 
     # injection site
@@ -257,7 +258,7 @@ def gdb_inject_fault(**kwargs):
         print("ENV GENERATE FINISHED")
 
     # First we have to start the SignalApp thread
-    signal_app_thread = SignalApp(max_wait_time=max_time, signal_cmd=signal_cmd,
+    signal_app_thread = SignalApp(max_wait_time=end_time, signal_cmd=signal_cmd,
                                   log_path=signal_app_log, unique_id=unique_id,
                                   signals_to_send=seq_signals,
                                   init_sleep=init_sleep)
@@ -533,6 +534,7 @@ def main():
             'injection_site': conf.get('DEFAULT', 'injectionSite'),
             'fault_models': [int(i) for i in str(conf.get('DEFAULT', 'faultModel')).split(',')],
             'max_time': float(kernel_info_dict['max_time']) * float(conf.get('DEFAULT', 'maxWaitTimes')),
+            'end_time': float(kernel_info_dict['max_time']),
             'iterations': each_thread_iterations,
             'benchmark_binary': benchmark_binary,
             'benchmark_args': conf.get('DEFAULT', 'benchmarkArgs'),
