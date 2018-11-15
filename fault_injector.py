@@ -151,7 +151,6 @@ Check output files for SDCs
 
 
 def check_sdcs_and_app_crash(logging, sdc_check_script, inj_output_path, inj_err_path, diff_log_path, diff_err_path):
-    print(logging, sdc_check_script, inj_output_path, inj_err_path, diff_log_path, diff_err_path)
     is_sdc = False
     is_app_crash = False
     if not os.path.isfile(inj_output_path):
