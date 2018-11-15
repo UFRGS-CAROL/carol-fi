@@ -29,7 +29,7 @@ CTRL + C event
 
 
 def signal_handler(sig, frame):
-    global kill_strings, current_path, gpu_threads
+    global kill_strings, current_path, gpus_threads
     print("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
@@ -39,7 +39,7 @@ def signal_handler(sig, frame):
             print("Command err: {}".format(str(err)))
 
     # os.system("rm -f {}/bin/*".format(current_path))
-    for th in gpu_threads:
+    for th in gpus_threads:
         th.terminate()
     sys.exit(0)
 
@@ -56,7 +56,7 @@ def check_finish(max_wait_time, logging, timestamp_start, process, thread, kill_
     # max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     sleep_time = max_wait_time / cp.NUM_DIVISION_TIMES
     if cp.DEBUG:
-        print("MAX_WAIT_TIME {} CHECK FINISH SLEEP_TIME {}".format(max_wait_time, sleep_time))
+        print("THREAD: {} MAX_WAIT_TIME {} CHECK FINISH SLEEP_TIME {}".format(thread, max_wait_time, sleep_time))
 
     # Watchdog to avoid hangs
     p_is_alive = process.is_alive()
@@ -72,7 +72,7 @@ def check_finish(max_wait_time, logging, timestamp_start, process, thread, kill_
     if not p_is_alive:
         logging.debug("PROCESS NOT RUNNING")
         if cp.DEBUG:
-            print("PROCESS NOT RUNNING")
+            print("THREAD {} PROCESS NOT RUNNING".format(thread))
 
     # check execution finished before or after waitTime
     if diff_time < max_wait_time:
@@ -99,7 +99,7 @@ Copy the logs and output(if fault not masked) to a selected folder
 
 
 def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, inj_output_path,
-                inj_err_path, diff_log_path, diff_err_path, signal_app_log_path):
+                inj_err_path, diff_log_path, diff_err_path, signal_app_log_path, thread):
     # FI successful
     fi_injected = False
     if os.path.isfile(flip_log_file):
@@ -142,7 +142,7 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, inj_output_p
             shutil.move(file_to_move, cp_dir)
         except Exception as err:
             if cp.DEBUG:
-                print("ERROR ON MOVING {} -- {}".format(file_to_move, str(err)))
+                print("THREAD {} ERROR ON MOVING {} -- {}".format(thread, file_to_move, str(err)))
 
 
 """
@@ -242,7 +242,7 @@ def gdb_inject_fault(**kwargs):
 
     # Starting FI process
     if cp.DEBUG:
-        print("STARTING GDB SCRIPT")
+        print("THREAD {} STARTING GDB SCRIPT".format(host_thread))
 
     logging = Logging(log_file=flip_log_file, unique_id=unique_id)
     logging.info("Starting GDB script")
@@ -253,7 +253,7 @@ def gdb_inject_fault(**kwargs):
                                                                   injection_site, host_thread)
 
     if cp.DEBUG:
-        print("ENV GENERATE FINISHED")
+        print("THREAD {} ENV GENERATE FINISHED".format(host_thread))
 
     # First we have to start the SignalApp thread
     signal_app_thread = SignalApp(max_wait_time=end_time, signal_cmd=signal_cmd,
@@ -269,14 +269,14 @@ def gdb_inject_fault(**kwargs):
                         inj_output_path=inj_output_path, inj_err_path=inj_err_path)
 
     if cp.DEBUG:
-        print("STARTING PROCESS")
+        print("THREAD {} STARTING PROCESS".format(host_thread))
 
     # Starting both threads
     signal_app_thread.start()
     fi_process.start()
 
     if cp.DEBUG:
-        print("PROCESSES SPAWNED")
+        print("THREAD {} PROCESSES SPAWNED".format(host_thread))
 
     # Start counting time
     timestamp_start = int(time.time())
@@ -287,7 +287,7 @@ def gdb_inject_fault(**kwargs):
                            process=fi_process, thread=host_thread,
                            kill_string=kill_strings)
     if cp.DEBUG:
-        print("FINISH CHECK OK")
+        print("THREAD {} FINISH CHECK OK".format(host_thread))
 
     # finishing and removing thrash
     fi_process.join()
@@ -300,14 +300,14 @@ def gdb_inject_fault(**kwargs):
     del fi_process, signal_app_thread
 
     if cp.DEBUG:
-        print("PROCESS JOINED")
+        print("THREAD {} PROCESS JOINED".format(host_thread))
 
     # # Check output files for SDCs
     is_sdc, is_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script,
                                                 inj_output_path=inj_output_path, inj_err_path=inj_err_path,
                                                 diff_log_path=diff_log_path, diff_err_path=diff_err_path)
     if cp.DEBUG:
-        print("CHECK SDCs OK")
+        print("THREAD {} CHECK SDCs OK".format(host_thread))
 
     # Search for set values for register
     # Must be done before save output
@@ -348,7 +348,7 @@ def gdb_inject_fault(**kwargs):
         new_value = old_value = None
         fi_successful = False
         if cp.DEBUG:
-            print("FAULT WAS NOT INJECTED. ERROR {}".format(e))
+            print("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, e))
             print()
 
     # Copy output files to a folder
@@ -357,7 +357,7 @@ def gdb_inject_fault(**kwargs):
                 diff_log_path=diff_log_path, diff_err_path=diff_err_path, signal_app_log_path=signal_app_log)
 
     if cp.DEBUG:
-        print("SAVE OUTPUT AND RETURN")
+        print("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
 
     return_list = [kernel, register, old_value, new_value, fi_successful,
                    is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread]
@@ -562,10 +562,6 @@ def main():
     csv_file = conf.get("DEFAULT", "csvFile")
 
     # Csv log
-    # [unique_id, kernel, register, num_rounds, fault_model, thread,
-    #                  block, old_val, new_val, injection_site,
-    #                  fault_injected, hang, crash, sdc, injection_time,
-    #                  signal_init_time, bits_to_flip, only_for_radiation_benchs()]
     fieldnames = ['unique_id', 'kernel', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
                   'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
                   'inj_time_location', 'bits_flipped', 'log_file']
