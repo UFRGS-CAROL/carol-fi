@@ -14,8 +14,7 @@ import signal
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 import sys
-# from threading import Thread
-from multiprocessing import Process
+from threading import Thread
 
 from classes.RunGDB import RunGDB
 from classes.SummaryFile import SummaryFile
@@ -465,7 +464,7 @@ def fault_injection_by_breakpoint(**kwargs):
                      fault_injected, hang, crash, sdc, injection_time,
                      signal_init_time, kwargs['bits_to_flip'], only_for_radiation_benchs()])
 
-            num_rounds += 1
+                num_rounds += 1
 
 
 """
@@ -547,10 +546,9 @@ def main():
         }
         kill_strings += "killall -9 {};killall -9 {};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
 
-        fi_master_thread = Process(target=fault_injection_by_breakpoint, kwargs=kwargs)
+        fi_master_thread = Thread(target=fault_injection_by_breakpoint, kwargs=kwargs)
         gpus_threads.append(fi_master_thread)
 
-    print(kill_strings)
     for thread in gpus_threads:
         thread.start()
 
