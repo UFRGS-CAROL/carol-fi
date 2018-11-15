@@ -34,8 +34,7 @@ class SignalApp(Thread):
 
         self.__log.info(log_string)
         for signals in range(0, self.__signals_to_send):
-            # > /dev/null 2>/dev/null
-            os.system("{} ".format(self.__signal_cmd))
+            os.system("{} > /dev/null 2>/dev/null".format(self.__signal_cmd))
             self.__log.info("sending signal {}".format(signals))
             time.sleep(self.__time_to_sleep)
 

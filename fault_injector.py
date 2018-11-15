@@ -264,7 +264,8 @@ def gdb_inject_fault(**kwargs):
     # Create one thread to start gdb script
     # Start fault injection process
     fi_process = RunGDB(unique_id=unique_id, gdb_exec_name=gdb_exec_name, flip_script=cp.FLIP_SCRIPT,
-                        carol_fi_base_path=current_path_local, gdb_env_string=gdb_env_string, gpu_to_execute=host_thread,
+                        carol_fi_base_path=current_path_local, gdb_env_string=gdb_env_string,
+                        gpu_to_execute=host_thread,
                         inj_output_path=inj_output_path, inj_err_path=inj_err_path)
 
     if cp.DEBUG:
@@ -443,8 +444,10 @@ def fault_injection_by_breakpoint(**kwargs):
         while num_rounds <= iterations:
             # Generate an unique id for this fault injection
             # Thread is for multi gpu
-            kwargs['unique_id'] = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
-            kwargs['bits_to_flip'] = bit_flip_selection(fault_model=fault_model)
+            unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
+            bits_to_flip = bit_flip_selection(fault_model=fault_model)
+            kwargs['unique_id'] = unique_id
+            kwargs['bits_to_flip'] = bits_to_flip
             kwargs['fault_model'] = fault_model
 
             fi_tic = int(time.time())
@@ -458,10 +461,10 @@ def fault_injection_by_breakpoint(**kwargs):
 
             if fault_injected:
                 summary_file_rows.append(
-                    [kwargs['unique_id'], kernel, register, num_rounds, fault_model, thread,
+                    [unique_id, kernel, register, num_rounds, fault_model, thread,
                      block, old_val, new_val, injection_site,
                      fault_injected, hang, crash, sdc, injection_time,
-                     signal_init_time, kwargs['bits_to_flip'], only_for_radiation_benchs()])
+                     signal_init_time, bits_to_flip, only_for_radiation_benchs()])
 
                 num_rounds += 1
 
