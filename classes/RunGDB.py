@@ -34,7 +34,7 @@ class RunGDB(Thread):
             print("GDB Thread run, id: {}".format(self.__unique_id))
 
         start_cmd = "{}/{}".format(self.__base_path, self.__flip_script)
-        script = 'env CUDA_VISIBLE_DEVICES {} {} -ex \'py arg0 = "{}"\' -n -batch -x {} > {} 2>{} &'
+        script = 'env CUDA_VISIBLE_DEVICES={} {} -ex \'py arg0 = "{}"\' -n -batch -x {} > {} 2>{} &'
 
         os.system(script.format(self.__gpu_to_execute, self.__gdb_exe_name, self.__gdb_env_string,
                                 start_cmd, self.__inj_output_path,
