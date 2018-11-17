@@ -354,7 +354,8 @@ def gdb_inject_fault(**kwargs):
     # Copy output files to a folder
     save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
                 flip_log_file=flip_log_file, inj_output_path=inj_output_path, inj_err_path=inj_err_path,
-                diff_log_path=diff_log_path, diff_err_path=diff_err_path, signal_app_log_path=signal_app_log)
+                diff_log_path=diff_log_path, diff_err_path=diff_err_path, signal_app_log_path=signal_app_log,
+                thread=host_thread)
 
     if cp.DEBUG:
         print("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
