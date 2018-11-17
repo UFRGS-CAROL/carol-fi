@@ -26,7 +26,7 @@ class RunGDB(Thread):
         self.__gdb_env_string = gdb_env_string
         self.__inj_output_path = inj_output_path
         self.__inj_err_path = inj_err_path
-        os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_to_execute)
+        self.__gpu_to_execute = gpu_to_execute
         os.environ['OMP_NUM_THREADS'] = '1'
 
     def run(self):
@@ -34,9 +34,9 @@ class RunGDB(Thread):
             print("GDB Thread run, id: {}".format(self.__unique_id))
 
         start_cmd = "{}/{}".format(self.__base_path, self.__flip_script)
-        script = '{} -ex \'py arg0 = "{}"\' -n -batch -x {} > {} 2>{} &'
+        script = 'env CUDA_VISIBLE_DEVICES {} {} -ex \'py arg0 = "{}"\' -n -batch -x {} > {} 2>{} &'
 
-        os.system(script.format(self.__gdb_exe_name, self.__gdb_env_string,
+        os.system(script.format(self.__gpu_to_execute, self.__gdb_exe_name, self.__gdb_env_string,
                                 start_cmd, self.__inj_output_path,
                                 self.__inj_err_path))
 
