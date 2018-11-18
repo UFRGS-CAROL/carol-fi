@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 import argparse
-import glob
 import os
 import random
 import re
@@ -14,8 +13,7 @@ import signal
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 import sys
-from threading import Thread
-
+from threading import Thread, Lock
 from classes.RunGDB import RunGDB
 from classes.SummaryFile import SummaryFile
 from classes.Logging import Logging
@@ -431,13 +429,14 @@ by creating a breakpoint and steeping into it
 
 def fault_injection_by_breakpoint(**kwargs):
     # Global rows list
-    global summary_file_rows
+    global lock
     benchmark_binary = kwargs.get('benchmark_binary')
     kwargs['signal_cmd'] = "killall -2 {}".format(os.path.basename(benchmark_binary))
     fault_models = kwargs.get('fault_models')
     iterations = kwargs.get('iterations')
     host_thread = kwargs.get('host_thread')
     injection_site = kwargs.get('injection_site')
+    summary_file = kwargs.get('summary_file')
 
     # Execute the fault injector for each one of the sections(apps) of the configuration file
     for fault_model in fault_models:
@@ -453,7 +452,8 @@ def fault_injection_by_breakpoint(**kwargs):
             kwargs['fault_model'] = fault_model
 
             fi_tic = int(time.time())
-            kernel, register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread, log_filename = gdb_inject_fault(**kwargs)
+            kernel, register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread, log_filename = gdb_inject_fault(
+                **kwargs)
 
             # Time toc
             fi_toc = int(time.time())
@@ -462,12 +462,13 @@ def fault_injection_by_breakpoint(**kwargs):
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                summary_file_rows.append(
-                    [unique_id, kernel, register, num_rounds, fault_model, thread,
-                     block, old_val, new_val, injection_site,
-                     fault_injected, hang, crash, sdc, injection_time,
-                     signal_init_time, bits_to_flip, log_filename])
-
+                row = [unique_id, kernel, register, num_rounds, fault_model, thread,
+                       block, old_val, new_val, injection_site,
+                       fault_injected, hang, crash, sdc, injection_time,
+                       signal_init_time, bits_to_flip, log_filename]
+                print("THREAD {} {}".format(thread, row))
+                with lock:
+                    summary_file.write_row(row)
                 num_rounds += 1
 
 
@@ -477,7 +478,7 @@ Main function
 
 
 def main():
-    global kill_strings, summary_file_rows, current_path, gpus_threads
+    global kill_strings, current_path, gpus_threads, lock
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
     parser.add_argument('-i', '--iter', dest="iterations",
@@ -508,7 +509,17 @@ def main():
     print("2 - {} faults will be injected".format(args.iterations))
     print("###################################################")
     ########################################################################
-    summary_file_rows = []
+
+    # Creating a summary csv file
+    csv_file = conf.get("DEFAULT", "csvFile")
+
+    # Csv log
+    fieldnames = ['unique_id', 'kernel', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
+                  'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
+                  'inj_time_location', 'bits_flipped', 'log_file']
+    summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
+    # Lock for summary file parallel
+    lock = Lock()
 
     # Define the number of threads tha will execute
     num_gpus = args.n_gpus
@@ -546,7 +557,8 @@ def main():
             'current_path': current_path,
             'seq_signals': int(conf.get('DEFAULT', 'seqSignals')),
             'init_sleep': float(conf.get('DEFAULT', 'initSleep')),
-            'gold_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript'))
+            'gold_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript')),
+            'summary_file': summary_file
         }
         kill_strings += "killall -9 {};killall -9 {};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
 
@@ -559,19 +571,6 @@ def main():
     for thread in gpus_threads:
         thread.join()
 
-    # Logging all results (DANGEROUS)
-    # Creating a summary csv file
-    csv_file = conf.get("DEFAULT", "csvFile")
-
-    # Csv log
-    fieldnames = ['unique_id', 'kernel', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
-                  'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
-                  'inj_time_location', 'bits_flipped', 'log_file']
-    summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
-
-    # Writing everything to file
-    summary_file.write_rows(summary_file_rows)
-
     os.system("rm -f {}/bin/*".format(current_path))
     print("###################################################")
     print("2 - Fault injection finished, results can be found in {}".format(csv_file))
@@ -583,8 +582,8 @@ def main():
 #                                   Main                               #
 ########################################################################
 
-summary_file_rows = None
 kill_strings = None
 current_path = None
+lock = None
 if __name__ == "__main__":
     main()
