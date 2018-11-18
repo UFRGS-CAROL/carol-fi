@@ -350,6 +350,16 @@ def gdb_inject_fault(**kwargs):
         if cp.DEBUG:
             print("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, e))
             print()
+    ####################################################################################################################
+    # temporary for log helper
+    log_filename = ''
+    with open(inj_output_path, "r") as fp:
+        for l in fp.readlines():
+            m = re.match("LOGFILENAME:.*/(\S+).*", l)
+            if m:
+                log_filename = m.group(1)
+                break
+    ####################################################################################################################
 
     # Copy output files to a folder
     save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
@@ -361,17 +371,8 @@ def gdb_inject_fault(**kwargs):
         print("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
 
     return_list = [kernel, register, old_value, new_value, fi_successful,
-                   is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread]
+                   is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread, log_filename]
     return return_list
-
-
-# TODO: REMOVE THIS FUNCTION
-
-
-def only_for_radiation_benchs():
-    list_of_files = glob.glob('/var/radiation-benchmarks/log/*.log')
-    latest_file = max(list_of_files, key=os.path.getctime)
-    return os.path.basename(latest_file)
 
 
 """
@@ -452,8 +453,8 @@ def fault_injection_by_breakpoint(**kwargs):
             kwargs['fault_model'] = fault_model
 
             fi_tic = int(time.time())
-            ret = gdb_inject_fault(**kwargs)
-            kernel, register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread = ret
+            kernel, register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread, log_filename = gdb_inject_fault(**kwargs)
+
             # Time toc
             fi_toc = int(time.time())
 
@@ -465,7 +466,7 @@ def fault_injection_by_breakpoint(**kwargs):
                     [unique_id, kernel, register, num_rounds, fault_model, thread,
                      block, old_val, new_val, injection_site,
                      fault_injected, hang, crash, sdc, injection_time,
-                     signal_init_time, bits_to_flip, only_for_radiation_benchs()])
+                     signal_init_time, bits_to_flip, log_filename])
 
                 num_rounds += 1
 

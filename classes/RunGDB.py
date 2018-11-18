@@ -1,10 +1,9 @@
 # from multiprocessing import Process
 import os
 from threading import Thread
-from os import system, path
+from os import path
 from subprocess import Popen, PIPE
 from re import search
-import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
 
 """
@@ -64,13 +63,3 @@ class RunGDB(Thread):
                 return True
 
         return False
-
-    """
-    Run gdb python script with specific parameters
-    It makes standart gdb script calls
-    """
-
-    def run_gdb_python(self, script):
-        # cmd = 'env CUDA_DEVICE_WAITS_ON_EXCEPTION=1 ' + gdb_name
-        cmd = gdb_name + ' ' + script  # -batch-silent
-        return cmd
