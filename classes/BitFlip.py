@@ -14,7 +14,6 @@ to implement the bit flip process
 class BitFlip:
     def __init__(self, **kwargs):
         # If kernel is not accessible it must return
-        self.__kernel_registers = kwargs.pop('kernel_registers') if 'kernel_registers' in kwargs else None
         self.__bits_to_flip = kwargs.pop('bits_to_flip') if 'bits_to_flip' in kwargs else None
         self.__fault_model = kwargs.pop('fault_model') if 'fault_model' in kwargs else None
         self.__logging = kwargs.pop('logging') if 'logging' in kwargs else None

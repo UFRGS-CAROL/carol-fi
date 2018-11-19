@@ -87,8 +87,7 @@ def main():
     bits_to_flip = [i for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
     bit_lip = BitFlip(bits_to_flip=bits_to_flip, fault_model=fault_model,
-                      logging=global_logging, injection_mode=injection_mode,
-                      kernel_registers=kernel_dict["kernel_registers"])
+                      logging=global_logging, injection_mode=injection_mode)
 
     # Start app execution
     gdb.execute("r")
