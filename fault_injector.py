@@ -38,7 +38,7 @@ def signal_handler(sig, frame):
 
     # os.system("rm -f {}/bin/*".format(current_path))
     for th in gpus_threads:
-        th.terminate()
+        th.join()
     sys.exit(0)
 
 
@@ -246,9 +246,9 @@ def gdb_inject_fault(**kwargs):
     logging.info("Starting GDB script")
 
     # Generate configuration file for specific test
-    gdb_env_string = "{}|{}|{}|file {}; set args {}|{}|{}".format(",".join(str(i) for i in bits_to_flip), fault_model,
-                                                                  flip_log_file, benchmark_binary, benchmark_args,
-                                                                  injection_site, host_thread)
+    gdb_env_string = "{}|{}|{}|file {}; set args {}|{}".format(",".join(str(i) for i in bits_to_flip), fault_model,
+                                                               flip_log_file, benchmark_binary, benchmark_args,
+                                                               injection_site)
 
     if cp.DEBUG:
         print("THREAD {} ENV GENERATE FINISHED".format(host_thread))
