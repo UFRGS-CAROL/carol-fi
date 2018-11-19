@@ -6,7 +6,6 @@ if (length(args)<3) {
 }
 
 dat = read.csv(args[1],sep=";")
-#head(dat, 5)
 
 execSDC = dim(dat)[1]
 execSDC0.1 = 0
@@ -85,19 +84,9 @@ per12 = (execSDC12 * 100 / execSDC)
 per15 = (execSDC15 * 100 / execSDC)
 
 print(paste("errLimit ; percentage; benchmark"))
-errLimit =c("0.1", "0.2", "0.3", "0.4", "0.5", "1", "2", "3", "4", "5", "8", "10", "12", "15")
-percentage = c(per0.1, per0.2, per0.3, per0.4, per0.5, per1, per2, per3, per4, per5, per8, per10, per12, per15)
-benchmark = c(args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2])
+errLimit =c("0", "0.1", "0.2", "0.3", "0.4", "0.5", "1", "2", "3", "4", "5", "8", "10", "12", "15")
+percentage = c(100, per0.1, per0.2, per0.3, per0.4, per0.5, per1, per2, per3, per4, per5, per8, per10, per12, per15)
+benchmark = c(args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2], args[2])
 myDat = data.frame(errLimit, percentage, benchmark)
 
 write.csv(myDat, file = args[3])
-#print(paste("0.1;",per0.1,";",args[2]))
-#print(paste("0.2;",per0.2,";",args[2]))
-#print(paste("0.3;",per0.3,";",args[2]))
-#print(paste("0.4;",per0.4,";",args[2]))
-#print(paste("0.5;",per0.5,";",args[2]))
-#print(paste("1;",per1,";",args[2]))
-#print(paste("2;",per2,";",args[2]))
-#print(paste("3;",per3,";",args[2]))
-#print(paste("4;",per4,";",args[2]))
-#print(paste("5;",per5,";",args[2]))
