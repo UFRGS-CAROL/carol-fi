@@ -310,7 +310,7 @@ def gdb_inject_fault(**kwargs):
     # Search for set values for register
     # Must be done before save output
     # Was fault injected?
-    kernel = register = block = thread = "___"
+    register = block = thread = "___"
     try:
         old_value = re.findall("old_value:(\S+)", logging.search("old_value"))[0]
         new_value = re.findall("new_value:(\S+)", logging.search("new_value"))[0]
@@ -334,12 +334,6 @@ def gdb_inject_fault(**kwargs):
             m = re.search("SELECTED_REGISTER:(\S+).*", register_selected)
             if m:
                 register = m.group(1)
-
-        kernel_selected = logging.search("SELECTED_KERNEL")
-        if kernel_selected:
-            m = re.search("SELECTED_KERNEL:(\S+).*", kernel_selected)
-            if m:
-                kernel = m.group(1)
 
         fi_successful = True
     except Exception as e:
@@ -368,7 +362,7 @@ def gdb_inject_fault(**kwargs):
     if cp.DEBUG:
         print("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
 
-    return_list = [kernel, register, old_value, new_value, fi_successful,
+    return_list = [register, old_value, new_value, fi_successful,
                    is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread, log_filename]
     return return_list
 
@@ -452,7 +446,7 @@ def fault_injection_by_breakpoint(**kwargs):
             kwargs['fault_model'] = fault_model
 
             fi_tic = int(time.time())
-            kernel, register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread, log_filename = gdb_inject_fault(
+            register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread, log_filename = gdb_inject_fault(
                 **kwargs)
 
             # Time toc
@@ -462,7 +456,7 @@ def fault_injection_by_breakpoint(**kwargs):
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                row = [unique_id, kernel, register, num_rounds, fault_model, thread,
+                row = [unique_id, register, num_rounds, fault_model, thread,
                        block, old_val, new_val, injection_site,
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, log_filename]
@@ -514,7 +508,7 @@ def main():
     csv_file = conf.get("DEFAULT", "csvFile")
 
     # Csv log
-    fieldnames = ['unique_id', 'kernel', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
+    fieldnames = ['unique_id', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
                   'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
                   'inj_time_location', 'bits_flipped', 'log_file']
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
