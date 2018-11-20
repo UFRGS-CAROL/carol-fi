@@ -381,7 +381,7 @@ void DetectionGold::load_gold_hash(std::ifstream& gold_file) {
 DetectionGold::~DetectionGold() {
 	if (!this->generate) {
 #ifdef LOGS
-		end_log_file();
+		this->app_log->end_log();
 #endif
 		delete this->app_log;
 	}

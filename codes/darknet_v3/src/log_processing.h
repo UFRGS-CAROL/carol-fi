@@ -38,6 +38,7 @@ struct Log {
 
 		start_log_file(const_cast<char*>(app.c_str()),
 				const_cast<char*>(test_info.c_str()));
+		printf("LOGFILENAME:%s\n", get_log_file_name());
 #endif
 	}
 
@@ -77,6 +78,8 @@ struct Log {
 		log_error_count(error_count);
 #endif
 	}
+
+
 };
 
 #endif /* LOG_PROCESSING_H_ */
