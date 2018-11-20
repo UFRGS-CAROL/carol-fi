@@ -731,6 +731,7 @@ void test_detector_radiation(char *datacfg, char *cfgfile, char *weightfile,
 	/**
 	 * DetectionGold declaration
 	 */
+	double test_time = what_time_is_it_now();
 	detection_gold_t *gold = create_detection_gold(argc, argv, thresh,
 			hier_thresh, filename, cfgfile, datacfg, "detector", weightfile);
 	int smx_redundancy = get_smx_redundancy(gold);
@@ -781,6 +782,8 @@ void test_detector_radiation(char *datacfg, char *cfgfile, char *weightfile,
 	real_t** X_arr = malloc(sizeof(real_t*) * smx_redundancy);
 	detection** dets_array = malloc(sizeof(detection*) * smx_redundancy);
 	int* nboxes_array = malloc(sizeof(int) * smx_redundancy);
+	printf("time on malloc net %lf\n", what_time_is_it_now() - test_time);
+
 	//start the process
 	for (iteration = 0; iteration < max_it; iteration++) {
 		int last_errors = 0;
@@ -837,7 +840,6 @@ void test_detector_radiation(char *datacfg, char *cfgfile, char *weightfile,
 			last_errors = curr_err;
 		}
 	}
-
 	free(dets_array);
 	free(nboxes_array);
 	for (inet = 0; inet < smx_redundancy; inet++) {
@@ -848,6 +850,7 @@ void test_detector_radiation(char *datacfg, char *cfgfile, char *weightfile,
 	destroy_detection_gold(gold);
 	free_all_images(image_array, sized_array, plist_size, smx_redundancy);
 	free(X_arr);
+
 }
 
 void run_detector(int argc, char **argv) {
