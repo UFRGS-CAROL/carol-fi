@@ -2,7 +2,6 @@
 import argparse
 import os
 import re
-import signal
 import time
 import common_functions as cf
 import common_parameters as cp
@@ -108,15 +107,8 @@ def main():
     # saving gold
     generate_gold(gdb_exec=gdb_exec, benchmark_binary=benchmark_binary, benchmark_args=benchmark_args)
 
-    sm_processor = conf.get("DEFAULT", "smx")
-    stderr = conf.get("DEFAULT", "makeStderr")
-    kernel_regs = generate_dict(sm_version=sm_processor, input_file_name=stderr)
-    if len(kernel_regs) < 1:
-        print("Warning: no kernel register information was retrieved from {} file.\nPlease check nvcc output and "
-              "GPU's architecture.".format(stderr))
-
     # Save the kernel configuration txt file
-    cf.save_file(file_path=cp.KERNEL_INFO_DIR, data={'max_time': max_time_app, 'kernel_registers': kernel_regs})
+    cf.save_file(file_path=cp.KERNEL_INFO_DIR, data={'max_time': max_time_app})
 
     print("1 - Profile finished\n###################################################")
 

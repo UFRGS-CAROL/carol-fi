@@ -63,14 +63,8 @@ def main():
 
     # Get variables values from environment
     # First parse line
-    # [bits_to_flip, fault_model, flip_log_file,
-    #  gdb_init_strings, injection_mode] = str(os.environ['CAROL_FI_INFO']).split('|')
-
     [bits_to_flip, fault_model, flip_log_file,
-     gdb_init_strings, injection_mode, host_thread] = arg0.split('|')
-
-    # Load kernel registers
-    kernel_dict = cf.load_file(cf.cp.KERNEL_INFO_DIR)
+     gdb_init_strings, injection_mode] = arg0.split('|')
 
     # Logging
     global_logging = Logging(log_file=flip_log_file)
@@ -87,8 +81,7 @@ def main():
     bits_to_flip = [i for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
     bit_lip = BitFlip(bits_to_flip=bits_to_flip, fault_model=fault_model,
-                      logging=global_logging, injection_mode=injection_mode,
-                      kernel_registers=kernel_dict["kernel_registers"])
+                      logging=global_logging, injection_mode=injection_mode)
 
     # Start app execution
     gdb.execute("r")
