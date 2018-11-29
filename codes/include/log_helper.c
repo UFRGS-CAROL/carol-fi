@@ -36,6 +36,7 @@ char vardir_key[] = "vardir";
 // Max errors that can be found for a single iteration
 // If more than max errors is found, exit the program
 unsigned long int max_errors_per_iter = 500;
+unsigned long int max_infos_per_iter = 500;
 
 // Absolute path for log file, if needed
 #ifdef MIC_NATIVE
@@ -54,7 +55,7 @@ char signalcmd_key[] = "signalcmd";
 #ifdef MIC_NATIVE
 char config_file[] = "/micNfs/radiation-benchmarks.conf";
 #else
-char config_file[] = "/home/ffsantos/radiation-benchmarks.conf";
+char config_file[] = "/etc/radiation-benchmarks.conf";
 #endif
 
 // Used to print the log only for some iterations, equal 1 means print every iteration
@@ -73,6 +74,7 @@ unsigned long int last_iter_errors = 0;
 unsigned long int last_iter_with_errors = 0;
 
 unsigned long int kernels_total_errors = 0;
+unsigned long int kernels_total_infos = 0;
 unsigned long int iteration_number = 0;
 double kernel_time_acc = 0;
 double kernel_time = 0;
@@ -151,7 +153,6 @@ long long get_time() {
 
     return (tv.tv_sec * 1000000) + tv.tv_usec;
 }
-;
 
 // ~ ===========================================================================
 unsigned long int set_max_errors_iter(unsigned long int max_errors) {
@@ -159,7 +160,13 @@ unsigned long int set_max_errors_iter(unsigned long int max_errors) {
 
     return max_errors_per_iter;
 }
-;
+
+// ~ ===========================================================================
+unsigned long int set_max_infos_iter(unsigned long int max_infos) {
+    max_infos_per_iter = max_infos;
+
+    return max_infos_per_iter;
+}
 
 // ~ ===========================================================================
 // Set the interval the program must print log details, default is 1 (each iteration)
@@ -172,7 +179,6 @@ int set_iter_interval_print(int interval) {
 
     return iter_interval_print;
 }
-;
 
 // ~ ===========================================================================
 // Read config file to get the value of a 'key = value' pair
@@ -239,7 +245,6 @@ char * getValueConfig(char * key) {
         free(line);
     return NULL;
 }
-;
 
 // ~ ===========================================================================
 // Update with current timestamp the file where the software watchdog watchs
@@ -253,14 +258,12 @@ void update_timestamp() {
         fclose(fp);
     }
 }
-;
 
 // ~ ===========================================================================
 // Return the name of the log file generated
 char * get_log_file_name() {
     return full_log_file_name;
 }
-;
 
 // ~ ===========================================================================
 // Generate the log file name, log info from user about the test to be executed and reset log variables
@@ -387,7 +390,6 @@ int start_log_file(char *benchmark_name, char *test_info) {
 
     return 0;
 }
-;
 
 // ~ ===========================================================================
 // Log the string "#END" and reset global variables
@@ -414,7 +416,6 @@ int end_log_file() {
 
     return 0;
 }
-;
 
 // ~ ===========================================================================
 // Start time to measure kernel time, also update iteration number and log to file
@@ -441,7 +442,6 @@ int start_iteration() {
     return 0;
 
 }
-;
 
 // ~ ===========================================================================
 // Finish the measured kernel time log both time (total time and kernel time)
@@ -479,7 +479,6 @@ int end_iteration() {
     return 0;
 
 }
-;
 
 // ~ ===========================================================================
 // Update total errors variable and log both errors(total errors and kernel errors)
@@ -541,7 +540,67 @@ int log_error_count(unsigned long int kernel_errors) {
     return 0;
 
 }
-;
+
+// ~ ===========================================================================
+// Update total infos variable and log both infos(total infos and iteration infos)
+int log_info_count(unsigned long int info_count) {
+
+    update_timestamp();
+
+    if (info_count < 1) {
+        return 0;
+    }
+
+    kernels_total_infos += info_count;
+
+    FILE *file = NULL;
+    file = fopen(full_log_file_name, "a");
+
+    if (file == NULL) {
+        fprintf(stderr,
+                "[ERROR in log_string(char *)] Unable to open file %s\n",
+                full_log_file_name);
+        return 1;
+    }
+
+    // (iteration_number-1) because this function is called after end_iteration() that increments iteration_number
+    fprintf(file, "#CINF Ite:%lu KerTime:%f AccTime:%f KerInfo:%lu AccInfo:%lu\n",
+            iteration_number - 1, kernel_time, kernel_time_acc, info_count,
+            kernels_total_infos);
+    //fprintf(file, "#SDC kernel_errors:%lu\n", kernel_errors);
+    //fprintf(file, "#TOTAL_SDC total_errors:%lu\n", kernels_total_errors);
+    fflush(file);
+
+//     if (info_count > max_infos_per_iter) {
+// #ifdef ERR_INJ
+//         fprintf(file, "#ERR_INJ not aborting, we would abort otherwise\n");
+// #else
+//         fprintf(file, "#ABORT too many infos per iteration\n");
+//         fflush(file);
+//         fclose(file);
+//         end_log_file();
+//         exit(1);
+// #endif
+//     }
+
+    // if (kernel_errors == last_iter_errors
+    //         && (last_iter_with_errors + 1) == iteration_number
+    //         && kernel_errors != 0) {
+    //     fprintf(file, "#ABORT amount of errors equals of the last iteration\n");
+    //     fflush(file);
+    //     fclose(file);
+    //     end_log_file();
+    //     exit(1);
+    // }
+
+    fclose(file);
+
+    // last_iter_errors = kernel_errors;
+    // last_iter_with_errors = iteration_number;
+
+    return 0;
+
+}
 
 // ~ ===========================================================================
 // Print some string with the detail of an error to log file
@@ -573,7 +632,6 @@ int log_error_detail(char *string) {
     fclose(file);
     return 0;
 }
-;
 
 // ~ ===========================================================================
 // Print some string with the detail of an error/information to log file
@@ -587,7 +645,7 @@ int log_info_detail(char *string) {
     }
     // Limits the number of lines written to logfile so that
     // HD space will not explode
-    if ((unsigned long) log_info_detail_count > max_errors_per_iter)
+    if ((unsigned long) log_info_detail_count > max_infos_per_iter)
         return 0;
 
     file = fopen(full_log_file_name, "a");
@@ -605,7 +663,6 @@ int log_info_detail(char *string) {
     fclose(file);
     return 0;
 }
-;
 
 unsigned long int get_iteration_number()
 {
