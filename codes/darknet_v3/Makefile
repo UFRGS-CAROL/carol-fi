@@ -5,12 +5,12 @@ OPENMP=0
 DEBUG?=0
 REAL_TYPE?=half
 LOGS?=1
-OPENGEMM?=1
+OPENGEMM?=0
 
 RADIATIONDIR=/home/carol/radiation-benchmarks/
 
 ARCH= -gencode arch=compute_60,code=sm_60 \
-      #-gencode arch=compute_61,code=sm_61 \
+      -gencode arch=compute_61,code=sm_61 \
       #-gencode arch=compute_62,code=[sm_62,compute_62] \
       -gencode arch=compute_70,code=[sm_70,compute_70] 
 
