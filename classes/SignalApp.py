@@ -18,7 +18,7 @@ class SignalApp(Thread):
         os.system("rm -f {}".format(log_path))
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
 
-        self.__init_wait_time = uniform(init_sleep, max_wait_time)
+        self.__init_wait_time = uniform(init_sleep, max_wait_time * 0.7)
         self.__signals_to_send = signals_to_send
         self.__time_to_sleep = (max_wait_time - self.__init_wait_time) / self.__signals_to_send
 

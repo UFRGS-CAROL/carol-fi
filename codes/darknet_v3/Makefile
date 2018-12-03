@@ -3,11 +3,11 @@ CUDNN=0
 OPENCV?=0
 OPENMP=0
 DEBUG?=0
-REAL_TYPE?=half
+REAL_TYPE?=double
 LOGS?=1
 OPENGEMM?=0
 
-RADIATIONDIR=/home/carol/radiation-benchmarks/
+RADIATIONDIR=/home/ffsantos/fernando_rad_dir/radiation-benchmarks/
 
 ARCH= -gencode arch=compute_60,code=sm_60 \
       -gencode arch=compute_61,code=sm_61 \
