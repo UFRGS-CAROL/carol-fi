@@ -9,13 +9,20 @@ from csv import DictReader, DictWriter
 MAX_REGISTER_NUMBER = 255
 
 
-def check_sdc_and_crash(log_file):
-    with open("/tmp/var/radiation-benchmarks/log/{}".format(log_file), "r") as fp:
+def check_sdc_and_crash(log_file, log_path):
+    with open("{}/{}".format(log_path, log_file), "r") as fp:
         data = fp.read()
-        return "SDC" in data, "END" not in data
+        # print log_file
+        crash = False
+        sdc = False
+        if 'ERR' in data:
+            sdc = True
+        if 'END' not in data:
+            crash = True
+        return sdc, crash
 
 
-def main(csv_path):
+def main(csv_path, log_path):
     """
     Main function
     :param csv_path: path to csv file
@@ -30,7 +37,9 @@ def main(csv_path):
     # only register histogram
     for reg in csv_data:
         register_fi_histogram[reg['register']][0] += 1
-        sdc, crash = check_sdc_and_crash(reg['log_file'])
+        if reg['log_file'] == '':
+            continue
+        sdc, crash = check_sdc_and_crash(log_file=reg['log_file'], log_path=log_path)
         register_fi_histogram[reg['register']][1] += int(sdc)
         register_fi_histogram[reg['register']][2] += int(crash)
 
@@ -52,4 +61,5 @@ def main(csv_path):
 
 if __name__ == '__main__':
     csv_path = argv[1]
-    main(csv_path=csv_path)
+    log_path = argv[2]
+    main(csv_path=csv_path, log_path=log_path)

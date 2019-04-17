@@ -460,7 +460,7 @@ def fault_injection_by_breakpoint(**kwargs):
                        block, old_val, new_val, injection_site,
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, log_filename]
-                print("THREAD {} {}".format(thread, row))
+                print("THREAD {} {}".format(host_thread, row))
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
