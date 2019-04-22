@@ -735,7 +735,7 @@ void run(int argc, char** argv) {
 	snprintf(test_name, 90, "cuda_trip_hotspot_%s", test_precision_description);
 	if (!(setupParams->generate)) start_log_file(test_name, test_info);
 #endif
-
+	printf("LOGFILENAME:%s\n", get_log_file_name());
 	timestamp = mysecond();
 	readInput(setupParams);
 	if (setupParams->verbose)

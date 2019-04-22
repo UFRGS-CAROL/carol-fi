@@ -9,19 +9,10 @@ SAFE_MALLOC?=0
 UPPERCASED_PRECISION=$(shell echo $(PRECISION) | tr a-z A-Z)
 LOWERCASED_PRECISION=$(shell echo $(PRECISION) | tr A-Z a-z)
 
-ifeq ($(UPPERCASED_PRECISION),HALF)
 ARCH= 	-gencode arch=compute_60,code=[sm_60,compute_60]	# Tesla P100
 ARCH+= 	-gencode arch=compute_61,code=[sm_61,compute_61]	# Titan X | Titan Xp
 ARCH+= 	-gencode arch=compute_62,code=[sm_62,compute_62]	# Tegra X2
 ARCH+= 	-gencode arch=compute_70,code=[sm_70,compute_70]	# Titan V | Tesla V100
-else
-ARCH= 	-gencode arch=compute_35,code=[sm_35,compute_35]	# Tesla K40
-ARCH+= 	-gencode arch=compute_53,code=[sm_53,compute_53]	# Tegra X1
-ARCH+= 	-gencode arch=compute_60,code=[sm_60,compute_60]	# Tesla P100
-ARCH+= 	-gencode arch=compute_61,code=[sm_61,compute_61]	# Titan X | Titan Xp
-ARCH+= 	-gencode arch=compute_62,code=[sm_62,compute_62]	# Tegra X2
-ARCH+= 	-gencode arch=compute_70,code=[sm_70,compute_70]	# Titan V | Tesla V100
-endif
 
 NVCC_FLAGS= $(ARCH) -O3 -std=c++11
 INCLUDE= -I/usr/local/cuda/include
@@ -31,8 +22,8 @@ CXXFLAGS= -I/usr/local/cuda/include -L/usr/local/cuda/lib64/ -lcudart  -std=c++1
 TARGET=cuda_trip_hotspot_$(LOWERCASED_PRECISION)
 RUN_SOURCES=./cuda_trip_hotspot.cu
 
-LOGHELPER_INC=../../include/
-LOGHELPER_LIB=../../include/
+LOGHELPER_INC=../include/
+LOGHELPER_LIB=../include/
 
 ifeq ($(LOGS), 1)
 INCLUDE+= -I$(LOGHELPER_INC)
@@ -50,14 +41,14 @@ NVCC_FLAGS+= -g -G
 endif
 
 ifeq ($(SAFE_MALLOC), 1)
-NVCC_FLAGS+= -I../../include/safe_memory -DSAFE_MALLOC -lSafeMemory 
-LIBRARY+= -L../../include/safe_memory
+NVCC_FLAGS+= -I../include/safe_memory -DSAFE_MALLOC -lSafeMemory 
+LIBRARY+= -L../include/safe_memory
 endif
 
 NVCC_FLAGS+= -DPRECISION_$(UPPERCASED_PRECISION)
 
-TEST_SIM_TIME=10
-DATA_DIR=../../../data/hotspot
+TEST_SIM_TIME=10000
+DATA_DIR=./
 DEF_INPUT_POWER=$(DATA_DIR)/power_$(DEF_SIZE)
 DEF_INPUT_TEMP=$(DATA_DIR)/temp_$(DEF_SIZE)
 DEF_GOLD=$(DATA_DIR)/hotspot_$(LOWERCASED_PRECISION)_$(DEF_SIZE)_$(TEST_SIM_TIME)
