@@ -24,6 +24,17 @@ typedef half_float::half host_half;
 
 typedef std::vector<host_half> half_vector;
 
+//namespace experimental { 
+//    namespace precision { 
+//        struct u4; // 4-bit unsigned 
+//        struct s4; // 4-bit signed 
+//        struct b1; // 1-bit 
+//     } 
+//    enum bmmaBitOp { bmmaBitOpXOR = 1 }; 
+//    enum bmmaAccumulateOp { bmmaAccumulateOpPOPC = 1 }; 
+//} 
+
+
 template<class real_t> void generate_matrices_files(half_vector& a_host_vector,
 		half_vector& b_host_vector, std::vector<real_t>& c_host_vector,
 		Log& log) {
@@ -31,7 +42,7 @@ template<class real_t> void generate_matrices_files(half_vector& a_host_vector,
 	std::ofstream f_a(log.a_input_path, std::ios::out | std::ios::binary);
 	std::ofstream f_b(log.b_input_path, std::ios::out | std::ios::binary);
 	std::ofstream f_c(log.c_input_path, std::ios::out | std::ios::binary);
-//	std::cout << "entrou generate" << std::endl;
+
 
 	if (f_a.is_open() && f_b.is_open() && f_c.is_open()) {
 		std::random_device rd; //Will be used to obtain a seed for the random number engine
@@ -39,21 +50,21 @@ template<class real_t> void generate_matrices_files(half_vector& a_host_vector,
 		std::uniform_real_distribution<double> dis(-GENERATOR_MAXABSVALUE,
 		GENERATOR_MAXABSVALUE);
 
-		for (size_t i = 0; i < log.size_matrices; i++) {
-			for (size_t j = 0; j < log.size_matrices; j++) {
-				a_host_vector[i * log.size_matrices + j] = host_half(dis(gen));
-				b_host_vector[i * log.size_matrices + j] = host_half(dis(gen));
-				c_host_vector[i * log.size_matrices + j] = real_t(dis(gen));
-			}
-		}
-
 //		for (size_t i = 0; i < log.size_matrices; i++) {
 //			for (size_t j = 0; j < log.size_matrices; j++) {
-//				a_host_vector[i * log.size_matrices + j] = (half) 2.0;
-//				b_host_vector[i * log.size_matrices + j] = (half) 2.0;
-//				c_host_vector[i * log.size_matrices + j] = (float) 2.0;
+//				a_host_vector[i * log.size_matrices + j] = host_half(dis(gen));
+//				b_host_vector[i * log.size_matrices + j] = host_half(dis(gen));
+//				c_host_vector[i * log.size_matrices + j] = real_t(dis(gen));
 //			}
 //		}
+
+		for (size_t i = 0; i < log.size_matrices; i++) {
+			for (size_t j = 0; j < log.size_matrices; j++) {
+				a_host_vector[i * log.size_matrices + j] = (half) 2.0;
+				b_host_vector[i * log.size_matrices + j] = (half) 2.0;
+				c_host_vector[i * log.size_matrices + j] = (real_t) 2.0;
+			}
+		}
 
 		host_half zero(0.0);
 		host_half nan_ = host_half(half_float::nanh("0"));
@@ -349,10 +360,11 @@ std::pair<int, int> compare_output_matrices(std::vector<real_t>& gold, std::vect
 	return res;
 }
 
-template<class host_real_t, class real_t>
+template<class host_real_t, class real_t, class half_t>
 void call_mxm(half_vector& host_matrix_a, half_vector& host_matrix_b,
 		Log& log_obj) {
-
+	cudaEvent_t start, stop;
+	float elapsedTime;
 // C matrix
 	std::vector<host_real_t> host_matrix_c(
 			log_obj.size_matrices * log_obj.size_matrices);
@@ -374,13 +386,14 @@ void call_mxm(half_vector& host_matrix_a, half_vector& host_matrix_b,
 				host_matrix_c, log_obj);
 	}
 
-	GEMMWMMA<host_half, half, host_real_t, real_t> mult_enviroment(
+	GEMMWMMA<host_half, half_t, host_real_t, real_t> mult_enviroment(
 			host_matrix_a.data(), host_matrix_b.data(), host_matrix_c.data(),
 			log_obj.size_matrices, log_obj.size_matrices, log_obj.size_matrices,
-			real_t(1.0), real_t(1.0));
+			real_t(1.1f), real_t(1.2f));
 
 	int tries = 0;
-
+	cudaEventCreate(&start);
+	cudaEventRecord(start,0);	
 	for (int it = 0; it < log_obj.iterations; it++) {
 		double start_computation = log_obj.mysecond();
 		log_obj.start_iteration_app();
@@ -403,6 +416,12 @@ void call_mxm(half_vector& host_matrix_a, half_vector& host_matrix_b,
 		mult_enviroment.pull_array(host_matrix_d0.data(), host_matrix_d1.data(),
 				host_matrix_d2.data());
 
+		 cudaEventCreate(&stop);
+		 cudaEventRecord(stop,0);
+		 cudaEventSynchronize(stop);
+
+		 cudaEventElapsedTime(&elapsedTime, start,stop);
+		 printf("Elapsed time : %f ms\n" ,elapsedTime);
 
 		//TODO check this
 		if (log_obj.triplicated && log_obj.generate) {
@@ -419,6 +438,11 @@ void call_mxm(half_vector& host_matrix_a, half_vector& host_matrix_b,
 		}
 
 		if (!log_obj.generate) {
+			//fault test 
+//			if(it == 2){
+//			host_matrix_d0[2]= (real_t) 5.00;
+//			}
+			//
 			std::pair<int, int> errors;
 			double start, end;
 			if (log_obj.triplicated) {
@@ -446,8 +470,14 @@ void call_mxm(half_vector& host_matrix_a, half_vector& host_matrix_b,
 			}
 
 		}
-
+		
 	}
+	cudaEventCreate(&stop);
+	cudaEventRecord(stop,0);
+	cudaEventSynchronize(stop);
+
+	cudaEventElapsedTime(&elapsedTime, start,stop);
+	printf("time : %f s\n" ,(elapsedTime/1000));
 	if (log_obj.generate) {
 		if (log_obj.triplicated)
 			write_gold_to_file<host_real_t>(log_obj.gold_inout_path, host_gold);
@@ -481,18 +511,29 @@ int main(int argc, char** argv) {
 	half_vector host_matrix_a(log_obj.size_matrices * log_obj.size_matrices);
 	half_vector host_matrix_b(log_obj.size_matrices * log_obj.size_matrices);
 
-	//TODO: To be implemented
+	//TODO: To be implemented experimental precisions
 	if (log_obj.precision == "half") {
-		call_mxm<host_half, half>(host_matrix_a, host_matrix_b, log_obj);
-
+		call_mxm<host_half, half, half>(host_matrix_a, host_matrix_b, log_obj);	
 	}
 	if (log_obj.precision == "float") {
-		call_mxm<float, float>(host_matrix_a, host_matrix_b, log_obj);
+		call_mxm<float, float, half>(host_matrix_a, host_matrix_b, log_obj);
 	}
-//
-//	if (log_obj.precision == "double") {
-//		call_mxm<double>(host_matrix_a, host_matrix_b, log_obj);
+	
+//	if (log_obj.precision == "uchar") {
+//		call_mxm<int,int,unsigned char>(host_matrix_a, host_matrix_b, log_obj);
 //	}
+	
+	
+//	if (log_obj.precision == "u4") {
+//		call_mxm<struct u4>(host_matrix_a, host_matrix_b, log_obj);
+//	}
+//	if (log_obj.precision == "s4") {
+//		call_mxm<struct s4>(host_matrix_a, host_matrix_b, log_obj);
+//	}
+//	if (log_obj.precision == "b1") {
+//		call_mxm<struct b1>(host_matrix_a, host_matrix_b, log_obj);
+//	}
+	
 
 	std::cout << "Finished computation\n";
 	return 0;

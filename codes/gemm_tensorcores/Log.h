@@ -73,6 +73,8 @@ public:
 		start_log_file(const_cast<char*>(app.c_str()),
 				const_cast<char*>(test_info.c_str()));
 #endif
+		printf("LOGFILENAME:%s\n", get_log_file_name());
+
 	}
 
 	virtual ~Log() {
