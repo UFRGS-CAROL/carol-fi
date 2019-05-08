@@ -576,7 +576,6 @@ void usage(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
-	double setup_time = mysecond();
 //================== Test vars
 	int loop2;
 	double time;
@@ -719,7 +718,9 @@ int main(int argc, char* argv[]) {
 #ifdef LOGS
 	if (!generate) {
 		start_log_file(test_name, test_info);
+		printf("LOGFILENAME:%s\n", get_log_file_name());
 	}
+
 #endif
 //====================================
 
@@ -785,8 +786,7 @@ int main(int argc, char* argv[]) {
 	allocCudaMemory();
 	copyCudaMemory();
 //====================================
-	printf("START_TIME: %lf\n", mysecond() - setup_time);
-	printf("LOGFILENAME:%s\n", get_log_file_name());
+
 	for (loop2 = 0; loop2 < iterations; loop2++) {
 		//================== Global test loop
 

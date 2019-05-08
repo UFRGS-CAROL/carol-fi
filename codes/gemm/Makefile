@@ -3,27 +3,13 @@ NVCC=/usr/local/cuda/bin/nvcc
 PRECISION?=single
 DEFAULT_INPUT_SIZE?=8192
 LOGS?=1
-USE_OMP?=0
+USE_OMP?=1
 SAFE_MALLOC?=0
-USE_TENSOR?=1
 
 UPPERCASED_PRECISION=$(shell echo $(PRECISION) | tr a-z A-Z)
 LOWERCASED_PRECISION=$(shell echo $(PRECISION) | tr A-Z a-z)
 
-ifeq ($(UPPERCASED_PRECISION),HALF)
-ARCH= 	-gencode arch=compute_60,code=[sm_60,compute_60]	# Tesla P100
-ARCH+= 	-gencode arch=compute_61,code=[sm_61,compute_61]	# Titan X | Titan Xp
-ARCH+= 	-gencode arch=compute_62,code=[sm_62,compute_62]	# Tegra X2
 ARCH+= 	-gencode arch=compute_70,code=[sm_70,compute_70]	# Titan V | Tesla V100
-else
-ARCH= 	-gencode arch=compute_35,code=[sm_35,compute_35]	# Tesla K40
-ARCH+= 	-gencode arch=compute_53,code=[sm_53,compute_53]	# Tegra X1
-ARCH+= 	-gencode arch=compute_60,code=[sm_60,compute_60]	# Tesla P100
-ARCH+= 	-gencode arch=compute_61,code=[sm_61,compute_61]	# Titan X | Titan Xp
-ARCH+= 	-gencode arch=compute_62,code=[sm_62,compute_62]	# Tegra X2
-ARCH+= 	-gencode arch=compute_70,code=[sm_70,compute_70]	# Titan V | Tesla V100
-endif
-
 
 NVCC_FLAGS= $(ARCH) -O3  -lcublas -std=c++11
 INCLUDE= -I/usr/local/cuda/include
@@ -60,7 +46,7 @@ NVCC_FLAGS+= -I$(SAFEMEMORYDIR)/
 NVCC_FLAGS+= -DPRECISION_$(UPPERCASED_PRECISION) -DDEFAULT_INPUT_SIZE=$(DEFAULT_INPUT_SIZE)
 
 DATA_DIR=.
-DEF_SIZE=$(DEFAULT_INPUT_SIZE)
+DEF_SIZE=8192
 DEF_A_MATRIX=$(DATA_DIR)/gemm_$(LOWERCASED_PRECISION)_A_$(DEF_SIZE).matrix
 DEF_B_MATRIX=$(DATA_DIR)/gemm_$(LOWERCASED_PRECISION)_B_$(DEF_SIZE).matrix
 DEF_GOLD_MATRIX=$(DATA_DIR)/gemm_$(LOWERCASED_PRECISION)_GOLD_$(DEF_SIZE).matrix
@@ -71,10 +57,10 @@ $(TARGET): $(RUN_SOURCES)
 	$(NVCC) $(INCLUDE) $(LIBRARY) $(NVCC_FLAGS) $(RUN_SOURCES) -o $(TARGET)
 
 clean:
-	rm -rf $(TARGET) $(DEF_A_MATRIX) $(DEF_B_MATRIX) $(DEF_GOLD_MATRIX) *.matrix cuda_gemm_*
+	rm -rf $(TARGET) $(DEF_A_MATRIX) $(DEF_B_MATRIX) $(DEF_GOLD_MATRIX)
 
 generate: $(TARGET)
-	./$(TARGET) -generate -size=$(DEF_SIZE) -input_a=$(DEF_A_MATRIX) -input_b=$(DEF_B_MATRIX) -gold=$(DEF_GOLD_MATRIX) -use_tensor=$(USE_TENSOR)
+	./$(TARGET) -generate -size=$(DEF_SIZE) -input_a=$(DEF_A_MATRIX) -input_b=$(DEF_B_MATRIX) -gold=$(DEF_GOLD_MATRIX) -input_check=0
 
 test: $(TARGET) generate
-	./$(TARGET) -size=$(DEF_SIZE) -input_a=$(DEF_A_MATRIX) -input_b=$(DEF_B_MATRIX) -gold=$(DEF_GOLD_MATRIX) -iterations=10 -use_tensor=$(USE_TENSOR)
+	./$(TARGET) -size=$(DEF_SIZE) -input_a=$(DEF_A_MATRIX) -input_b=$(DEF_B_MATRIX) -gold=$(DEF_GOLD_MATRIX) -iterations=10 -verbose
