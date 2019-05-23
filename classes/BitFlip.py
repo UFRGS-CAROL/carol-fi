@@ -39,7 +39,7 @@ class BitFlip:
         except Exception as err:
             # Even if CUDA focus was not successful we keep going
             self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED. KEEP GOING, with error {}".format(err))
-            return
+            # return
 
         try:
             self.__select_register()
