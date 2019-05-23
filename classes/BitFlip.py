@@ -84,7 +84,7 @@ class BitFlip:
             if 'running' in blocks[block_index] and '*' not in blocks[block_index]:
                 m = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", blocks[block_index])
                 if m:
-                    block = "{},{},{}".format(m.group(1), m.group(2), m.group(3))
+                    block = "{},{},{}".format(m.group(4), m.group(5), m.group(6))
 
         change_focus_block_cmd = "cuda block {}".format(block)
         block_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_block_cmd)
