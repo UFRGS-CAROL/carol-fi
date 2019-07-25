@@ -18,9 +18,9 @@
 // helper functions
 #include "helper_cuda.h"
 
-#define HALF_ROUND_STYLE 1
-#define HALF_ROUND_TIES_TO_EVEN 1
-#include "half.hpp"
+//#define HALF_ROUND_STYLE 1
+//#define HALF_ROUND_TIES_TO_EVEN 1
+//#include "half.hpp"
 
 std::string get_double_representation(double val) {
 	std::string output = "";
