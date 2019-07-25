@@ -42,7 +42,7 @@
 #define OUTPUT_R_HALF 4.44 // 0x4471
 
 typedef enum {
-	ADD, MUL, FMA, NUMCOMPOSE
+	ADD, MUL, FMA, ADDNOTBIASED, MULNOTBIASED, FMANOTBIASED
 } MICROINSTRUCTION;
 
 typedef enum {
@@ -79,8 +79,12 @@ std::unordered_map<std::string, MICROINSTRUCTION> mic = {
 		{ "mul", MUL },
 		//FMA
 		{ "fma", FMA },
-		//NUMCOMPOSE
-		{ "compose", NUMCOMPOSE }, };
+		// NUMCOMPOSE (add not biased)
+		{ "compose", ADDNOTBIASED },
+		// MUL not biased
+		{ "mulnotbiased", MULNOTBIASED },
+		// MUL not biased
+		{ "fmanotbiased", FMANOTBIASED } };
 
 template<typename ...TypeArgs> struct Type;
 
@@ -192,6 +196,11 @@ struct Parameters {
 		this->redundancy = red[this->hardening_str];
 		this->precision = pre[this->precision_str];
 		this->micro = mic[this->instruction_str];
+
+		if (this->micro == MULNOTBIASED || this->micro == FMANOTBIASED) {
+			this->grid_size *= 32;
+			this->r_size *= 32;
+		}
 	}
 
 	void print_details() {

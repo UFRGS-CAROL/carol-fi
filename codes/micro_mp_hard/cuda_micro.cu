@@ -18,9 +18,9 @@
 // helper functions
 #include "helper_cuda.h"
 
-//#define HALF_ROUND_STYLE 1
-//#define HALF_ROUND_TIES_TO_EVEN 1
-//#include "half.hpp"
+#define HALF_ROUND_STYLE 1
+#define HALF_ROUND_TIES_TO_EVEN 1
+#include "half.hpp"
 
 std::string get_double_representation(double val) {
 	std::string output = "";
@@ -131,6 +131,7 @@ void test_radiation(Type<TypeArgs...>& type_, Parameters& parameters) {
 				<< std::endl;
 	}
 
+	auto gold = type_.output_r;
 	for (int iteration = 0; iteration < parameters.iterations; iteration++) {
 		//================== Global test loop
 		double kernel_time = mysecond();
@@ -159,31 +160,50 @@ void test_radiation(Type<TypeArgs...>& type_, Parameters& parameters) {
 
 		} else {
 			switch (parameters.micro) {
-			case ADD:
+			case ADD: {
 				MicroBenchmarkKernel_ADD<incomplete, full> <<<
 						parameters.grid_size, parameters.block_size>>>(
 						device_vector_inc.data(), device_vector_full.data(),
 						type_.output_r, type_.input_a);
 				break;
-			case MUL:
+			}
+			case MUL: {
 				MicroBenchmarkKernel_MUL<incomplete, full> <<<
 						parameters.grid_size, parameters.block_size>>>(
 						device_vector_inc.data(), device_vector_full.data(),
 						type_.output_r, type_.input_a);
 				break;
-			case FMA:
+			}
+			case FMA: {
 				MicroBenchmarkKernel_FMA<incomplete, full> <<<
 						parameters.grid_size, parameters.block_size>>>(
 						device_vector_inc.data(), device_vector_full.data(),
 						type_.output_r, type_.input_a, type_.input_b);
 				break;
-
-			case NUMCOMPOSE:
-				MicroBenchmarkKernel_NumCompose<incomplete, full> <<<
+			}
+			case ADDNOTBIASED: {
+				MicroBenchmarkKernel_ADDNOTBIASAED<incomplete, full> <<<
 						parameters.grid_size, parameters.block_size>>>(
 						device_vector_inc.data(), device_vector_full.data(),
 						type_.output_r);
 				break;
+			}
+			case MULNOTBIASED: {
+				MicroBenchmarkKernel_MULNOTBIASAED<incomplete, full> <<<
+						parameters.grid_size, parameters.block_size>>>(
+						device_vector_inc.data(), device_vector_full.data(),
+						type_.output_r);
+				gold = 1.11532903497274960003;
+				break;
+			}
+			case FMANOTBIASED: {
+				MicroBenchmarkKernel_FMANOTBIASAED<incomplete, full> <<<
+						parameters.grid_size, parameters.block_size>>>(
+						device_vector_inc.data(), device_vector_full.data(),
+						type_.output_r);
+				gold = 2.00324498477763457416e+00;
+				break;
+			}
 			}
 		}
 
@@ -208,7 +228,7 @@ void test_radiation(Type<TypeArgs...>& type_, Parameters& parameters) {
 		unsigned long long relative_errors = copy_errors();
 
 		int errors = check_output_errors(host_vector_inc, host_vector_full,
-				type_.output_r, parameters.verbose, relative_errors);
+				gold, parameters.verbose, relative_errors);
 
 		double outputpersec = double(parameters.r_size) / kernel_time;
 		if (parameters.verbose) {
