@@ -193,7 +193,7 @@ void test_radiation(Type<TypeArgs...>& type_, Parameters& parameters) {
 						parameters.grid_size, parameters.block_size>>>(
 						device_vector_inc.data(), device_vector_full.data(),
 						type_.output_r);
-				gold = 1.11532903497274960003;
+				gold = 1.10517102313140469505;
 				break;
 			}
 			case FMANOTBIASED: {
