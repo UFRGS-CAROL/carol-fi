@@ -1,8 +1,13 @@
 OPS?=1000000
+OPSNUM=1
 LOGS=1
 DEBUG?=0
 CHECKBLOCK=0
 ZERO_FLOAT=2.2e-07
+MICRO=mul
+MINRAND=1.000001
+MAXRAND=1.0001
+BENCH=mul
 
 CC=g++
 NVCC=nvcc
@@ -34,8 +39,11 @@ EXEC=./cuda_micro_mp_hardening
 NVCC_FLAGS+= -DCHECKBLOCK=$(CHECKBLOCK) -DZERO_FLOAT=$(ZERO_FLOAT)
 
 
-FLAGS+=-I$(NVIDIA_INC) -I/home/carol/radiation-benchmarks/src/cuda/common/ -L$(NVIDIA_LIB) -DOPS=$(OPS) 
+FLAGS+=-I$(NVIDIA_INC) -I/home/carol/radiation-benchmarks/src/cuda/common -L$(NVIDIA_LIB) -DOPS=$(OPS) 
 FLAGS+= -O3 -lLogHelper -std=c++11  $(NVCC_FLAGS)
+
+
+.PHONY: all test clean generate
 
 all: $(EXEC)
 
@@ -45,20 +53,14 @@ $(EXEC): clean $(SOURCES)
 clean:
 	rm -rf $(EXEC)
 
-test_mul:
-	$(EXEC) --verbose --iterations 10 --precision double --redundancy dmrmixed --inst mul
-
-test_fma:
-	$(EXEC) --verbose --iterations 10 --precision double --redundancy dmrmixed --inst fma
-
-test_add:
-	$(EXEC) --verbose --iterations 10 --precision double --redundancy dmrmixed --inst add
-
-test_compose:
-	$(EXEC) --verbose --iterations 10 --precision double --redundancy dmrmixed --inst compose
-
-test_mulnotbiased:
-	$(EXEC) --verbose --iterations 10 --precision double --redundancy dmrmixed --inst mulnotbiased
-	
-test_fmanotbiased:
-	$(EXEC) --verbose --iterations 10 --precision double --redundancy dmrmixed --inst fmanotbiased
+generate:
+	$(EXEC) --precision double --redundancy dmrmixed \
+		--inst $(MICRO) --generate --opnum $(OPSNUM) --nonconstant \
+		--minrand $(MINRAND) --maxrand $(MAXRAND) \
+		--gold ./gold_$(MICRO).data 
+		
+test:
+	$(EXEC) --precision double --redundancy dmrmixed \
+		--inst $(MICRO) --opnum $(OPSNUM) --nonconstant \
+		--minrand $(MINRAND) --maxrand $(MAXRAND) \
+		--gold ./gold_$(MICRO).data --verbose --iterations 10
