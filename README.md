@@ -1,4 +1,4 @@
-# carol-fi
+# carol-fi_cuda is not working, use carol-fi_cuda-parallel instead 
 
 CAROL-FI CUDA is an cuda-gdb based fault injector. 
 CAROL-FI GDB Fault Injector should work on any recent machine with cuda-gdb.
