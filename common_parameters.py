@@ -45,8 +45,9 @@ LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
 MAX_INT_32 = 4294967295
 
 
-# termination, program, alarm, asynchronous, job, operation error, miscellaneous, si
-SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGINT', 'SIGQUIT', 'SIGHUP',  # termination codes
+# termination, program, alarm, asynchronous, job, operation error, miscellaneous, signal interruption
+# 'SIGINT' must not be here, since I used it to send an interruption to app
+SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGQUIT', 'SIGHUP',  # termination codes
            'SIGFPE', 'SIGILL', 'SIGSEGV', 'SIGBUS', 'SIGABRT', 'SIGIOT', 'SIGTRAP', 'SIGEMT', 'SIGSYS',  # program codes
            'SIGALRM', 'SIGVTALRM', 'SIGPROF',  # alarm codes
            'SIGIO', 'SIGURG', 'SIGPOLL',  # asynchronous codes
