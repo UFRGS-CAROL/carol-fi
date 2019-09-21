@@ -71,7 +71,6 @@ The DEFAULT section contains the following keys:
 You can see an example of a DEFAULT section below:
 
 ```
-[DEFAULT]
 
 [DEFAULT]
 
