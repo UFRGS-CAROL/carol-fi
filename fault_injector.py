@@ -159,7 +159,7 @@ def check_sdcs_and_app_crash(logging, sdc_check_script, inj_output_path, inj_err
         raise ValueError("GOLD FILE NOT FOUND")
     elif not os.path.isfile(sdc_check_script):
         logging.error("sdc check script file not found: " + sdc_check_script)
-        raise ValueError("SDC CHECK SCRIPT NOT FOUND")
+        raise ValueError("SDC CHECK SCRIPT NOT FOUND: " + sdc_check_script)
     elif not os.path.isfile(inj_err_path):
         logging.error("possible crash, stderr not found: " + inj_output_path)
         is_app_crash = True
