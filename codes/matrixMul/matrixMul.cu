@@ -36,16 +36,12 @@
 #include <helper_functions.h>
 #include <helper_cuda.h>
 
-__device__ int test_function(int a, int wA, int ty, int tx) {
-	return a + wA * ty + tx;
-}
-
 /**
  * Matrix multiplication (CUDA Kernel) on the device: C = A * B
  * wA is A's width and wB is B's width
  */
-template<int BLOCK_SIZE> __global__ void matrixMulCUDA(float *C, float *A,
-		float *B, int wA, int wB) {
+template<int BLOCK_SIZE>
+__global__ void matrixMulCUDA(float *C, float *A, float *B, int wA, int wB) {
 	// Block index
 	int bx = blockIdx.x;
 	int by = blockIdx.y;
@@ -88,7 +84,7 @@ template<int BLOCK_SIZE> __global__ void matrixMulCUDA(float *C, float *A,
 		// Load the matrices from device memory
 		// to shared memory; each thread loads
 		// one element of each matrix
-		As[ty][tx] = A[test_function(a, wA, ty, tx)];
+		As[ty][tx] = A[a + wA * ty + tx];
 		Bs[ty][tx] = B[b + wB * ty + tx];
 
 		// Synchronize to make sure the matrices are loaded
@@ -203,15 +199,15 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 	printf("Computing result using CUDA Kernel...\n");
 
 	// Performs warmup operation using matrixMul CUDA kernel
-	if (block_size == 16) {
-		matrixMulCUDA<16> <<<grid, threads>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
-	} else {
-		matrixMulCUDA<32> <<<grid, threads>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
-	}
+//	if (block_size == 16) {
+//		matrixMulCUDA<16> <<<grid, threads>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
+//	} else {
+//		matrixMulCUDA<32> <<<grid, threads>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
+//	}
 
-	printf("done\n");
-
-	cudaDeviceSynchronize();
+//	printf("done\n");
+//
+//	cudaDeviceSynchronize();
 
 	// Allocate CUDA events that we'll use for timing
 	cudaEvent_t start;
@@ -254,6 +250,7 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 		}
 	}
 
+	cudaDeviceSynchronize();
 	// Record the stop event
 	error = cudaEventRecord(stop, NULL);
 
@@ -334,7 +331,8 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 	cudaFree(d_C);
 
 	printf(
-			"\nNOTE: The CUDA Samples are not meant for performance measurements. Results may vary when GPU Boost is enabled.\n");
+			"\nNOTE: The CUDA Samples are not meant for performance measurements. "
+					"Results may vary when GPU Boost is enabled.\n");
 
 	if (correct) {
 		return EXIT_SUCCESS;

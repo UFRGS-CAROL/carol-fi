@@ -17,17 +17,11 @@ done
 
 # SDC checking diff
 # Must compare all things here
-# Copied from SASSIFI
 
 diff -B ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} > ${DIFF_LOG}
 grep -q "Result = FAIL" ${CLEAN_INJ_OUTPUT} >> ${DIFF_LOG}
 
 # diff stderr
 diff -B ${INJ_ERR_PATH} ${GOLD_ERR_PATH} > ${DIFF_ERR_LOG}
-
-if ! grep -q 'exited normally\]' ${INJ_OUTPUT_PATH} ;
-then
-    echo "PROGRAM_DID_EXITED_NORMALLY" >> ${DIFF_ERR_LOG}
-fi
 
 rm -f ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} ${TMP}
