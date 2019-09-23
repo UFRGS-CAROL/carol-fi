@@ -19,7 +19,7 @@
 #endif
 
 #ifndef MAX_VALUE
-#define MAX_VALUE 2
+#define MAX_VALUE 1456
 #endif
 
 __DEVICE__ void check_bit_error(const float lhs, const double rhs) {
