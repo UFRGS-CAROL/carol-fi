@@ -98,6 +98,28 @@ initSleep = 0
 
 ```
 
+###SDC and DUE check script (goldenCheckScript)
+To make CAROL-FI able to compare the outputs of your benchmark, you have to create a shell script that compares the output files within the files generated in the profile process. 
+The following environment variables will be available at the moment of the execution of the shell script. The environment variables are previously set in the common_parameters.py. I strongly suggest using the default parameters.
+
+* GOLD_OUTPUT_PATH - The Gold file that contains the golden stdout output from the profiler process;
+
+* INJ_OUTPUT_PATH - The injection file that contains the current injection stdout output;
+
+* GOLD_ERR_PATH - The Gold file that contains the golden stderr output from the profiler process;
+
+* INJ_ERR_PATH - The injection file that contains the current injection stderr output;
+
+* DIFF_LOG - The diff output between GOLD_OUTPUT_PATH and INJ_OUTPUT_PATH. 
+CAROL-FI will use this file to check if the app returned SDC or not. 
+It is good to keep in mind that things that vary in each execution like execution time must be removed from DIFF_LOG
+ since it can lead to a false SDC;
+
+* DIFF_ERR_LOG - The diff output between GOLD_ERR_PATH and INJ_ERR_PATH. 
+CAROL-FI will use this file to check if the app returned DUE or not. 
+It is good to keep in mind that things that vary in each execution like execution time must be removed from DIFF_ERR_LOG 
+since it can lead to a false DUE;
+
 ## Fault Models
 Currently, we have 5 fault models implemented:
 
@@ -113,4 +135,3 @@ Currently, we have only RF injection site implemented:
 * RF - Register File
 * INST_OUT - Instruction Output (NOT IMPLEMENTED YET)
 * INST_composed -> Instruction Adress (NOT IMPLEMENTED YET)
-
