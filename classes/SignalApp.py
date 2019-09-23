@@ -19,7 +19,8 @@ class SignalApp(Thread):
         self.__log = Logging(log_file=log_path, unique_id=unique_id)
 
         # Most of the benchmarks we cannot wait until the end of the processing
-        self.__init_wait_time = uniform(init_sleep, max_wait_time * 0.7)
+        # Considering most of 90% of the time
+        self.__init_wait_time = uniform(init_sleep, max_wait_time * 0.9)
         self.__signals_to_send = signals_to_send
         self.__time_to_sleep = (max_wait_time - self.__init_wait_time) / self.__signals_to_send
 
