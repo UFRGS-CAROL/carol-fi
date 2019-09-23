@@ -120,6 +120,12 @@ CAROL-FI will use this file to check if the app returned DUE or not.
 It is good to keep in mind that things that vary in each execution like execution time must be removed from DIFF_ERR_LOG 
 since it can lead to a false DUE;
 
+#### Golden Check script example:
+
+```
+TODO
+```
+
 ## Fault Models
 Currently, we have 5 fault models implemented:
 
