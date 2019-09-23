@@ -284,15 +284,15 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 	}
 
 	// Compute and print the performance
-	float msecPerMatrixMul = msecTotal / nIter;
-	double flopsPerMatrixMul = 2.0 * (double) dimsA.x * (double) dimsA.y
-			* (double) dimsB.x;
-	double gigaFlops = (flopsPerMatrixMul * 1.0e-9f)
-			/ (msecPerMatrixMul / 1000.0f);
-	printf(
-			"Performance= %.2f GFlop/s, Time= %.3f msec, Size= %.0f Ops, WorkgroupSize= %u threads/block\n",
-			gigaFlops, msecPerMatrixMul, flopsPerMatrixMul,
-			threads.x * threads.y);
+//	float msecPerMatrixMul = msecTotal / nIter;
+//	double flopsPerMatrixMul = 2.0 * (double) dimsA.x * (double) dimsA.y
+//			* (double) dimsB.x;
+//	double gigaFlops = (flopsPerMatrixMul * 1.0e-9f)
+//			/ (msecPerMatrixMul / 1000.0f);
+//	printf(
+//			"Performance= %.2f GFlop/s, Time= %.3f msec, Size= %.0f Ops, WorkgroupSize= %u threads/block\n",
+//			gigaFlops, msecPerMatrixMul, flopsPerMatrixMul,
+//			threads.x * threads.y);
 
 	// Copy result from device to host
 	error = cudaMemcpy(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost);
