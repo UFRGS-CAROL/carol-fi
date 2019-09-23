@@ -1,5 +1,5 @@
 OPS?=1000000
-OPSNUM=1
+OPSNUM=1000
 LOGS=1
 DEBUG?=0
 CHECKBLOCK=0
@@ -57,7 +57,7 @@ generate:
 	$(EXEC) --precision double --redundancy dmrmixed \
 		--inst $(MICRO) --generate --opnum $(OPSNUM) --nonconstant \
 		--minrand $(MINRAND) --maxrand $(MAXRAND) \
-		--gold ./gold_$(MICRO).data 
+		--gold ./gold_$(MICRO).data --verbose 
 		
 test:
 	$(EXEC) --precision double --redundancy dmrmixed \
