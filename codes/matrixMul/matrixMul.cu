@@ -35,7 +35,9 @@
 // Helper functions and utilities to work with CUDA
 #include <helper_functions.h>
 #include <helper_cuda.h>
+#include <omp.h>
 
+static double start_all;
 /**
  * Matrix multiplication (CUDA Kernel) on the device: C = A * B
  * wA is A's width and wB is B's width
@@ -115,6 +117,13 @@ void constantInit(float *data, int size, float val) {
 	for (int i = 0; i < size; ++i) {
 		data[i] = val;
 	}
+}
+
+double mysecond() {
+	struct timeval tp;
+	struct timezone tzp;
+	int i = gettimeofday(&tp, &tzp);
+	return ((double) tp.tv_sec + (double) tp.tv_usec * 1.e-6);
 }
 
 /**
@@ -239,18 +248,16 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 
 	// Execute the kernel
 	int nIter = 1;
-
+//	printf("BEFORE START KERNEL %lf\n", mysecond() - start_all);
+	double t1 = mysecond();
 	for (int j = 0; j < nIter; j++) {
-		if (block_size == 16) {
-			matrixMulCUDA<16> <<<grid, threads>>>(d_C, d_A, d_B, dimsA.x,
-					dimsB.x);
-		} else {
-			matrixMulCUDA<32> <<<grid, threads>>>(d_C, d_A, d_B, dimsA.x,
-					dimsB.x);
-		}
+		matrixMulCUDA<32> <<<grid, threads>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
+		cudaDeviceSynchronize();
 	}
+	double exec_time = mysecond() - t1;
 
-	cudaDeviceSynchronize();
+//	printf("KERNEL EXECUTION TIME %lf\n", exec_time);
+
 	// Record the stop event
 	error = cudaEventRecord(stop, NULL);
 
@@ -306,19 +313,26 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 	// test relative error by the formula
 	//     |<x, y>_cpu - <x,y>_gpu|/<|x|, |y|>  < eps
 	double eps = 1.e-6; // machine zero
-
+	t1 = mysecond();
+#pragma omp parallel for shared(h_C, correct)
 	for (int i = 0; i < (int) (dimsC.x * dimsC.y); i++) {
-		double abs_err = fabs(h_C[i] - (dimsA.x * valB));
-		double dot_length = dimsA.x;
-		double abs_val = fabs(h_C[i]);
-		double rel_err = abs_err / abs_val / dot_length;
+		float abs_err = fabs(h_C[i] - float(dimsA.x * valB));
+		float dot_length = dimsA.x;
+		float abs_val = fabs(h_C[i]);
+		float rel_err = abs_err / abs_val / dot_length;
 
 		if (rel_err > eps) {
 			printf("Error! Matrix[%05d]=%.8f, ref=%.8f error term is > %E\n", i,
 					h_C[i], dimsA.x * valB, eps);
-			correct = false;
+#pragma omp critical
+			{
+				correct = false;
+			}
 		}
 	}
+
+	exec_time = mysecond() - t1;
+//	printf("CMP TIME %lf\n", exec_time);
 
 	printf("%s\n", correct ? "Result = PASS" : "Result = FAIL");
 
@@ -345,6 +359,7 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
  * Program main
  */
 int main(int argc, char **argv) {
+	start_all = mysecond();
 	printf("[Matrix Multiply Using CUDA] - Starting...\n");
 
 	if (checkCmdLineFlag(argc, (const char **) argv, "help")
