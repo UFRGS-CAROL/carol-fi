@@ -98,7 +98,7 @@ initSleep = 0
 
 ```
 
-###SDC and DUE check script (goldenCheckScript)
+### SDC and DUE check script (goldenCheckScript)
 To make CAROL-FI able to compare the outputs of your benchmark, you have to create a shell script that compares the output files within the files generated in the profile process. 
 The following environment variables will be available at the moment of the execution of the shell script. The environment variables are previously set in the common_parameters.py. I strongly suggest using the default parameters.
 
