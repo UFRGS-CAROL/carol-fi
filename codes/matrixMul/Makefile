@@ -253,7 +253,7 @@ matrixMul: matrixMul.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 run: build
-	$(EXEC) ./matrixMul -wA=8192 -hA=8192 -hB=8192 -wB=8192
+	$(EXEC) ./matrixMul -wA=16384 -hA=16384 -hB=16384 -wB=16384
 
 clean:
 	rm -f matrixMul matrixMul.o
