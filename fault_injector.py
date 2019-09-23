@@ -402,8 +402,6 @@ def bit_flip_selection(fault_model):
 
     # Least 16 bits
     elif fault_model == 4:
-        # max_size_register_fault_model = 32
-        # bits_to_flip[0] = random.randint(16, max_size_register_fault_model - 1)
         bits_to_flip[0] = random.randint(0, 16)
 
     # Least 8 bits
@@ -417,11 +415,11 @@ def bit_flip_selection(fault_model):
 """
 This injector has two injection options
 this function performs fault injection
-by creating a breakpoint and steeping into it
+by sending a SIGINT signal to the application
 """
 
 
-def fault_injection_by_breakpoint(**kwargs):
+def fault_injection_by_signal(**kwargs):
     # Global rows list
     global lock
     benchmark_binary = kwargs.get('benchmark_binary')
@@ -446,8 +444,9 @@ def fault_injection_by_breakpoint(**kwargs):
             kwargs['fault_model'] = fault_model
 
             fi_tic = int(time.time())
-            register, old_val, new_val, fault_injected, hang, crash, sdc, signal_init_time, block, thread, log_filename = gdb_inject_fault(
-                **kwargs)
+            [register, old_val, new_val, fault_injected,
+             hang, crash, sdc, signal_init_time, block,
+             thread, log_filename] = gdb_inject_fault(**kwargs)
 
             # Time toc
             fi_toc = int(time.time())
@@ -491,7 +490,8 @@ def main():
 
     # Read the configuration file with data for all the apps that will be executed
     conf = cf.load_config_file(args.config_file)
-    # Connect signal SIGINT to stop application
+
+    # Connect signal SIGINT to stop the fault injector
     kill_strings = ""
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -556,7 +556,7 @@ def main():
         }
         kill_strings += "killall -9 {};killall -9 {};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
 
-        fi_master_thread = Thread(target=fault_injection_by_breakpoint, kwargs=kwargs)
+        fi_master_thread = Thread(target=fault_injection_by_signal, kwargs=kwargs)
         gpus_threads.append(fi_master_thread)
 
     for thread in gpus_threads:
