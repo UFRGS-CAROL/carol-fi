@@ -210,7 +210,7 @@ LIBRARIES :=
 ################################################################################
 
 # Gencode arguments
-SMS ?= 35 37 50 52 60 61
+SMS ?= 70
 
 ifeq ($(SMS),)
 $(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)
@@ -251,11 +251,9 @@ matrixMul.o:matrixMul.cu
 
 matrixMul: matrixMul.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	#$(EXEC) mkdir -p ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
-	#$(EXEC) cp $@ ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)
 
 run: build
-	$(EXEC) ./matrixMul -wA=2048 -hA=2048 -hB=2048 -wB=2048
+	$(EXEC) ./matrixMul -wA=8192 -hA=8192 -hB=8192 -wB=8192
 
 clean:
 	rm -f matrixMul matrixMul.o
