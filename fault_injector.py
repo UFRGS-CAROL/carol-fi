@@ -181,16 +181,20 @@ def check_sdcs_and_app_crash(logging, sdc_check_script, inj_output_path, inj_err
         os.environ['INJ_ERR_PATH'] = inj_err_path
         os.environ['DIFF_LOG'] = diff_log_path
         os.environ['DIFF_ERR_LOG'] = diff_err_path
-        os.system("sh " + sdc_check_script)
+
+        compare_script_result = os.system("sh " + sdc_check_script)
+
+        if compare_script_result != 0:
+            raise ValueError("SDC/Crash script returned a value different from 0. Cannot proceed")
 
         # Test if files are ok
         with open(diff_log_path, 'r') as fi:
             out_lines = fi.readlines()
             if len(out_lines) != 0:
                 # Check if NVIDIA signals on output
-                for signal in cp.SIGNALS:
+                for carol_fi_signal in cp.SIGNALS:
                     for line in out_lines:
-                        if signal in line:
+                        if carol_fi_signal in line:
                             is_app_crash = True
                             break
                     if is_app_crash:
