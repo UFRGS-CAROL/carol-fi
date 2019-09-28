@@ -116,7 +116,8 @@ def remove_useless_information_from_output(output_file_path):
         '.*Inferior.*\(process.*\) exited normally.*',               # GDB exited normally message
         '.*Thread 0x.*exited.*'                                      # Thread exited
         '.*0x.* in cu.* () from /usr/lib/.*libcuda.*'                # Cuda lib calls
-        '.*0x.*in.*\[clone.*\].*\(\).*'                               # OMP calls
+        '.*0x.*in.*\[clone.*\].*\(\).*'                              # OMP calls
+        '.*0x.*in.*'                                                 # General API call
     ]
 
     ok_output_lines = []
