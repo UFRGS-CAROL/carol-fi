@@ -107,13 +107,14 @@ def remove_useless_information_from_output(output_file_path):
     # All trash produced by GDB must be add here in this list
     # Using the Regular Expression format (python re)
     common_thrash_lines_patterns = [
-        '.*Thread.*received signal SIGINT, Interrupt.*',            # Thread SIGINT message
-        '.*New Thread.*',                                           # New GDB Thread creation
-        '.*Thread debugging using.*enabled.*',                      # Lib thread enabled
+        '.*Thread.*received signal SIGINT, Interrupt.*',             # Thread SIGINT message
+        '.*New Thread.*',                                            # New GDB Thread creation
+        '.*Thread debugging using.*enabled.*',                       # Lib thread enabled
         '.*Using host.*library.*',                                   # Using host library
         '.*Switching focus to CUDA kernel.*',                        # Switching focus to CUDA kernel message
         '.*0x.*in.*<<<.*>>>.*',                                      # Kernel interruption message
         '.*Inferior.*\(process.*\) exited normally.*',               # GDB exited normally message
+        '.*Thread 0x.*exited.*'                                      # Thread exited
     ]
 
     ok_output_lines = []
@@ -124,7 +125,6 @@ def remove_useless_information_from_output(output_file_path):
             for pattern in common_thrash_lines_patterns:
                 # It is addable or not
                 search_result = re.search(pattern=pattern, string=line)
-                print(search_result)
                 if search_result:
                     is_line_addable = False
             if is_line_addable:
