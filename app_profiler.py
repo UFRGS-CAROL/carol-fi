@@ -70,16 +70,15 @@ Function to generate the gold execution
 def generate_gold(gdb_exec, benchmark_binary, benchmark_args):
     script = '{} -ex \'py arg0 = {}\' -n -batch -x {} > {} 2> {}'
     init_string = '"file {}; set args {}"'.format(benchmark_binary, benchmark_args)
-    profiler_cmd = script.format(gdb_exec, init_string, cp.PROFILER_SCRIPT,  cp.GOLD_OUTPUT_PATH , cp.GOLD_ERR_PATH)
+    profiler_cmd = script.format(gdb_exec, init_string, cp.PROFILER_SCRIPT, cp.GOLD_OUTPUT_PATH, cp.GOLD_ERR_PATH)
     if cp.DEBUG:
         print("PROFILER CMD: {}".format(profiler_cmd))
 
     # Execute and save gold file
-    os.system(profiler_cmd)
+    return os.system(profiler_cmd)
 
 
 def main():
-    global kill_strings
     os.system("rm -f {}".format(cp.KERNEL_INFO_DIR))
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--conf', dest="config_file", help='Configuration file', required=True)
@@ -105,7 +104,15 @@ def main():
     max_time_app = profiler_caller(gdb_exec=gdb_exec, benchmark_binary=benchmark_binary, benchmark_args=benchmark_args)
 
     # saving gold
-    generate_gold(gdb_exec=gdb_exec, benchmark_binary=benchmark_binary, benchmark_args=benchmark_args)
+    generate_gold_result = generate_gold(gdb_exec=gdb_exec,
+                                         benchmark_binary=benchmark_binary, benchmark_args=benchmark_args)
+
+    if generate_gold_result != 0:
+        raise EnvironmentError("Gold generation did not finish well, the fault injection will not work")
+
+    # Remove trash GDB info from the std output and the err output
+    cf.remove_useless_information_from_output(cp.GOLD_OUTPUT_PATH)
+    cf.remove_useless_information_from_output(cp.GOLD_ERR_PATH)
 
     # Save the kernel configuration txt file
     cf.save_file(file_path=cp.KERNEL_INFO_DIR, data={'max_time': max_time_app})

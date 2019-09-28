@@ -1,7 +1,7 @@
 import os
 import pickle
+import re
 import sys
-import common_parameters as cp
 
 if sys.version_info >= (3, 0):
     import configparser  # python 3
@@ -95,3 +95,41 @@ def set_python_env():
     os.environ['PYTHONPATH'] = "$PYTHONPATH:" + current_path + ":" + current_path + "/classes"
     os.environ['OMP_NUM_THREADS'] = '1'
     return current_path
+
+
+"""
+Remove all useless information produced by CUDA-GDB on the output files
+before they got to the SDC check script
+"""
+
+
+def remove_useless_information_from_output(output_file_path):
+    # All trash produced by GDB must be add here in this list
+    # Using the Regular Expression format (python re)
+    common_thrash_lines_patterns = [
+        '.*Thread.*received signal SIGINT, Interrupt.*',            # Thread SIGINT message
+        '.*New Thread.*',                                           # New GDB Thread creation
+        '.*Thread debugging using.*enabled.*',                      # Lib thread enabled
+        '.*Using host.*library.*',                                   # Using host library
+        '.*Switching focus to CUDA kernel.*',                        # Switching focus to CUDA kernel message
+        '.*0x.*in.*<<<.*>>>.*',                                      # Kernel interruption message
+        '.*Inferior.*\(process.*\) exited normally.*',               # GDB exited normally message
+    ]
+
+    ok_output_lines = []
+    with open(output_file_path, 'r') as ifp:
+        lines = ifp.readlines()
+        for line in lines:
+            is_line_addable = True
+            for pattern in common_thrash_lines_patterns:
+                # It is addable or not
+                search_result = re.search(pattern=pattern, string=line)
+                print(search_result)
+                if search_result:
+                    is_line_addable = False
+            if is_line_addable:
+                ok_output_lines.append(line)
+
+    # Overwrite the output file
+    with open(output_file_path, 'w') as ofp:
+        ofp.writelines(ok_output_lines)

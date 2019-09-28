@@ -165,7 +165,13 @@ def check_sdcs_and_app_crash(logging, sdc_check_script, inj_output_path, inj_err
         is_app_crash = True
     elif not os.path.isfile(cp.GOLD_ERR_PATH):
         logging.error("gold_err_file not found: " + cp.GOLD_ERR_PATH)
-        raise ValueError("GOLD ERR FILE NOT FOUND")
+        raise ValueError("GOLD ERR FILE NOT FOUND: " + cp.GOLD_ERR_PATH)
+
+    # Removing the output trash info
+    # It automatically overwrite the file in the output path
+    cf.remove_useless_information_from_output(output_file_path=inj_output_path)
+    cf.remove_useless_information_from_output(output_file_path=inj_err_path)
+
     if os.path.isfile(cp.GOLD_OUTPUT_PATH) and os.path.isfile(inj_output_path) and os.path.isfile(
             cp.GOLD_ERR_PATH) and os.path.isfile(inj_err_path):
         # Set environ variables for sdc_check_script

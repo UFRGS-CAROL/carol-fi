@@ -44,6 +44,9 @@ LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
 # MAX INT 32 bits
 MAX_INT_32 = 4294967295
 
+# Most of the benchmarks we cannot wait until the end of the processing
+# Considering most of 90% of the time
+MAX_SIGNAL_BEFORE_ENDING = 0.9
 
 # termination, program, alarm, asynchronous, job, operation error, miscellaneous, signal interruption
 # 'SIGINT' must not be here, since I used it to send an interruption to app

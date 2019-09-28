@@ -1,25 +1,12 @@
-# Remove GDB specific outputs from gold and inj output
-CLEAN_GOLD=/tmp/clean_carol_fi_gold.txt
-CLEAN_INJ_OUTPUT=/tmp/clean_carol_fi_inj.txt
-TMP=/tmp/carol_buff.txt
-
-cat ${GOLD_OUTPUT_PATH} > ${CLEAN_GOLD}
-cat ${INJ_OUTPUT_PATH} > ${CLEAN_INJ_OUTPUT}
-
-for i in '/Breakpoint/,+2d' '/\[New/d' '/\[Thread/d' '/\[Switching/d' '/\[Inferior/d' '/Performance=/d' '/Using/d';
-do
-    for j in ${CLEAN_INJ_OUTPUT} ${CLEAN_GOLD};
-    do
-        sed -e $i $j > ${TMP}
-        cat ${TMP} > $j
-    done
-done
-
 # SDC checking diff
 # Must compare all things here
+# Any special output comparrison must be done here
+# To be consider as an SDC or CRASH the
+# DIFF_LOG and DIFF_ERR_LOG files must not be empty
 
-diff -B ${CLEAN_GOLD} ${CLEAN_INJ_OUTPUT} > ${DIFF_LOG}
-grep -q "Result = FAIL" ${CLEAN_INJ_OUTPUT} >> ${DIFF_LOG}
+
+diff -B ${GOLD_OUTPUT_PATH} ${INJ_OUTPUT_PATH} > ${DIFF_LOG}
+grep -q "Result = FAIL" ${INJ_OUTPUT_PATH} >> ${DIFF_LOG}
 
 # diff stderr
 diff -B ${INJ_ERR_PATH} ${GOLD_ERR_PATH} > ${DIFF_ERR_LOG}

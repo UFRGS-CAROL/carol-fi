@@ -20,7 +20,7 @@ class SignalApp(Thread):
 
         # Most of the benchmarks we cannot wait until the end of the processing
         # Considering most of 90% of the time
-        self.__init_wait_time = uniform(init_sleep, max_wait_time * 0.9)
+        self.__init_wait_time = uniform(init_sleep, max_wait_time * cp.MAX_SIGNAL_BEFORE_ENDING)
         self.__signals_to_send = signals_to_send
         self.__time_to_sleep = (max_wait_time - self.__init_wait_time) / self.__signals_to_send
 
