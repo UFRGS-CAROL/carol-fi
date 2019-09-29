@@ -210,7 +210,7 @@ LIBRARIES :=
 ################################################################################
 
 # Gencode arguments
-SMS ?= 70
+SMS ?= 30 35 37 50 52 60 61 70
 
 ifeq ($(SMS),)
 $(info >>> WARNING - no SM architectures have been specified - waiving sample <<<)
