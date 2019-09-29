@@ -2,6 +2,7 @@ import os
 import pickle
 import re
 import sys
+import common_parameters as cp
 
 if sys.version_info >= (3, 0):
     import configparser  # python 3
@@ -104,28 +105,12 @@ before they got to the SDC check script
 
 
 def remove_useless_information_from_output(output_file_path):
-    # All trash produced by GDB must be add here in this list
-    # Using the Regular Expression format (python re)
-    common_thrash_lines_patterns = [
-        '.*Thread.*received signal SIGINT, Interrupt.*',  # Thread SIGINT message
-        '.*New Thread.*',  # New GDB Thread creation
-        '.*Thread debugging using.*enabled.*',  # Lib thread enabled
-        '.*Using host.*library.*',  # Using host library
-        '.*Switching focus to CUDA kernel.*',  # Switching focus to CUDA kernel message
-        '.*0x.*in.*<<<.*>>>.*',  # Kernel interruption message
-        '.*Inferior.*\(process.*\) exited normally.*',  # GDB exited normally message
-        '.*Thread 0x.*exited.*',  # Thread exited
-        '.*0x.* in cu.* () from /usr/lib/.*libcuda.*',  # Cuda lib calls
-        '.*0x.*in.*\[clone.*\].*\(\).*',  # OMP calls
-        '.*0x.*in.*',  # General API call
-    ]
-
     ok_output_lines = []
     with open(output_file_path, 'r') as ifp:
         lines = ifp.readlines()
         for line in lines:
             is_line_addable = True
-            for pattern in common_thrash_lines_patterns:
+            for pattern in cp.POSSIBLE_USELESS_GDB_OUTPUT_PATTERNS:
                 # It is addable or not
                 search_result = re.search(pattern=pattern, string=line)
                 if search_result:

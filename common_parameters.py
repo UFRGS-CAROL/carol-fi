@@ -64,3 +64,21 @@ SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGQUIT', 'SIGHUP',  # termination codes
            'CUDA_EXCEPTION_6', 'CUDA_EXCEPTION_7', 'CUDA_EXCEPTION_8', 'CUDA_EXCEPTION_9', 'CUDA_EXCEPTION_10',
            'CUDA_EXCEPTION_11',
            'CUDA_EXCEPTION_12', 'CUDA_EXCEPTION_13', 'CUDA_EXCEPTION_14', 'CUDA_EXCEPTION_15']
+
+# All trash produced by GDB must be add here in this list
+# Using the Regular Expression format (python re)
+
+POSSIBLE_USELESS_GDB_OUTPUT_PATTERNS = [
+        '.*Thread.*received signal SIGINT, Interrupt.*',  # Thread SIGINT message
+        '.*New Thread.*',  # New GDB Thread creation
+        '.*Thread debugging using.*enabled.*',  # Lib thread enabled
+        '.*Using host.*library.*',  # Using host library
+        '.*Switching focus to CUDA kernel.*',  # Switching focus to CUDA kernel message
+        '.*0x.*in.*<<<.*>>>.*',  # Kernel interruption message
+        '.*Inferior.*\(process.*\) exited normally.*',  # GDB exited normally message
+        '.*Thread 0x.*exited.*',  # Thread exited
+        '.*0x.* in cu.* () from /usr/lib/.*libcuda.*',  # Cuda lib calls
+        '.*0x.*in.*\[clone.*\].*\(\).*',  # OMP calls
+        '.*0x.*in.*',  # General API call
+        '.*Inferior.*\(process.*\).*',  # General inferior process
+    ]
