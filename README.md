@@ -116,21 +116,17 @@ since it can lead to a false DUE;
 # To be considered as an SDC or CRASH the
 # DIFF_LOG and DIFF_ERR_LOG files must not be empty
 
-
 # INJ_OUTPUT_PATH, INJ_ERR_PATH, GOLD_OUTPUT_PATH, GOLD_ERR_PATH
 # are environment variables defined by the fault_injector.py
 
 # diff stdout
 diff -B ${INJ_OUTPUT_PATH} ${GOLD_OUTPUT_PATH} > ${DIFF_LOG}
 
-
 # Special comparison like the following one can be done in this script
 grep -q "Result = FAIL" ${INJ_OUTPUT_PATH} >> ${DIFF_LOG}
 
-
 # diff stderr
 diff -B ${INJ_ERR_PATH} ${GOLD_ERR_PATH} > ${DIFF_ERR_LOG}
-
 
 # Must exit 0
 exit 0
