@@ -21,14 +21,14 @@ CAROL-FI has two big stages profiler and fault injection.
 
 1. In the profiler stage, the execution time, and the golden copies of STDOUT and STDERR of the application will be extracted. They will be stored in the /tmp/ folder on the operating system.
 
-2.  On the fault injection stage, CAROL-FI will inject faults simulating transient faults on the application. The fault_injector.py script starts a session of the GDB running the app with a python script (flip_value.py). In parallel a thread that sends a SIGINT to the application to interrupt it. On the flip_value.py script, an event will simulate the fault injection. The following sections explain the parameters that must be set in order to make CAROL-FI works.
+2.  On the fault injection stage, CAROL-FI will inject faults simulating transient faults on the application. The fault_injector.py script starts a session of the GDB running the app with a python script (flip_value.py). In parallel a thread that sends a SIGINT to the application to interrupt it. On the flip_value.py script, an event will simulate the fault injection. The subsections 2.1 to 2.4 explain the parameters that must be set in order to make CAROL-FI works.
 
 
 ## 2.1 Configuration files
 
 A configuration file will define the parameters that CAROL-FI will use for the fault injection. In the following subsections, the examples are related to the matrix multiplication benchmark stored in codes/matrixMul/matrixMul folder.
 
-### 2.1.1 DEFAULT section
+### 2.1.1 Configuration file parameters
 
 The DEFAULT section contains the following keys:
 
@@ -116,21 +116,17 @@ since it can lead to a false DUE;
 # To be considered as an SDC or CRASH the
 # DIFF_LOG and DIFF_ERR_LOG files must not be empty
 
-
 # INJ_OUTPUT_PATH, INJ_ERR_PATH, GOLD_OUTPUT_PATH, GOLD_ERR_PATH
 # are environment variables defined by the fault_injector.py
 
 # diff stdout
 diff -B ${INJ_OUTPUT_PATH} ${GOLD_OUTPUT_PATH} > ${DIFF_LOG}
 
-
 # Special comparison like the following one can be done in this script
 grep -q "Result = FAIL" ${INJ_OUTPUT_PATH} >> ${DIFF_LOG}
 
-
 # diff stderr
 diff -B ${INJ_ERR_PATH} ${GOLD_ERR_PATH} > ${DIFF_ERR_LOG}
-
 
 # Must exit 0
 exit 0
