@@ -28,7 +28,7 @@ CAROL-FI has two big stages profiler and fault injection.
 
 A configuration file will define the parameters that CAROL-FI will use for the fault injection. In the following subsections, the examples are related to the matrix multiplication benchmark stored in codes/matrixMul/matrixMul folder.
 
-### 2.1.1 DEFAULT section
+### 2.1.1 Configuration file parameters
 
 The DEFAULT section contains the following keys:
 
