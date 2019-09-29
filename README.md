@@ -23,7 +23,6 @@ CAROL-FI has two big stages profiler and fault injection.
 
 2.  On the fault injection stage, CAROL-FI will inject faults simulating transient faults on the application as showed in image bellow. The fault_injector.py script starts a session of the GDB running the app with a python script (flip_value.py). In parallel a thread that sends a SIGINT to the application to interrupt it. On the flip_value.py script, an event will simulate the fault injection. The subsections 2.1 to 2.4 explain the parameters that must be set in order to make CAROL-FI works.
 
-![alt text](https://github.com/UFRGS-CAROL/carol-fi/blob/carol-fi_cuda-parallel/carolfi_cuda.jpg "Logo Title Text 1")
 
 ## 2.1 Configuration files
 
