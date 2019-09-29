@@ -21,8 +21,9 @@ CAROL-FI has two big stages profiler and fault injection.
 
 1. In the profiler stage, the execution time, and the golden copies of STDOUT and STDERR of the application will be extracted. They will be stored in the /tmp/ folder on the operating system.
 
-2.  On the fault injection stage, CAROL-FI will inject faults simulating transient faults on the application. The fault_injector.py script starts a session of the GDB running the app with a python script (flip_value.py). In parallel a thread that sends a SIGINT to the application to interrupt it. On the flip_value.py script, an event will simulate the fault injection. The following sections explain the parameters that must be set in order to make CAROL-FI works.
+2.  On the fault injection stage, CAROL-FI will inject faults simulating transient faults on the application as showed in image bellow. The fault_injector.py script starts a session of the GDB running the app with a python script (flip_value.py). In parallel a thread that sends a SIGINT to the application to interrupt it. On the flip_value.py script, an event will simulate the fault injection. The subsections 2.1 to 2.4 explain the parameters that must be set in order to make CAROL-FI works.
 
+![alt text](https://github.com/UFRGS-CAROL/carol-fi/blob/carol-fi_cuda-parallel/carolfi_cuda.jpg "Logo Title Text 1")
 
 ## 2.1 Configuration files
 
