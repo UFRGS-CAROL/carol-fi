@@ -12,8 +12,8 @@ CAROL-FI GDB Fault Injector should work on any modern machine with CUDA-gdb.
 If you use CAROL-FI in your research please cite it:
 
 - Original CAROL-FI paper (For Intel Xeon Phi)
-```
-@inproceedings{carolfixeon,
+```bibtex
+@INPROCEEDINGS{carolfixeon,
     author = {Oliveira, Daniel and Pilla, La{\'e}rcio and DeBardeleben, 
         Nathan and Blanchard, Sean and Quinn, Heather and Koren, 
         Israel and Navaux, Philippe and Rech, Paolo},
@@ -51,7 +51,7 @@ If you use CAROL-FI in your research please cite it:
 
 # Questions and contributions
 
-If you have a question about the CAROL-FI CUDA branch found a bug in the code,
+If you have a question about the CAROL-FI CUDA branch or found a bug in the code,
  you can send me an e-mail to ffsantos@inf.ufrgs.br
  
 # Requirements
@@ -71,7 +71,7 @@ CAROL-FI has two big stages: profiler and fault injection.
 
 2.  On the fault injection stage, CAROL-FI will inject faults simulating transient faults on the application. The fault_injector.py script starts a session of the GDB running the app with a 
 python script (flip_value.py). In parallel a thread that sends a SIGINT to the application to interrupt it. 
-On the flip_value.py script, an event will simulate the fault injection. The subsections 1 to 1.4 explain the parameters that must be set to make CAROL-FI works.
+On the flip_value.py script, an event will simulate the fault injection. The subsections 1 to 4 explain the parameters that must be set to make CAROL-FI works.
 
 
 ## 1 Configuration files
