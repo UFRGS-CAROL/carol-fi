@@ -36,6 +36,10 @@
 # Location of the CUDA Toolkit
 CUDA_PATH ?= "/usr/local/cuda"
 
+# Set the execution size
+SIZE=8192
+BUILD_TIMER=0
+
 ##############################
 # start deprecated interface #
 ##############################
@@ -234,6 +238,9 @@ endif
 
 ################################################################################
 
+ALL_LDFLAGS+= -DBUILD_TIMER=$(BUILD_TIMER)
+ALL_CCFLAGS+= -DBUILD_TIMER=$(BUILD_TIMER)
+
 # Target rules
 all: build
 
@@ -253,7 +260,7 @@ matrixMul: matrixMul.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 
 run: build
-	$(EXEC) ./matrixMul -wA=16384 -hA=16384 -hB=16384 -wB=16384
+	$(EXEC) ./matrixMul -wA=$(SIZE) -hA=$(SIZE) -hB=$(SIZE) -wB=$(SIZE)
 
 clean:
 	rm -f matrixMul matrixMul.o

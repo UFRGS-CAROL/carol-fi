@@ -37,7 +37,10 @@
 #include <helper_cuda.h>
 #include <omp.h>
 
-static double start_all;
+#if BUILD_TIMER == 1
+static double timer;
+#endif
+
 /**
  * Matrix multiplication (CUDA Kernel) on the device: C = A * B
  * wA is A's width and wB is B's width
@@ -248,15 +251,19 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 
 	// Execute the kernel
 	int nIter = 1;
-//	printf("BEFORE START KERNEL %lf\n", mysecond() - start_all);
+#if BUILD_TIMER == 1
+	printf("BEFORE START KERNEL %lf\n", mysecond() - timer);
 	double t1 = mysecond();
+#endif
 	for (int j = 0; j < nIter; j++) {
 		matrixMulCUDA<32> <<<grid, threads>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
 		cudaDeviceSynchronize();
 	}
-	double exec_time = mysecond() - t1;
 
-//	printf("KERNEL EXECUTION TIME %lf\n", exec_time);
+#if BUILD_TIMER == 1
+	double exec_time = mysecond() - t1;
+	printf("KERNEL EXECUTION TIME %lf\n", exec_time);
+#endif
 
 	// Record the stop event
 	error = cudaEventRecord(stop, NULL);
@@ -287,16 +294,18 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 		exit (EXIT_FAILURE);
 	}
 
+#if BUILD_TIMER == 1
 	// Compute and print the performance
-//	float msecPerMatrixMul = msecTotal / nIter;
-//	double flopsPerMatrixMul = 2.0 * (double) dimsA.x * (double) dimsA.y
-//			* (double) dimsB.x;
-//	double gigaFlops = (flopsPerMatrixMul * 1.0e-9f)
-//			/ (msecPerMatrixMul / 1000.0f);
-//	printf(
-//			"Performance= %.2f GFlop/s, Time= %.3f msec, Size= %.0f Ops, WorkgroupSize= %u threads/block\n",
-//			gigaFlops, msecPerMatrixMul, flopsPerMatrixMul,
-//			threads.x * threads.y);
+	float msecPerMatrixMul = msecTotal / nIter;
+	double flopsPerMatrixMul = 2.0 * (double) dimsA.x * (double) dimsA.y
+			* (double) dimsB.x;
+	double gigaFlops = (flopsPerMatrixMul * 1.0e-9f)
+			/ (msecPerMatrixMul / 1000.0f);
+	printf(
+			"Performance= %.2f GFlop/s, Time= %.3f msec, Size= %.0f Ops, WorkgroupSize= %u threads/block\n",
+			gigaFlops, msecPerMatrixMul, flopsPerMatrixMul,
+			threads.x * threads.y);
+#endif
 
 	// Copy result from device to host
 	error = cudaMemcpy(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost);
@@ -313,7 +322,10 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 	// test relative error by the formula
 	//     |<x, y>_cpu - <x,y>_gpu|/<|x|, |y|>  < eps
 	double eps = 1.e-6; // machine zero
+#if BUILD_TIMER == 1
 	t1 = mysecond();
+#endif
+
 #pragma omp parallel for shared(h_C, correct)
 	for (int i = 0; i < (int) (dimsC.x * dimsC.y); i++) {
 		float abs_err = fabs(h_C[i] - float(dimsA.x * valB));
@@ -331,9 +343,10 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
 		}
 	}
 
+#if BUILD_TIMER == 1
 	exec_time = mysecond() - t1;
-//	printf("CMP TIME %lf\n", exec_time);
-
+	printf("CMP TIME %lf\n", exec_time);
+#endif
 	printf("%s\n", correct ? "Result = PASS" : "Result = FAIL");
 
 	// Clean up memory
@@ -359,7 +372,9 @@ int matrixMultiply(int argc, char **argv, int block_size, dim3 &dimsA,
  * Program main
  */
 int main(int argc, char **argv) {
-	start_all = mysecond();
+#if BUILD_TIMER == 1
+	timer = mysecond();
+#endif
 	printf("[Matrix Multiply Using CUDA] - Starting...\n");
 
 	if (checkCmdLineFlag(argc, (const char **) argv, "help")
