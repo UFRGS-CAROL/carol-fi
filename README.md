@@ -201,7 +201,7 @@ Currently, we have only RF injection site implemented:
 
 ## 4 How to run matrix multiplication test
 
-To test matrixMul run the make into the matrixMul folder 'codes/matrixMul'.
+To test matrixMul run the make into the matrixMul folder 'codes/matrixMul'. See codes/matrixMul/README.md for more info.
 
 <ol>
 <li>First step is the profiler</li>
