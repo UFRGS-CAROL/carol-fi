@@ -131,5 +131,5 @@ to allow pretty printing
 
 def printf(*string_to_print):
     for i in string_to_print:
-        sys.stdout.write("\r" + str(i))
+        sys.stdout.write("\r{0}".format(i))
     sys.stdout.write("\r\n")
