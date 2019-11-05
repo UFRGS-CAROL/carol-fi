@@ -195,6 +195,8 @@ class BitFlip:
                 program_counter = i
                 break
 
+        fault_is_injected = False
+
         # Search the line to inject
         for i in range(program_counter, len(disassemble_array)):
             line = disassemble_array[i]
@@ -205,6 +207,7 @@ class BitFlip:
                     self.__register = "R" + re.findall("R(\d+)", line)[0]
                     self.__logging.info("SELECTED_REGISTER_ON_INST_INJECTOR:{}".format(self.__register))
                     self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
+                    fault_is_injected = True
                     break
 
-        self.__rf_generic_injector()
+        return self.__rf_generic_injector() and fault_is_injected
