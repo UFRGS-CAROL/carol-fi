@@ -121,3 +121,15 @@ def remove_useless_information_from_output(output_file_path):
     # Overwrite the output file
     with open(output_file_path, 'w') as ofp:
         ofp.writelines(ok_output_lines)
+
+
+"""
+Show output function
+to allow pretty printing
+"""
+
+
+def printf(*string_to_print):
+    for i in string_to_print:
+        sys.stdout.write(i)
+    sys.stdout.write("\n")

@@ -5,6 +5,7 @@ from os import path
 from subprocess import Popen, PIPE
 from re import search
 import common_parameters as cp  # All common parameters will be at common_parameters module
+from common_functions import printf
 
 """
 Class RunGdb: necessary to run gdb while
@@ -30,7 +31,7 @@ class RunGDB(Thread):
 
     def run(self):
         if cp.DEBUG:
-            print("GDB Thread run, id: {}".format(self.__unique_id))
+            printf("GDB Thread run, id: {}".format(self.__unique_id))
 
         start_cmd = "{}/{}".format(self.__base_path, self.__flip_script)
         script = 'env CUDA_VISIBLE_DEVICES={} {} -ex \'py arg0 = "{}"\' -n -batch -x {} > {} 2>{} &'

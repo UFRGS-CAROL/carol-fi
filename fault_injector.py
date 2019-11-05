@@ -22,19 +22,6 @@ from classes.SignalApp import SignalApp
 created_threads = []
 
 
-
-"""
-Show output function
-to allow pretty printing
-"""
-
-
-def printf(*string_to_print):
-    for i in string_to_print:
-        sys.stdout.write(i)
-    sys.stdout.write("\n")
-
-
 """
 CTRL + C event
 """
@@ -42,13 +29,13 @@ CTRL + C event
 
 def signal_handler(sig, frame):
     global kill_strings, current_path, gpus_threads
-    printf("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
+    cf.printf("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
         try:
             os.system(cmd)
         except Exception as err:
-            printf("Command err: {}".format(str(err)))
+            cf.printf("Command err: {}".format(str(err)))
 
     # os.system("rm -f {}/bin/*".format(current_path))
     for th in gpus_threads:
@@ -68,7 +55,7 @@ def check_finish(max_wait_time, logging, timestamp_start, process, thread, kill_
     # max_wait_time = int(conf.get(section, "maxWaitTimes")) * end_time
     sleep_time = max_wait_time / cp.NUM_DIVISION_TIMES
     if cp.DEBUG:
-        printf("THREAD: {} MAX_WAIT_TIME {} CHECK FINISH SLEEP_TIME {}".format(thread, max_wait_time, sleep_time))
+        cf.printf("THREAD: {} MAX_WAIT_TIME {} CHECK FINISH SLEEP_TIME {}".format(thread, max_wait_time, sleep_time))
 
     # Watchdog to avoid hangs
     p_is_alive = process.is_alive()
@@ -84,7 +71,7 @@ def check_finish(max_wait_time, logging, timestamp_start, process, thread, kill_
     if not p_is_alive:
         logging.debug("PROCESS NOT RUNNING")
         if cp.DEBUG:
-            printf("THREAD {} PROCESS NOT RUNNING".format(thread))
+            cf.printf("THREAD {} PROCESS NOT RUNNING".format(thread))
 
     # check execution finished before or after waitTime
     if diff_time < max_wait_time:
@@ -154,7 +141,7 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, inj_output_p
             shutil.move(file_to_move, cp_dir)
         except Exception as err:
             if cp.DEBUG:
-                printf("THREAD {} ERROR ON MOVING {} -- {}".format(thread, file_to_move, str(err)))
+                cf.printf("THREAD {} ERROR ON MOVING {} -- {}".format(thread, file_to_move, str(err)))
 
 
 """
@@ -264,7 +251,7 @@ def gdb_inject_fault(**kwargs):
 
     # Starting FI process
     if cp.DEBUG:
-        printf("THREAD {} STARTING GDB SCRIPT".format(host_thread))
+        cf.printf("THREAD {} STARTING GDB SCRIPT".format(host_thread))
 
     logging = Logging(log_file=flip_log_file, unique_id=unique_id)
     logging.info("Starting GDB script")
@@ -275,7 +262,7 @@ def gdb_inject_fault(**kwargs):
                                                                injection_site)
 
     if cp.DEBUG:
-        printf("THREAD {} ENV GENERATE FINISHED".format(host_thread))
+        cf.printf("THREAD {} ENV GENERATE FINISHED".format(host_thread))
 
     # First we have to start the SignalApp thread
     signal_app_thread = SignalApp(max_wait_time=end_time, signal_cmd=signal_cmd,
@@ -291,14 +278,14 @@ def gdb_inject_fault(**kwargs):
                         inj_output_path=inj_output_path, inj_err_path=inj_err_path)
 
     if cp.DEBUG:
-        printf("THREAD {} STARTING PROCESS".format(host_thread))
+        cf.printf("THREAD {} STARTING PROCESS".format(host_thread))
 
     # Starting both threads
     signal_app_thread.start()
     fi_process.start()
 
     if cp.DEBUG:
-        printf("THREAD {} PROCESSES SPAWNED".format(host_thread))
+        cf.printf("THREAD {} PROCESSES SPAWNED".format(host_thread))
 
     # Start counting time
     timestamp_start = int(time.time())
@@ -309,7 +296,7 @@ def gdb_inject_fault(**kwargs):
                            process=fi_process, thread=host_thread,
                            kill_string=kill_strings)
     if cp.DEBUG:
-        printf("THREAD {} FINISH CHECK OK".format(host_thread))
+        cf.printf("THREAD {} FINISH CHECK OK".format(host_thread))
 
     # finishing and removing thrash
     fi_process.join()
@@ -322,14 +309,14 @@ def gdb_inject_fault(**kwargs):
     del fi_process, signal_app_thread
 
     if cp.DEBUG:
-        printf("THREAD {} PROCESS JOINED".format(host_thread))
+        cf.printf("THREAD {} PROCESS JOINED".format(host_thread))
 
     # # Check output files for SDCs
     is_sdc, is_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script,
                                                 inj_output_path=inj_output_path, inj_err_path=inj_err_path,
                                                 diff_log_path=diff_log_path, diff_err_path=diff_err_path)
     if cp.DEBUG:
-        printf("THREAD {} CHECK SDCs OK".format(host_thread))
+        cf.printf("THREAD {} CHECK SDCs OK".format(host_thread))
 
     # Search for set values for register
     # Must be done before save output
@@ -363,8 +350,8 @@ def gdb_inject_fault(**kwargs):
         new_value = old_value = None
         fi_successful = False
         if cp.DEBUG:
-            printf("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, te))
-            printf()
+            cf.printf("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, te))
+            cf.printf()
     ####################################################################################################################
     # temporary for log helper
     log_filename = ''
@@ -383,7 +370,7 @@ def gdb_inject_fault(**kwargs):
                 thread=host_thread)
 
     if cp.DEBUG:
-        printf("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
+        cf.printf("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
 
     return_list = [register, old_value, new_value, fi_successful,
                    is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread, log_filename]
@@ -459,6 +446,7 @@ def fault_injection_by_signal(**kwargs):
         num_rounds = 1
         while num_rounds <= iterations:
             sys.stdout.flush()
+            cf.printf("-----------------------------------------------------------------------------------------------")
             # Generate an unique id for this fault injection
             # Thread is for multi gpu
             unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
@@ -483,10 +471,11 @@ def fault_injection_by_signal(**kwargs):
                        block, old_val, new_val, injection_site,
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, log_filename]
-                printf("THREAD {} {}".format(host_thread, row))
+                cf.printf("THREAD {} {}".format(host_thread, row))
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
+            cf.printf("-----------------------------------------------------------------------------------------------")
 
 
 """
@@ -522,10 +511,10 @@ def main():
     # First set env vars
     current_path = cf.set_python_env()
 
-    printf("2 - Starting fault injection")
-    printf("###################################################")
-    printf("2 - {} faults will be injected".format(args.iterations))
-    printf("###################################################")
+    cf.printf("2 - Starting fault injection")
+    cf.printf("###################################################")
+    cf.printf("2 - {} faults will be injected".format(args.iterations))
+    cf.printf("###################################################")
     ########################################################################
 
     # Creating a summary csv file
@@ -590,9 +579,9 @@ def main():
         thread.join()
 
     os.system("rm -f {}/bin/*".format(current_path))
-    printf("###################################################")
-    printf("2 - Fault injection finished, results can be found in {}".format(csv_file))
-    printf("###################################################")
+    cf.printf("###################################################")
+    cf.printf("2 - Fault injection finished, results can be found in {}".format(csv_file))
+    cf.printf("###################################################")
     ########################################################################
 
 
