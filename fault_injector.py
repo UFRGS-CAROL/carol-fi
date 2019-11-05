@@ -440,12 +440,15 @@ def fault_injection_by_signal(**kwargs):
     injection_site = kwargs.get('injection_site')
     summary_file = kwargs.get('summary_file')
 
+    cf.printf("-----------------------------------------------------------------------------------------------")
     # Execute the fault injector for each one of the sections(apps) of the configuration file
     for fault_model in fault_models:
         # Execute iterations number of fault injection for a specific app
         num_rounds = 1
         while num_rounds <= iterations:
             sys.stdout.flush()
+            cf.printf("FAULT NUM ", num_rounds)
+
             cf.printf("-----------------------------------------------------------------------------------------------")
             # Generate an unique id for this fault injection
             # Thread is for multi gpu
