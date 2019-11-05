@@ -319,38 +319,37 @@ def gdb_inject_fault(**kwargs):
 
     # Search for set values for register
     # Must be done before save output
-    # Was fault injected?
     register = block = thread = "___"
+    block_focus = logging.search("CUDA_BLOCK_FOCUS")
+    if block_focus:
+        # Search for block
+        m = re.search("CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", block_focus)
+        if m:
+            block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
+
+    thread_focus = logging.search("CUDA_THREAD_FOCUS")
+    if thread_focus:
+        # Search for thread
+        m = re.search("CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", thread_focus)
+        if m:
+            thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
+
+    register_selected = logging.search("SELECTED_REGISTER")
+    if register_selected:
+        m = re.search("SELECTED_REGISTER:(\S+).*", register_selected)
+        if m:
+            register = m.group(1)
+
+    # Was fault injected?
     try:
         old_value = re.findall("old_value:(\S+)", logging.search("old_value"))[0]
         new_value = re.findall("new_value:(\S+)", logging.search("new_value"))[0]
-
-        block_focus = logging.search("CUDA_BLOCK_FOCUS")
-        if block_focus:
-            # Search for block
-            m = re.search("CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", block_focus)
-            if m:
-                block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
-
-        thread_focus = logging.search("CUDA_THREAD_FOCUS")
-        if thread_focus:
-            # Search for thread
-            m = re.search("CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", thread_focus)
-            if m:
-                thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
-
-        register_selected = logging.search("SELECTED_REGISTER")
-        if register_selected:
-            m = re.search("SELECTED_REGISTER:(\S+).*", register_selected)
-            if m:
-                register = m.group(1)
-
         fi_successful = True
-    except Exception as e:
+    except TypeError as te:
         new_value = old_value = None
         fi_successful = False
         if cp.DEBUG:
-            print("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, e))
+            print("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, te))
             print()
     ####################################################################################################################
     # temporary for log helper
