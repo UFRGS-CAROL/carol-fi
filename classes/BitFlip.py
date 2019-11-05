@@ -54,7 +54,7 @@ class BitFlip:
             if 'RF' in self.__injection_mode or self.__injection_mode is None:
                 self.fault_injected = self.__rf_generic_injector()
             elif 'INST' in self.__injection_mode:
-                raise NotImplemented("INST MODE NOT IMPLEMENTED YET")
+                self.fault_injected = self.__inst_generic_injector()
         except Exception as err:
             self.__logging.exception("fault_injection_python_exception: {}".format(err))
             self.__logging.exception("Fault Injection Went Wrong")
@@ -174,9 +174,6 @@ class BitFlip:
     """
 
     def __select_register(self):
-        # disassemble_array = cf.execute_command(gdb=gdb, to_execute="disassemble")
-        # self.__logging.debug("error on select register {}".format(disassemble_array[0]))
-        # m = re.match(".*Dump of assembler code for function[ ]+(\S+)\:.*", disassemble_array[0])
         registers_list = deque(cf.execute_command(gdb=gdb, to_execute="info registers"))
         max_num_register = 1
         registers_list.popleft()
@@ -187,4 +184,27 @@ class BitFlip:
 
         self.__register = "R{}".format(random.randint(0, max_num_register))
         self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
-        # self.__logging.info("SELECTED_KERNEL:{}".format(kernel))
+
+    def __inst_generic_injector(self):
+        disassemble_array = cf.execute_command(gdb=gdb, to_execute="disassemble")
+        program_counter = 0
+
+        for i in range(len(disassemble_array)):
+            line = disassemble_array[i]
+            if "=>" in line:
+                program_counter = i
+                break
+
+        # Search the line to inject
+        for i in range(program_counter, len(disassemble_array)):
+            line = disassemble_array[i]
+            find_inst = re.match(".*:\t(\S+) .*", line)
+            if find_inst:
+                instruction_to_inject = find_inst.group(1).rstrip()
+                if any(inst in instruction_to_inject for inst in cp.INSTRUCTIONS_TO_INJECT):
+                    self.__register = "R" + re.findall("R(\d+)", line)[0]
+                    self.__logging.info("SELECTED_REGISTER_ON_INST_INJECTOR:{}".format(self.__register))
+                    self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
+                    break
+
+        self.__select_register()

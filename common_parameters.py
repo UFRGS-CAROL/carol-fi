@@ -82,3 +82,12 @@ POSSIBLE_USELESS_GDB_OUTPUT_PATTERNS = [
         '.*0x.*in.*',  # General API call
         '.*Inferior.*\(process.*\).*',  # General inferior process
     ]
+
+INSTRUCTIONS_TO_INJECT = [
+    'DFMA',
+    'FFMA',
+    'DADD',
+    'FADD',
+    'DMUL',
+    'FMUL'
+]
