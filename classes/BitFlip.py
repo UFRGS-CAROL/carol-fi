@@ -197,17 +197,21 @@ class BitFlip:
 
         fault_is_injected = False
 
-        # Search the line to inject
-        for i in range(program_counter, len(disassemble_array)):
-            line = disassemble_array[i]
-            find_inst = re.match(".*:\t(\S+) .*", line)
-            if find_inst:
-                instruction_to_inject = find_inst.group(1).rstrip()
-                if any(inst in instruction_to_inject for inst in cp.INSTRUCTIONS_TO_INJECT):
-                    self.__register = "R" + re.findall("R(\d+)", line)[0]
-                    self.__logging.info("SELECTED_REGISTER_ON_INST_INJECTOR:{}".format(self.__register))
-                    self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
-                    fault_is_injected = True
-                    break
+        try:
+            # Search the line to inject
+            for i in range(program_counter, len(disassemble_array)):
+                line = disassemble_array[i]
+                find_inst = re.match(".*:\t(\S+) .*", line)
+                if find_inst:
+                    instruction_to_inject = find_inst.group(1).rstrip()
+                    if any(inst in instruction_to_inject for inst in cp.INSTRUCTIONS_TO_INJECT):
+                        self.__register = "R{}".format(re.findall("R(\d+)", line)[0])
+                        self.__logging.info("SELECTED_REGISTER_ON_INST_INJECTOR:{}".format(self.__register))
+                        self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
+                        fault_is_injected = True
+                        break
+        except Exception as ee:
+            with open("/tmp/debug.log", "w") as fp:
+                fp.write(str(ee) + "\n")
 
         return self.__rf_generic_injector() and fault_is_injected
