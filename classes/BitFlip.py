@@ -207,4 +207,4 @@ class BitFlip:
                     self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
                     break
 
-        self.__select_register()
+        self.__rf_generic_injector()
