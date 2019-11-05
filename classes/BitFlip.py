@@ -208,6 +208,7 @@ class BitFlip:
                         self.__register = "R{}".format(re.findall("R(\d+)", line)[0])
                         self.__logging.info("SELECTED_REGISTER_ON_INST_INJECTOR:{}".format(self.__register))
                         self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
+                        self.__logging.info("ASSM_LINE:{}".format(line))
                         fault_is_injected = True
                         break
         except Exception as ee:
