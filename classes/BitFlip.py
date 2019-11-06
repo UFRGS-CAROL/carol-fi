@@ -188,7 +188,7 @@ class BitFlip:
     def __inst_generic_injector(self):
         disassemble_array = cf.execute_command(gdb=gdb, to_execute="disassemble")
         program_counter = 0
-
+        line = ""
         for i in range(len(disassemble_array)):
             line = disassemble_array[i]
             if "=>" in line:
@@ -196,23 +196,31 @@ class BitFlip:
                 break
 
         fault_is_injected = False
-
-        try:
+        find_inst = re.match(".*:\t(\S+) .*", line)
+        instruction_to_inject = ""
+        # There is an instruction on this line
+        # Then
+        if find_inst:
+            instruction_to_inject = find_inst.group(1).rstrip()
+            if any(inst in instruction_to_inject for inst in cp.INSTRUCTIONS_TO_INJECT):
+                self.__register = "R{}".format(re.findall("R(\d+)", line)[0])
+                fault_is_injected = True
+        else:
             # Search the line to inject
+            # If the first line is not right then inject it on the possible input
             for i in range(program_counter, len(disassemble_array)):
                 line = disassemble_array[i]
                 find_inst = re.match(".*:\t(\S+) .*", line)
                 if find_inst:
                     instruction_to_inject = find_inst.group(1).rstrip()
                     if any(inst in instruction_to_inject for inst in cp.INSTRUCTIONS_TO_INJECT):
-                        self.__register = "R{}".format(re.findall("R(\d+)", line)[0])
-                        self.__logging.info("SELECTED_REGISTER_ON_INST_INJECTOR:{}".format(self.__register))
-                        self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
-                        self.__logging.info("ASSM_LINE:{}".format(line))
+                        self.__register = "R{}".format(re.findall("R(\d+)", line)[-1])
                         fault_is_injected = True
                         break
-        except Exception as ee:
-            with open("/tmp/debug.log", "w") as fp:
-                fp.write(str(ee) + "\n")
+
+        if fault_is_injected:
+            self.__logging.info("SELECTED_REGISTER_ON_INST_INJECTOR:{}".format(self.__register))
+            self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
+            self.__logging.info("ASSM_LINE:{}".format(line))
 
         return self.__rf_generic_injector() and fault_is_injected
