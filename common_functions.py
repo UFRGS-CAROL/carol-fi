@@ -129,7 +129,8 @@ to allow pretty printing
 """
 
 
-def printf(*string_to_print):
-    for i in string_to_print:
-        sys.stdout.write("\r{0} ".format(i))
-    sys.stdout.write("\r\n")
+def printf(*args):
+    string_to_print = ""
+    for i in args:
+        string_to_print += "\r{0}\n".format(i)
+    sys.stdout.write("{}".format(string_to_print))
