@@ -130,7 +130,7 @@ to allow pretty printing
 
 
 def printf(*args):
-    string_to_print = ""
+    string_to_print = "\r"
     for i in args:
-        string_to_print += "\r{0}\n".format(i)
-    sys.stdout.write("{}".format(string_to_print))
+        string_to_print += "{0} ".format(i)
+    sys.stdout.write("{}\n".format(string_to_print))
