@@ -108,17 +108,9 @@ test_gemm_dmr_mixed:
 			--input_a `pwd`/a_$(OUTPUTPREFIX) \
 			--input_b b_$(OUTPUTPREFIX) \
 			--input_c c_$(OUTPUTPREFIX) \
-			--gold  g_$(OUTPUTPREFIX)		
+			--gold  g_$(OUTPUTPREFIX)   \
+			--opnum $(CHECKBLOCK)
 
-test_gemm_dmr_fp3fp64:
-	./$(TARGET) --size $(SIZE) --generate 0 --verbose 1 \
-			--precision $(PRECISION) --dmr fp32fp64 \
-			--iterations $(ITERATIONS)  \
-			--alpha $(ALPHA) --beta $(BETA)\
-			--input_a /home/carol/carol-fi/codes/gemm_tensorcores/a_$(OUTPUTPREFIX) \
-			--input_b /home/carol/carol-fi/codes/gemm_tensorcores/b_$(OUTPUTPREFIX) \
-			--input_c /home/carol/carol-fi/codes/gemm_tensorcores/c_$(OUTPUTPREFIX) \
-			--gold  /home/carol/carol-fi/codes/gemm_tensorcores/g_$(OUTPUTPREFIX)		
 
 test_gemm_dmr:
 	./$(TARGET) --size $(SIZE) --generate 0 --verbose 1 \
