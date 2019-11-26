@@ -170,9 +170,9 @@ void setup_execute(Log& log_obj, GemmCaller<COUNT, half_t, real_t>& mult_env,
 				log_obj.beta, log_obj.size_matrices, log_obj.size_matrices,
 				threshold);
 		rad::checkFrameworkErrors (cudaDeviceSynchronize());;
-		rad::checkFrameworkErrors (cudaPeekAtLastError());
+		rad::checkFrameworkErrors (cudaPeekAtLastError());;
 
-log_obj		.end_iteration();
+		log_obj.end_iteration();
 		computation_time = rad::mysecond() - computation_time;
 		elapsed_time += computation_time;
 
@@ -234,18 +234,18 @@ log_obj		.end_iteration();
 }
 
 void setup_gemm_unhardened(Log& log) {
-//	if (log.precision == "half") {
+	if (log.precision == "half") {
 //		UnhardenedGemmCaller<half> gemm_obj(log.size_matrices,
+//				log.size_matrices);
+//		setup_execute(log, gemm_obj);
+	}
+//
+//	if (log.precision == "float" || log.precision == "single") {
+//		UnhardenedGemmCaller<float> gemm_obj(log.size_matrices,
 //				log.size_matrices);
 //		setup_execute(log, gemm_obj);
 //	}
 //
-	if (log.precision == "float" || log.precision == "single") {
-		UnhardenedGemmCaller<float> gemm_obj(log.size_matrices,
-				log.size_matrices);
-		setup_execute(log, gemm_obj);
-	}
-
 	if (log.precision == "double") {
 		UnhardenedGemmCaller<double> gemm_obj(log.size_matrices,
 				log.size_matrices);
@@ -255,23 +255,42 @@ void setup_gemm_unhardened(Log& log) {
 
 void setup_gemm_dmr(Log& log) {
 	if (log.precision == "half") {
+		throw_line("Not ready yet");
 	}
 
 	if (log.precision == "float" || log.precision == "single") {
-		if (log.dmr == "fp32fp64") {
-			DMRMixedGemmCaller<1, double, float> gemm_obj(log.size_matrices,
-					log.size_matrices);
-			setup_execute(log, gemm_obj, THRESHOLD_1);
-		}
+		throw_line("Not ready yet");
 	}
 
 	if (log.precision == "double") {
+
 		if (log.dmr == "mixed") {
-			DMRMixedGemmCaller<32, float, double> gemm_obj(log.size_matrices,
-					log.size_matrices);
-			setup_execute(log, gemm_obj, THRESHOLD_1);
+			switch (log.check_block) {
+			case 1: {
+//				DMRMixedGemmCaller<1, float, double> gemm_obj(log.size_matrices,
+//						log.size_matrices);
+//				setup_execute(log, gemm_obj, THRESHOLD_1);
+				break;
+
+			}
+			case 31: {
+//				DMRMixedGemmCaller<31, float, double> gemm_obj(
+//						log.size_matrices, log.size_matrices);
+//				setup_execute(log, gemm_obj, THRESHOLD_1);
+				break;
+
+			}
+			default: {
+				//The counter will never be 32, so it will check only at the end
+//				DMRMixedGemmCaller<32, float, double> gemm_obj(
+//						log.size_matrices, log.size_matrices);
+//				setup_execute(log, gemm_obj, THRESHOLD_32);
+				break;
+			}
+			}
+
 		} else if (log.dmr == "full") {
-			DMRGemmCaller<1, double> gemm_obj(log.size_matrices,
+			DMRGemmCaller<32, double> gemm_obj(log.size_matrices,
 					log.size_matrices);
 			setup_execute(log, gemm_obj);
 		}
