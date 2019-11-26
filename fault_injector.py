@@ -447,7 +447,7 @@ def fault_injection_by_signal(**kwargs):
         num_rounds = 1
         while num_rounds <= iterations:
             sys.stdout.flush()
-            cf.printf("FAULT NUM ", num_rounds)
+            cf.printf("FAULT NUM", num_rounds)
 
             cf.printf("-----------------------------------------------------------------------------------------------")
             # Generate an unique id for this fault injection
