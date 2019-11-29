@@ -7,7 +7,7 @@ BUILDPROFILER=0
 OPERATIONNUM=1
 PRECISION=double
 DMR=dmrmixed
-DATA_DIR=../../../data/lava
+DATA_DIR=/home/carol/carol-fi/codes/lava_mp
 DEF_SIZE=23
 STREAMS=1
 CHARGES_INPUT=$(DATA_DIR)/lava_$(PRECISION)_charges_$(DEF_SIZE)
@@ -24,7 +24,7 @@ NVCCFLAGS= -std=c++11 -O3 -Xptxas -v
 ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70] #Titan V
 #ARCH+= -gencode arch=compute_72,code=[sm_72,compute_72] #XavierV
 #-I$(CUDAPATH)/samples/common/inc 
-INCLUDE= -I./src -I$(CUDAPATH)/include -I../../include -I../common
+INCLUDE= -I./src -I$(CUDAPATH)/include -I../include -I/home/carol/radiation-benchmarks/src/cuda/common
 
 OBJDIR=./obj/
 OBJ= setup_double.o  setup_float.o Parameters.o cuda_lava.o 
@@ -38,7 +38,7 @@ endif
 ifeq ($(LOGS), 1)
 CXXFLAGS+= -DLOGS
 NVCCFLAGS+= -DLOGS
-LDFLAGS+= -L../../include  -lLogHelper
+LDFLAGS+= -L../include  -lLogHelper
 endif
 
 ifeq ($(BUILDPROFILER), 1)
