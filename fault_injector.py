@@ -37,7 +37,7 @@ def signal_handler(sig, frame):
         except Exception as err:
             cf.printf("Command err: {}".format(str(err)))
 
-    # os.system("rm -f {}/bin/*".format(current_path))
+    os.system("rm -f {}/bin/*".format(current_path))
     for th in gpus_threads:
         th.join()
     sys.exit(0)
