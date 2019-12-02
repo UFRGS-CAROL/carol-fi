@@ -174,14 +174,14 @@ class BitFlip:
     """
 
     def __select_register(self):
-        registers_list = deque(cf.execute_command(gdb=gdb, to_execute="info registers"))
-        max_num_register = 1
-        registers_list.popleft()
-        for line in registers_list:
-            m = re.match(".*R.*0x([0-9a-fA-F]+).*", line)
-            if m and m.group(1) != '0':
-                max_num_register += 1
-
+        # registers_list = deque(cf.execute_command(gdb=gdb, to_execute="info registers"))
+        # max_num_register = 1
+        # registers_list.popleft()
+        # for line in registers_list:
+        #     m = re.match(".*R.*0x([0-9a-fA-F]+).*", line)
+        #     if m and m.group(1) != '0':
+        #         max_num_register += 1
+        max_num_register = 42
         self.__register = "R{}".format(random.randint(0, max_num_register))
         self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
 
