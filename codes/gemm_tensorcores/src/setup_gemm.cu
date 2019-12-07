@@ -17,10 +17,10 @@ struct GemmCaller {
 			rad::DeviceVector<real_t>& d_dev, 			//D matrix
 			rad::DeviceVector<half_t>& d_dev_half_t,  	//D_Half matrix
 			real_t alpha, real_t beta, int wA, int wB,
-			const uint32_t threshold);
+			const uint32_t threshold) = 0;
 
 	virtual std::vector<half_t> memcpy_half_t_mem(
-			rad::DeviceVector<half_t>& d_dev_half_t);
+			rad::DeviceVector<half_t>& d_dev_half_t) = 0;
 
 	GemmCaller(uint32_t m, uint32_t n) :
 			duplicated(false) {
@@ -79,6 +79,7 @@ struct DMRMixedGemmCaller: public GemmCaller<COUNT, half_t, real_t> {
 				d_dev.data(), 				//d
 				d_dev_half_t.data(), 		//d hardening
 				alpha, beta, wA, wB, threshold);
+
 	}
 
 	DMRMixedGemmCaller(uint32_t m, uint32_t n) :
@@ -92,8 +93,8 @@ struct DMRMixedGemmCaller: public GemmCaller<COUNT, half_t, real_t> {
 	}
 };
 
-template<const uint32_t COUNT, typename real_t>
-struct DMRGemmCaller: public GemmCaller<COUNT, real_t, real_t> {
+template<typename real_t>
+struct DMRGemmCaller: public GemmCaller<0, real_t, real_t> {
 
 	void gemm(
 			rad::DeviceVector<real_t>& a_dev, 			//A matrix
@@ -103,17 +104,40 @@ struct DMRGemmCaller: public GemmCaller<COUNT, real_t, real_t> {
 			rad::DeviceVector<real_t>& d_dev_half_t,  	//D_Half matrix
 			real_t alpha, real_t beta, int wA, int wB,
 			const uint32_t threshold) {
-		matrix_mult_kernel_dmr<COUNT> <<<this->dim_grid, this->dim_block>>>( //call
+//		matrix_mult_kernel_dmr<COUNT> <<<this->dim_grid, this->dim_block>>>( //call
+//				a_dev.data(), 				//a
+//				b_dev.data(), 				//b
+//				c_dev.data(), 				//c
+//				d_dev.data(), 				//d
+//				d_dev_half_t.data(), 		//d hardening
+//				alpha, beta, wA, wB);
+
+		matrix_mult_kernel_unhardened<<<this->dim_grid, this->dim_block>>>( //call
 				a_dev.data(), 				//a
 				b_dev.data(), 				//b
 				c_dev.data(), 				//c
 				d_dev.data(), 				//d
-				d_dev_half_t.data(), 		//d hardening
 				alpha, beta, wA, wB);
+		matrix_mult_kernel_unhardened<<<this->dim_grid, this->dim_block>>>( //call
+				a_dev.data(), 				//a
+				b_dev.data(), 				//b
+				c_dev.data(), 				//c
+				d_dev_half_t.data(), 				//d
+				alpha, beta, wA, wB);
+
+		rad::checkFrameworkErrors(cudaDeviceSynchronize());
+		;
+		rad::checkFrameworkErrors(cudaPeekAtLastError());
+		;
+		uint32_t thread_block = BLOCK_SIZE * BLOCK_SIZE;
+		uint32_t grid_block = (wA * wB) / thread_block;
+		compare_two_outputs<<<grid_block, thread_block>>>(d_dev.data(),
+				d_dev_half_t.data());
+
 	}
 
 	DMRGemmCaller(uint32_t m, uint32_t n) :
-			GemmCaller<COUNT, real_t, real_t>(m, n) {
+			GemmCaller<0, real_t, real_t>(m, n) {
 		this->duplicated = true;
 	}
 
@@ -171,8 +195,10 @@ void setup_execute(Log& log_obj, GemmCaller<COUNT, half_t, real_t>& mult_env,
 				d_vector_device, d_vector_half_t_device, log_obj.alpha,
 				log_obj.beta, log_obj.size_matrices, log_obj.size_matrices,
 				threshold);
-		rad::checkFrameworkErrors (cudaDeviceSynchronize());;
-		rad::checkFrameworkErrors (cudaPeekAtLastError());;
+		rad::checkFrameworkErrors(cudaDeviceSynchronize());
+		;
+		rad::checkFrameworkErrors(cudaPeekAtLastError());
+		;
 
 		log_obj.end_iteration();
 		computation_time = rad::mysecond() - computation_time;
@@ -193,14 +219,19 @@ void setup_execute(Log& log_obj, GemmCaller<COUNT, half_t, real_t>& mult_env,
 					mult_env.duplicated);
 
 			comparing_time = rad::mysecond() - comparing_time;
-
-			std::cout << "Iteration: " << it << " DMR errors " << errors.first
-					<< ". " << "Radiation errors: " << errors.second << ". "
-					<< "Time spent on computation: " << computation_time
-					<< "s. " << "Time spent on comparing: " << comparing_time
-					<< "s. " << "Time spent on copying: " << copy_time << "s. "
-					<< std::endl;
-
+			if (log_obj.verbose) {
+				std::cout << "Iteration: " << it << " DMR errors "
+						<< errors.first << ". " << "Radiation errors: "
+						<< errors.second << ". "
+						<< "Time spent on computation: " << computation_time
+						<< "s. " << "Time spent on comparing: "
+						<< comparing_time << "s. " << "Time spent on copying: "
+						<< copy_time << "s. " << std::endl;
+			} else {
+				std::cout << "Iteration: " << it << " DMR errors "
+						<< errors.first << ". " << "Radiation errors: "
+						<< errors.second << ". " << std::endl;
+			}
 			//If errors != 0 reload matrices to gpu
 			if (errors.first != 0 || errors.second != 0) {
 				read_gold(a_vector_host, b_vector_host, c_vector_host,
@@ -224,9 +255,13 @@ void setup_execute(Log& log_obj, GemmCaller<COUNT, half_t, real_t>& mult_env,
 		}
 
 	}
+	if (log_obj.verbose) {
 
-	std::cout << "Elapsed time: " << (elapsed_time / log_obj.iterations)
-			<< " s\n";
+		std::cout << "Elapsed time: " << (elapsed_time / log_obj.iterations)
+				<< " s\n";
+	} else {
+		std::cout << "done.\n";
+	}
 	if (log_obj.generate) {
 		write_gold(a_vector_host, b_vector_host, c_vector_host,
 				d_vector_host_real_t, log_obj.a_input_path,
@@ -268,9 +303,9 @@ void setup_gemm_dmr(Log& log) {
 
 		if (log.dmr == "mixed") {
 			switch (log.check_block) {
-			case 1: {
-				DMRMixedGemmCaller<ONE_OP_CHECK, float, double> gemm_obj(log.size_matrices,
-						log.size_matrices);
+			case ONE_OP_CHECK: {
+				DMRMixedGemmCaller<ONE_OP_CHECK, float, double> gemm_obj(
+						log.size_matrices, log.size_matrices);
 				setup_execute(log, gemm_obj, THRESHOLD_1);
 				break;
 
@@ -285,7 +320,7 @@ void setup_gemm_dmr(Log& log) {
 			}
 
 		} else if (log.dmr == "full") {
-			DMRGemmCaller<AT_END_OP_CHECK, double> gemm_obj(log.size_matrices,
+			DMRGemmCaller<double> gemm_obj(log.size_matrices,
 					log.size_matrices);
 			setup_execute(log, gemm_obj);
 		}

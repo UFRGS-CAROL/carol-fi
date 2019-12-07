@@ -131,6 +131,18 @@ static unsigned long long dmr_errors() {
 	return ret;
 }
 
+
+
+template<typename real_t>
+bool equals(real_t& lhs, real_t& rhs, const uint32_t threshold = 0) {
+	return lhs == rhs;
+}
+
+#if __CUDA_ARCH__ >= 600
+static bool equals(half& lhs, half& rhs, const uint32_t threshold = 0) {
+	return float(lhs) == float(rhs);
+}
+
 static std::ostream& operator<<(std::ostream& os, half &rhs) {
 	float temp = float(rhs);
 	os << temp;
@@ -141,14 +153,7 @@ static float fabs(half h) {
 	return fabs(float(h));
 }
 
-template<typename real_t>
-bool equals(real_t& lhs, real_t& rhs, const uint32_t threshold = 0) {
-	return lhs == rhs;
-}
-
-static bool equals(half& lhs, half& rhs, const uint32_t threshold = 0) {
-	return float(lhs) == float(rhs);
-}
+#endif
 
 static bool equals(float& lhs, double& rhs, const uint32_t threshold) {
 	assert(sizeof(float) == sizeof(uint32_t));
@@ -172,25 +177,20 @@ std::pair<int, int> check_output_errors_dmr(std::vector<real_t>& gold,
 	uint32_t memory_errors = 0;
 
 #ifdef OMP
-#pragma omp parallel for shared(host_errors)
+#pragma omp parallel for shared(host_errors, memory_errors)
 #endif
 	for (size_t i = 0; i < gold.size(); i++) {
 		auto gold_value = gold[i];
 		real_t full_precision = real_vector[i];
-		half_t half_precision;
-		bool dmr_equals = true;
+		half_t half_precision = (dmr == true) ? half_vector[i] : real_vector[i];
 
-		if (dmr) {
-			half_precision = half_vector[i];
-			dmr_equals = equals(half_precision, full_precision, threshold);
-//			std::cout << half_precision << " " << full_precision << std::endl;
-		} else {
-			half_precision = full_precision;
-		}
+		//Check if DMR is OK
+		bool dmr_equals = equals(half_precision, full_precision, threshold);
 
+		//Is output corrupted
 		bool is_output_diff = !equals(gold_value, full_precision);
 
-		if (is_output_diff || !dmr_equals) {
+		if (gold_value != full_precision) {
 #ifdef OMP
 #pragma omp critical
 			{
@@ -212,7 +212,9 @@ std::pair<int, int> check_output_errors_dmr(std::vector<real_t>& gold,
 
 			log.log_error(error_detail.str());
 			host_errors++;
-			memory_errors += (is_output_diff && dmr_equals && dmr);
+			if(is_output_diff && dmr_equals && dmr){
+				memory_errors++;
+			}
 
 #ifdef OMP
 		}
@@ -224,7 +226,7 @@ std::pair<int, int> check_output_errors_dmr(std::vector<real_t>& gold,
 	if (dmr_err != 0) {
 		std::string error_detail;
 		error_detail = "detected_dmr_errors: " + std::to_string(dmr_err);
-		log.log_error(error_detail);
+		log.log_info(error_detail);
 	}
 
 	if (memory_errors != 0) {
@@ -237,5 +239,6 @@ std::pair<int, int> check_output_errors_dmr(std::vector<real_t>& gold,
 
 	return {dmr_err, host_errors};
 }
+
 
 #endif /* COMMON_TEMPLATE_FUNCTIONS_H_ */
