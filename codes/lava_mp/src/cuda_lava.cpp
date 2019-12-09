@@ -81,6 +81,7 @@ int main(int argc, char *argv[]) {
 	 * Do the magic here
 	 */
 
+	std::cout << log << std::endl;
 	switch (parameters.precision) {
 	case HALF:
 	case SINGLE:
