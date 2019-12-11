@@ -1,29 +1,26 @@
-OPS?=1000000
-OPSNUM=1000
 LOGS=1
 DEBUG?=0
-CHECKBLOCK=0
-ZERO_FLOAT=2.2e-07
 MICRO=mul
-MINRAND=1.000001
-MAXRAND=1.0001
-BENCH=mul
+DMR=none
+ITERATIONS=10
+CHECK_BLOCK=1
+BUILDRELATIVEERROR=0
 
 CC=g++
-NVCC=nvcc
+CUDAPATH=/usr/local/cuda
+NVCC=$(CUDAPATH)/bin/nvcc
 
+#ARCH+= 	-gencode arch=compute_35,code=[sm_35,compute_35]	# Titan V | Tesla V100
 ARCH+= 	-gencode arch=compute_70,code=[sm_70,compute_70]	# Titan V | Tesla V100
-
+#ARCH+= 	-gencode arch=compute_72,code=[sm_72,compute_72]	# Titan V | Tesla V100
 
 NVCC_FLAGS= $(ARCH) -Xptxas -v
-
 NVIDIA_INC=/usr/local/cuda/include/
 NVIDIA_LIB=/usr/local/cuda/lib64/
 LOGHELPER_INC=../include/
 LOGHELPER_LIB=../include/
 
 ifeq ($(DEBUG), 1)
-OPS=1000
 NVCC_FLAGS+= -g -G
 endif
 
@@ -33,34 +30,40 @@ NVCC_FLAGS+= -DLOGS
 FLAGS=-I$(LOGHELPER_INC) -L$(LOGHELPER_INC) 
 endif
 
-SOURCES=./cuda_micro.cu
+SOURCES=./src/main.cu
 EXEC=./cuda_micro_mp_hardening
 
-NVCC_FLAGS+= -DCHECKBLOCK=$(CHECKBLOCK) -DZERO_FLOAT=$(ZERO_FLOAT)
-
-
-FLAGS+=-I$(NVIDIA_INC) -I/home/carol/radiation-benchmarks/src/cuda/common -L$(NVIDIA_LIB) -DOPS=$(OPS) 
-FLAGS+= -O3 -lLogHelper -std=c++11  $(NVCC_FLAGS)
+FLAGS+=-I$(NVIDIA_INC) -I/home/carol/radiation-benchmarks/src/cuda/common/include -L$(NVIDIA_LIB)
+FLAGS+= -O3 -lLogHelper -std=c++11  $(NVCC_FLAGS) -DBUILDRELATIVEERROR=$(BUILDRELATIVEERROR)
 
 
 .PHONY: all test clean generate
 
-all: $(EXEC)
+all: $(EXEC) 
 
 $(EXEC): clean $(SOURCES)
 	$(NVCC) $(FLAGS) -Xcompiler "-fopenmp -O3" $(SOURCES) -o $(EXEC)
 
+generate_input: clean
+	$(CC) -O3 -std=c++11 -o generate_input generate_input.cpp
+
 clean:
-	rm -rf $(EXEC)
+	rm -rf $(EXEC) generate_input
 
 generate:
-	$(EXEC) --precision double --redundancy dmrmixed \
-		--inst $(MICRO) --generate --opnum $(OPSNUM) --nonconstant \
-		--minrand $(MINRAND) --maxrand $(MAXRAND) \
-		--gold ./gold_$(MICRO).data --verbose 
-		
+	$(EXEC) --precision double  \
+			--redundancy $(DMR) \
+			--inst $(MICRO)     \
+			--generate \
+			--gold ./gold_$(MICRO).data \
+			--opnum $(CHECK_BLOCK) \
+			--verbose
+
 test:
-	$(EXEC) --precision double --redundancy dmrmixed \
-		--inst $(MICRO) --opnum $(OPSNUM) --nonconstant \
-		--minrand $(MINRAND) --maxrand $(MAXRAND) \
-		--gold ./gold_$(MICRO).data --verbose --iterations 10
+	$(EXEC) --precision double  \
+			--redundancy $(DMR) \
+			--inst $(MICRO)     \
+			--gold ./gold_$(MICRO).data \
+			--opnum $(CHECK_BLOCK) \
+			--verbose --iterations $(ITERATIONS)
+
