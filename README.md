@@ -196,7 +196,7 @@ Currently, we have only RF injection site implemented:
 
 * RF - Register File
 * INST_OUT - Instruction Output (NOT IMPLEMENTED YET)
-* INST_composed -> Instruction Adress (NOT IMPLEMENTED YET)
+* INST_ADD -> Instruction Adress (NOT IMPLEMENTED YET)
 
 
 ## 4 How to run matrix multiplication test
