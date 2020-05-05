@@ -224,3 +224,8 @@ $ ./fault_injector.py -c ./codes/matrixMul/matrixmul.conf -i 10
 ```
 
 The fault injector will run matrix multiplication ten times and, the logs will be stored in the *logs* folder.
+
+
+# Contributing to CAROL-FI
+
+If you are interested in contributing to CAROL-FI, please initialize a [Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
