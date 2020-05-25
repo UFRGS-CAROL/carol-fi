@@ -41,7 +41,7 @@ class RunGDB(Thread):
                                 self.__inj_err_path))
 
     def kill_subprocess(self):
-        os.system("killall -9 {}".format(os.path.basename(self.__gdb_exe_name)))
+        os.system("killall -9 {} > /dev/null 2>&1".format(os.path.basename(self.__gdb_exe_name)))
 
     """
     Check if the process is still alive

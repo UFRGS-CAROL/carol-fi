@@ -50,10 +50,7 @@ def signal_handler(sig, frame):
     cf.printf("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
-        try:
-            os.system(cmd + " > /dev/null 2>&1")
-        except Exception as err:
-            cf.printf("Command err: {}".format(str(err)))
+        os.system(cmd + " > /dev/null 2>&1")
 
     os.system("rm -f {}/bin/*".format(current_path))
     for th in gpus_threads:
@@ -451,6 +448,7 @@ def fault_injection_by_signal(**kwargs):
     host_thread = kwargs.get('host_thread')
     injection_site = kwargs.get('injection_site')
     summary_file = kwargs.get('summary_file')
+    header = kwargs.get('header')
 
     cf.printf("-----------------------------------------------------------------------------------------------")
     # Execute the fault injector for each one of the sections(apps) of the configuration file
@@ -461,7 +459,6 @@ def fault_injection_by_signal(**kwargs):
             sys.stdout.flush()
             cf.printf("FAULT NUM", num_rounds)
 
-            cf.printf("-----------------------------------------------------------------------------------------------")
             # Generate an unique id for this fault injection
             # Thread is for multi gpu
             unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
