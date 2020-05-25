@@ -456,9 +456,6 @@ def fault_injection_by_signal(**kwargs):
         # Execute iterations number of fault injection for a specific app
         num_rounds = 1
         while num_rounds <= iterations:
-            sys.stdout.flush()
-            cf.printf("FAULT NUM", num_rounds)
-
             # Generate an unique id for this fault injection
             # Thread is for multi gpu
             unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
@@ -479,11 +476,17 @@ def fault_injection_by_signal(**kwargs):
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
+                output_str = "THREAD:{}, FAULT NUM:{}".format(host_thread, num_rounds)
                 row = [unique_id, register, num_rounds, fault_model, thread,
                        block, old_val, new_val, injection_site,
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, log_filename]
-                cf.printf("THREAD {} {}".format(host_thread, row))
+
+                for name, value in zip(header, row):
+                    output_str += " {}: {},".format(name, value)
+
+                # :-1 to remove the last comma
+                cf.printf(output_str[:-1])
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
@@ -585,7 +588,8 @@ def main():
             'seq_signals': int(conf.get('DEFAULT', 'seqSignals')),
             'init_sleep': float(conf.get('DEFAULT', 'initSleep')),
             'gold_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript')),
-            'summary_file': summary_file
+            'summary_file': summary_file,
+            'header': fieldnames
         }
 
         kill_strings += "killall -9 {};killall -9 {};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
