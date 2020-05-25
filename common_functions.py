@@ -81,7 +81,7 @@ Kill all remaining processes
 
 def kill_all(kill_string, logging=None):
     for cmd in kill_string.split(";"):
-        os.system(cmd)
+        os.system(cmd + " > /dev/null 2>&1")
         if logging:
             logging.debug("kill cmd: {}".format(cmd))
 
