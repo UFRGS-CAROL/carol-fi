@@ -51,7 +51,7 @@ def signal_handler(sig, frame):
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
         try:
-            os.system(cmd)
+            os.system(cmd + " > /dev/null 2>&1")
         except Exception as err:
             cf.printf("Command err: {}".format(str(err)))
 
