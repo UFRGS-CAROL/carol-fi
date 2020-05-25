@@ -549,7 +549,10 @@ def main():
     if args.n_gpus > args.iterations:
         num_gpus = args.iterations
 
-    os.system('mkdir -p {}/bin'.format(current_path))
+    bin_path = current_path + '/bin'
+    if not os.path.exists(bin_path):
+        os.mkdir(bin_path)
+
     # Set binaries for the injection
     benchmark_binary_default = conf.get('DEFAULT', 'benchmarkBinary')
     gdb_path_default = conf.get('DEFAULT', 'gdbExecName')

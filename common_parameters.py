@@ -10,23 +10,23 @@ MAX_TIMES_TO_PROFILE = 2
 LOGS_PATH = 'logs'
 
 # Temporary file to store kernel information
-KERNEL_INFO_DIR = '/tmp/carol-fi-kernel-info.txt'
+KERNEL_INFO_DIR = LOGS_PATH + '/tmp/carol-fi-kernel-info.txt'
 
 # For golden generation
-GOLD_ERR_PATH = '/tmp/carol_fi_golden_bench_err.txt'
-GOLD_OUTPUT_PATH = '/tmp/carol_fi_golden_bench_output.txt'
+GOLD_ERR_PATH = LOGS_PATH + '/tmp/carol_fi_golden_bench_err.txt'
+GOLD_OUTPUT_PATH = LOGS_PATH + '/tmp/carol_fi_golden_bench_output.txt'
 
 # Files that will be compared to golden ones
-INJ_OUTPUT_PATH = '/tmp/carol_fi_inj_bench_output_{}.txt'
-INJ_ERR_PATH = '/tmp/carol_fi_inj_bench_err_{}.txt'
+INJ_OUTPUT_PATH = LOGS_PATH + '/tmp/carol_fi_inj_bench_output_{}.txt'
+INJ_ERR_PATH = LOGS_PATH + '/tmp/carol_fi_inj_bench_err_{}.txt'
 
 # Internal python scripts
 FLIP_SCRIPT = 'flip_value.py'
 PROFILER_SCRIPT = 'profiler.py'
 
 # Temporary difference logs
-DIFF_LOG = '/tmp/diff_{}.log'
-DIFF_ERR_LOG = '/tmp/diff_err_{}.log'
+DIFF_LOG = LOGS_PATH + '/tmp/diff_{}.log'
+DIFF_ERR_LOG = LOGS_PATH + '/tmp/diff_err_{}.log'
 
 # Debug env vars
 # Debug FI process
@@ -35,13 +35,13 @@ DEBUG = True
 DEBUG_PROFILER = True
 
 # Log file for SignalApp thread
-SIGNAL_APP_LOG = '/tmp/signal_app_thread_{}.txt'
+SIGNAL_APP_LOG = LOGS_PATH + '/tmp/signal_app_thread_{}.txt'
 
 # Num of sleep time divisor
 NUM_DIVISION_TIMES = 100.0
 
 # Common body of log filename
-LOG_DEFAULT_NAME = '/tmp/carolfi-flipvalue-{}.log'
+LOG_DEFAULT_NAME = LOGS_PATH + '/tmp/carolfi-flipvalue-{}.log'
 
 
 # MAX INT 32 bits
