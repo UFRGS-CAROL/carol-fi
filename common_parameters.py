@@ -6,16 +6,19 @@ SINGLE_MAX_SIZE_REGISTER = 32
 # to profiler application
 MAX_TIMES_TO_PROFILE = 2
 
+# Log path to store all injections info
+LOGS_PATH = 'logs'
+
 # Temporary file to store kernel information
-KERNEL_INFO_DIR = "/tmp/carol-fi-kernel-info.txt"
+KERNEL_INFO_DIR = '/tmp/carol-fi-kernel-info.txt'
 
 # For golden generation
-GOLD_ERR_PATH = "/tmp/carol_fi_golden_bench_err.txt"
-GOLD_OUTPUT_PATH = "/tmp/carol_fi_golden_bench_output.txt"
+GOLD_ERR_PATH = '/tmp/carol_fi_golden_bench_err.txt'
+GOLD_OUTPUT_PATH = '/tmp/carol_fi_golden_bench_output.txt'
 
 # Files that will be compared to golden ones
-INJ_OUTPUT_PATH = "/tmp/carol_fi_inj_bench_output_{}.txt"
-INJ_ERR_PATH = "/tmp/carol_fi_inj_bench_err_{}.txt"
+INJ_OUTPUT_PATH = '/tmp/carol_fi_inj_bench_output_{}.txt'
+INJ_ERR_PATH = '/tmp/carol_fi_inj_bench_err_{}.txt'
 
 # Internal python scripts
 FLIP_SCRIPT = 'flip_value.py'
@@ -32,13 +35,13 @@ DEBUG = True
 DEBUG_PROFILER = True
 
 # Log file for SignalApp thread
-SIGNAL_APP_LOG = "/tmp/signal_app_thread_{}.txt"
+SIGNAL_APP_LOG = '/tmp/signal_app_thread_{}.txt'
 
 # Num of sleep time divisor
 NUM_DIVISION_TIMES = 100.0
 
 # Common body of log filename
-LOG_DEFAULT_NAME = "/tmp/carolfi-flipvalue-{}.log"
+LOG_DEFAULT_NAME = '/tmp/carolfi-flipvalue-{}.log'
 
 
 # MAX INT 32 bits
@@ -69,18 +72,18 @@ SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGQUIT', 'SIGHUP',  # termination codes
 # Using the Regular Expression format (python re)
 
 POSSIBLE_USELESS_GDB_OUTPUT_PATTERNS = [
-        '.*Thread.*received signal SIGINT, Interrupt.*',  # Thread SIGINT message
-        '.*New Thread.*',  # New GDB Thread creation
-        '.*Thread debugging using.*enabled.*',  # Lib thread enabled
-        '.*Using host.*library.*',  # Using host library
-        '.*Switching focus to CUDA kernel.*',  # Switching focus to CUDA kernel message
-        '.*0x.*in.*<<<.*>>>.*',  # Kernel interruption message
-        '.*Inferior.*\(process.*\) exited normally.*',  # GDB exited normally message
-        '.*Thread 0x.*exited.*',  # Thread exited
-        '.*0x.* in cu.* () from /usr/lib/.*libcuda.*',  # Cuda lib calls
-        '.*0x.*in.*\[clone.*\].*\(\).*',  # OMP calls
-        '.*0x.*in.*',  # General API call
-        '.*Inferior.*\(process.*\).*',  # General inferior process
+        r'.*Thread.*received signal SIGINT, Interrupt.*',  # Thread SIGINT message
+        r'.*New Thread.*',  # New GDB Thread creation
+        r'.*Thread debugging using.*enabled.*',  # Lib thread enabled
+        r'.*Using host.*library.*',  # Using host library
+        r'.*Switching focus to CUDA kernel.*',  # Switching focus to CUDA kernel message
+        r'.*0x.*in.*<<<.*>>>.*',  # Kernel interruption message
+        r'.*Inferior.*\(process.*\) exited normally.*',  # GDB exited normally message
+        r'.*Thread 0x.*exited.*',  # Thread exited
+        r'.*0x.* in cu.* () from /usr/lib/.*libcuda.*',  # Cuda lib calls
+        r'.*0x.*in.*\[clone.*\].*\(\).*',  # OMP calls
+        r'.*0x.*in.*',  # General API call
+        r'.*Inferior.*\(process.*\).*',  # General inferior process
     ]
 
 INSTRUCTIONS_TO_INJECT = [

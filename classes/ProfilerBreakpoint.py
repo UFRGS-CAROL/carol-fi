@@ -24,25 +24,21 @@ class ProfilerBreakpoint(gdb.Breakpoint):
         super(ProfilerBreakpoint, self).__init__(*args, **kwargs)
 
     def stop(self):
-        try:
-            if cp.DEBUG_PROFILER:
-                print("IT IS IN STOP METHOD")
-            if self.__kludge:
-                return True
+        if cp.DEBUG_PROFILER:
+            print("IT IS IN STOP METHOD")
+        if self.__kludge:
+            return True
 
-            print("FOUND A KERNEL LINE {}".format(self.__kernel_line))
-            self.__generate_source_ass_list()
-            kernel_info = {
-                'addresses': self.__addresses,
-                'kernel_name': self.__kernel_name,
-                'kernel_line': self.__kernel_line,
-                'kernel_end_line': self.__kernel_end_line
-            }
+        print("FOUND A KERNEL LINE {}".format(self.__kernel_line))
+        self.__generate_source_ass_list()
+        kernel_info = {
+            'addresses': self.__addresses,
+            'kernel_name': self.__kernel_name,
+            'kernel_line': self.__kernel_line,
+            'kernel_end_line': self.__kernel_end_line
+        }
 
-            cf.append_file(file_path=cp.KERNEL_INFO_DIR, data=kernel_info)
-        except:
-            with open("/tmp/test.txt", "w") as fp:
-                fp.write(traceback.format_exc())
+        cf.append_file(file_path=cp.KERNEL_INFO_DIR, data=kernel_info)
 
     """
     inject faults only on the resources used at that source line

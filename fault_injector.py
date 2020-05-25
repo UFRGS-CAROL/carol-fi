@@ -1,6 +1,4 @@
-#!/usr/bin/python
-
-from __future__ import print_function
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -19,7 +17,27 @@ from classes.SummaryFile import SummaryFile
 from classes.Logging import Logging
 from classes.SignalApp import SignalApp
 
-created_threads = []
+"""
+[THIS FUNCTION CAN BE EDITED IF DESIRED]
+User defined function
+this function must return an empty or not string.
+The string will be appended in the last collum of summary CSV file
+the column will have  'user_defined' as header
+if the string is always empty the column will be empty, otherwise it
+will contain the returned values for each injection
+"""
+
+
+def user_defined_function(injection_output_path):
+    # This is a temporary example for carol-fi-codes suite
+    # it will search for a LOGFILENAME int the benchmark output if it finds
+    # then the desired pattern will be returned
+    with open(injection_output_path, "r") as fp:
+        for l in fp.readlines():
+            m = re.match(r"LOGFILENAME:.*/(\S+).*", l)
+            if m:
+                return m.group(1)
+    return ""
 
 
 """
@@ -116,19 +134,19 @@ def save_output(is_sdc, is_hang, logging, unique_id, flip_log_file, inj_output_p
 
     # Log and create the paths
     if not fi_injected:
-        cp_dir = os.path.join('logs', 'failed-injection', dir_d_t)
+        cp_dir = os.path.join(cp.LOGS_PATH, 'failed-injection', dir_d_t)
         logging.summary("Fault Injection Failed")
     elif is_hang:
-        cp_dir = os.path.join('logs', 'hangs', dir_d_t)
+        cp_dir = os.path.join(cp.LOGS_PATH, 'hangs', dir_d_t)
         logging.summary("Hang")
     elif is_sdc:
-        cp_dir = os.path.join('logs', 'sdcs', dir_d_t)
+        cp_dir = os.path.join(cp.LOGS_PATH, 'sdcs', dir_d_t)
         logging.summary("SDC")
     elif not os.path.isfile(inj_output_path):
-        cp_dir = os.path.join('logs', 'no_output_generated', dir_d_t)
+        cp_dir = os.path.join(cp.LOGS_PATH, 'no_output_generated', dir_d_t)
         logging.summary("no_output_generated")
     else:
-        cp_dir = os.path.join('logs', 'masked', dir_d_t)
+        cp_dir = os.path.join(cp.LOGS_PATH, 'masked', dir_d_t)
         logging.summary("Masked")
 
     if not os.path.isdir(cp_dir):
@@ -324,27 +342,27 @@ def gdb_inject_fault(**kwargs):
     block_focus = logging.search("CUDA_BLOCK_FOCUS")
     if block_focus:
         # Search for block
-        m = re.search("CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", block_focus)
+        m = re.search(r"CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", block_focus)
         if m:
             block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
     thread_focus = logging.search("CUDA_THREAD_FOCUS")
     if thread_focus:
         # Search for thread
-        m = re.search("CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", thread_focus)
+        m = re.search(r"CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", thread_focus)
         if m:
             thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
     register_selected = logging.search("SELECTED_REGISTER")
     if register_selected:
-        m = re.search("SELECTED_REGISTER:(\S+).*", register_selected)
+        m = re.search(r"SELECTED_REGISTER:(\S+).*", register_selected)
         if m:
             register = m.group(1)
 
     # Was fault injected?
     try:
-        old_value = re.findall("old_value:(\S+)", logging.search("old_value"))[0]
-        new_value = re.findall("new_value:(\S+)", logging.search("new_value"))[0]
+        old_value = re.findall(r'old_value:(\S+)', logging.search("old_value"))[0]
+        new_value = re.findall(r'new_value:(\S+)', logging.search("new_value"))[0]
         fi_successful = True
     except TypeError as te:
         new_value = old_value = None
@@ -352,16 +370,10 @@ def gdb_inject_fault(**kwargs):
         if cp.DEBUG:
             cf.printf("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, te))
             cf.printf()
-    ####################################################################################################################
-    # temporary for log helper
-    log_filename = ''
-    with open(inj_output_path, "r") as fp:
-        for l in fp.readlines():
-            m = re.match("LOGFILENAME:.*/(\S+).*", l)
-            if m:
-                log_filename = m.group(1)
-                break
-    ####################################################################################################################
+
+    # Change the behavior of this function if any other information
+    # needs to be added in the final summary
+    user_defined_string = user_defined_function(injection_output_path=inj_output_path)
 
     # Copy output files to a folder
     save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
@@ -373,7 +385,7 @@ def gdb_inject_fault(**kwargs):
         cf.printf("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
 
     return_list = [register, old_value, new_value, fi_successful,
-                   is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread, log_filename]
+                   is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread, user_defined_string]
     return return_list
 
 
@@ -399,7 +411,8 @@ def bit_flip_selection(fault_model):
         bits_to_flip = [0] * 2
         bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
         # Make sure that the same bit is not going to be selected
-        r = range(0, bits_to_flip[0]) + range(bits_to_flip[0] + 1, max_size_register_fault_model)
+        r = [i for i in range(0, bits_to_flip[0])]
+        r += [i for i in range(bits_to_flip[0] + 1, max_size_register_fault_model)]
         bits_to_flip[1] = random.choice(r)
 
     # Random value
@@ -412,12 +425,11 @@ def bit_flip_selection(fault_model):
 
     # Least 16 bits
     elif fault_model == 4:
-        bits_to_flip[0] = random.randint(0, 16)
+        bits_to_flip[0] = random.randint(0, 15)
 
     # Least 8 bits
     elif fault_model == 5:
-        max_size_register_fault_model = 8
-        bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
+        bits_to_flip[0] = random.randint(0, 7)
 
     return bits_to_flip
 
@@ -526,7 +538,7 @@ def main():
     # Csv log
     fieldnames = ['unique_id', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
                   'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
-                  'inj_time_location', 'bits_flipped', 'log_file']
+                  'inj_time_location', 'bits_flipped', 'user_defined']
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
     # Lock for summary file parallel
     lock = Lock()
@@ -570,6 +582,7 @@ def main():
             'gold_check_script': "{}/{}".format(current_path, conf.get('DEFAULT', 'goldenCheckScript')),
             'summary_file': summary_file
         }
+
         kill_strings += "killall -9 {};killall -9 {};".format(os.path.basename(benchmark_binary), os.path.basename(gdb))
 
         fi_master_thread = Thread(target=fault_injection_by_signal, kwargs=kwargs)

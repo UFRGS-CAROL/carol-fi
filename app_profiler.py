@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import argparse
 import os
 import re
@@ -18,12 +18,12 @@ def generate_dict(sm_version, input_file_name):
         # process the input file created by capturing the stderr while compiling the
         # application using -Xptxas -v options
         for line in f:  # for each line in the file
-            m = re.match(".*Compiling entry function.*'(\S+)'.*for.*'{}'.*".format(sm_version), line)
+            m = re.match(r".*Compiling entry function.*'(\S+)'.*for.*'{}'.*".format(sm_version), line)
             if m:
                 kernel_name = m.group(1)
                 check_for_register_count = True
 
-            m = re.match(".*Used[ ]+(\d+)[ ]+registers.*", line)
+            m = re.match(r".*Used[ ]+(\d+)[ ]+registers.*", line)
             if check_for_register_count and m:
                 reg_num = m.group(1)  # extract register number
                 if kernel_name not in kernel_reg:
