@@ -556,8 +556,7 @@ def main():
     # Create tmp path and clean it if it exists
     tmp_path = current_path + "/" + cp.LOGS_PATH + "/tmp"
     if not os.path.exists(tmp_path):
-        os.mkdir(tmp_path)
-    os.system("rm -rf " + tmp_path + "/*")
+        raise FileNotFoundError(tmp_path + " path does not exists, run app_profile.py to create it")
 
     # Set binaries for the injection
     benchmark_binary_default = conf.get('DEFAULT', 'benchmarkBinary')
