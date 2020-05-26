@@ -482,7 +482,7 @@ def fault_injection_by_signal(**kwargs):
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, user_defined_val]
 
-                for i, name, value in zip(header, row, range(len(row))):
+                for i, name, value in zip(range(len(row)), header, row):
                     output_str += " {}: {},".format(name, value)
                     if i % 5 == 0:
                         output_str += "\n"
