@@ -474,7 +474,7 @@ def fault_injection_by_signal(**kwargs):
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                output_str = "-------------------------------------------------------------------------------------\n",
+                output_str = "-------------------------------------------------------------------------------------\n"
                 output_str += "THREAD:{}, FAULT NUM:{}\n".format(host_thread, num_rounds)
 
                 row = [unique_id, register, num_rounds, fault_model, thread,
