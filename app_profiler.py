@@ -70,8 +70,7 @@ Function to generate the gold execution
 def generate_gold(gdb_exec, benchmark_binary, benchmark_args):
     # Create tmp path and clean it if it exists
     tmp_path = os.path.dirname(os.path.realpath(__file__)) + "/" + cp.LOGS_PATH + "/tmp"
-    if not os.path.exists(tmp_path):
-        os.mkdir(tmp_path)
+    os.system("mkdir -p " + tmp_path)
     os.system("rm -rf " + tmp_path + "/*")
 
     script = '{} -ex \'py arg0 = {}\' -n -batch -x {} > {} 2> {}'

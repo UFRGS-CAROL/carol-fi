@@ -21,10 +21,10 @@ from classes.SignalApp import SignalApp
 [THIS FUNCTION CAN BE EDITED IF DESIRED]
 User defined function
 this function must return an empty or not string.
-The string will be appended in the last collum of summary CSV file
+The string will be appended in the last column of summary CSV file
 the column will have  'user_defined' as header
-if the string is always empty the column will be empty, otherwise it
-will contain the returned values for each injection
+if there isn't a return value the column will be None, 
+otherwise it will contain the returned values for each injection
 """
 
 
@@ -37,7 +37,6 @@ def user_defined_function(injection_output_path):
             m = re.match(r"LOGFILENAME:.*/(\S+).*", l)
             if m:
                 return m.group(1)
-    return ""
 
 
 """
@@ -467,7 +466,7 @@ def fault_injection_by_signal(**kwargs):
             fi_tic = int(time.time())
             [register, old_val, new_val, fault_injected,
              hang, crash, sdc, signal_init_time, block,
-             thread, log_filename] = gdb_inject_fault(**kwargs)
+             thread, user_defined_val] = gdb_inject_fault(**kwargs)
 
             # Time toc
             fi_toc = int(time.time())
@@ -476,17 +475,21 @@ def fault_injection_by_signal(**kwargs):
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                output_str = "THREAD:{}, FAULT NUM:{}".format(host_thread, num_rounds)
+                cf.printf("THREAD:{}, FAULT NUM:{}".format(host_thread, num_rounds))
                 row = [unique_id, register, num_rounds, fault_model, thread,
                        block, old_val, new_val, injection_site,
                        fault_injected, hang, crash, sdc, injection_time,
-                       signal_init_time, bits_to_flip, log_filename]
+                       signal_init_time, bits_to_flip, user_defined_val]
 
-                for name, value in zip(header, row):
-                    output_str += " {}: {},".format(name, value)
+                # 5 elements per line
+                for max_line in range(0, len(header), 5):
+                    output_str = ''
+                    for name, value in zip(header[max_line:(max_line + 5)], row[max_line:(max_line + 5)]):
+                        output_str += " {}: {},".format(name, value)
 
-                # :-1 to remove the last comma
-                cf.printf(output_str[:-1])
+                    # :-1 to remove the last comma
+                    cf.printf(output_str[:-1])
+
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
