@@ -134,4 +134,4 @@ def printf(*args):
     for i in args:
         string_to_print += "{0} ".format(i)
     # sys.stdout.write("{}\n".format(string_to_print))
-    print(string_to_print, end="\r")
+    print(string_to_print)  # , end="\r")
