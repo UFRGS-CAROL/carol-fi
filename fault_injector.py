@@ -449,7 +449,6 @@ def fault_injection_by_signal(**kwargs):
     summary_file = kwargs.get('summary_file')
     header = kwargs.get('header')
 
-    cf.printf("-----------------------------------------------------------------------------------------------")
     # Execute the fault injector for each one of the sections(apps) of the configuration file
     for fault_model in fault_models:
         # Execute iterations number of fault injection for a specific app
@@ -475,25 +474,23 @@ def fault_injection_by_signal(**kwargs):
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                cf.printf("THREAD:{}, FAULT NUM:{}".format(host_thread, num_rounds))
+                output_str = ["-------------------------------------------------------------------------------------\n",
+                              "THREAD:{}, FAULT NUM:{}".format(host_thread, num_rounds)]
+
                 row = [unique_id, register, num_rounds, fault_model, thread,
                        block, old_val, new_val, injection_site,
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, user_defined_val]
 
-                # 5 elements per line
-                for max_line in range(0, len(header), 5):
-                    output_str = ''
-                    for name, value in zip(header[max_line:(max_line + 5)], row[max_line:(max_line + 5)]):
-                        output_str += " {}: {},".format(name, value)
+                for name, value in zip(header, row):
+                    output_str.append(" {}: {},".format(name, value))
 
-                    # :-1 to remove the last comma
-                    cf.printf(output_str[:-1])
-
+                # :-1 to remove the last comma
+                cf.printf(output_str)
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
-            cf.printf("-----------------------------------------------------------------------------------------------")
+            cf.printf()
 
 
 """
