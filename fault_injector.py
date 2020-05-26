@@ -530,7 +530,7 @@ def main():
     # First set env vars
     current_path = cf.set_python_env()
 
-    cf.printf("Starting fault injection, {} faults will be injected".format(args.iterations))
+    cf.printf("Starting fault injection, it will inject {} faults".format(args.iterations))
     ########################################################################
 
     # Creating a summary csv file
