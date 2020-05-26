@@ -101,7 +101,7 @@ def main():
     # Max time will be obtained by running
     # it will also get app output for golden copy
     # that is,
-    print("###################################################\n1 - Profiling application")
+    print("Profiling application")
     benchmark_binary = conf.get('DEFAULT', 'benchmarkBinary')
     benchmark_args = conf.get('DEFAULT', 'benchmarkArgs')
     gdb_exec = conf.get("DEFAULT", "gdbExecName")
@@ -122,7 +122,7 @@ def main():
     # Save the kernel configuration txt file
     cf.save_file(file_path=cp.KERNEL_INFO_DIR, data={'max_time': max_time_app})
 
-    print("1 - Profile finished\n###################################################")
+    print("Profile finished")
 
 
 if __name__ == '__main__':

@@ -530,10 +530,7 @@ def main():
     # First set env vars
     current_path = cf.set_python_env()
 
-    cf.printf("2 - Starting fault injection")
-    cf.printf("###################################################")
-    cf.printf("2 - {} faults will be injected".format(args.iterations))
-    cf.printf("###################################################")
+    cf.printf("Starting fault injection, {} faults will be injected".format(args.iterations))
     ########################################################################
 
     # Creating a summary csv file
@@ -608,9 +605,7 @@ def main():
         thread.join()
 
     os.system("rm -f {}/bin/*".format(current_path))
-    cf.printf("###################################################")
-    cf.printf("2 - Fault injection finished, results can be found in {}".format(csv_file))
-    cf.printf("###################################################")
+    cf.printf("Fault injection finished, results can be found in {}".format(csv_file))
     ########################################################################
 
 
