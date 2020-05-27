@@ -485,10 +485,9 @@ def fault_injection_by_signal(**kwargs):
                 for i, name, value in zip(range(len(row)), header, row):
                     output_str += " {}: {},".format(name, value)
                     if i % 5 == 0:
-                        output_str += "\n"
+                        output_str = output_str[:-1] + "\n"
 
                 # :-1 to remove the last comma
-                output_str = output_str[:-1]
                 output_str += "\n------------------------------------------------------------------------------------\n"
                 cf.printf(output_str)
                 with lock:
