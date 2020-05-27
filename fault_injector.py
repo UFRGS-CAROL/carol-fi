@@ -488,7 +488,8 @@ def fault_injection_by_signal(**kwargs):
                         output_str = output_str[:-1] + "\n"
 
                 # :-1 to remove the last comma
-                output_str += "\n------------------------------------------------------------------------------------\n"
+                output_str = output_str[:-1] + "\n"
+                output_str += "------------------------------------------------------------------------------------\n"
                 cf.printf(output_str)
                 with lock:
                     summary_file.write_row(row)
