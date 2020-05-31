@@ -474,8 +474,7 @@ def fault_injection_by_signal(**kwargs):
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                output_str = "THREAD:{}, FAULT NUM:{}\n".format(host_thread, num_rounds)
-
+                output_str = ""
                 row = [unique_id, register, num_rounds, fault_model, thread,
                        block, old_val, new_val, injection_site,
                        fault_injected, hang, crash, sdc, injection_time,
@@ -484,7 +483,7 @@ def fault_injection_by_signal(**kwargs):
                 for i, name, value in zip(range(len(row)), header, row):
                     output_str += " {}: {},".format(name, value)
                     if i % 5 == 0:
-                        output_str = output_str[:-1] + "\n"
+                        output_str = output_str[1:-1] + "\n"
 
                 # :-1 to remove the last comma
                 output_str = output_str[:-1] + "\n"
@@ -492,6 +491,8 @@ def fault_injection_by_signal(**kwargs):
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
+            else:
+                cf.printf("Fault {} was not injected, trying again".format(num_rounds))
             cf.printf()
 
 
