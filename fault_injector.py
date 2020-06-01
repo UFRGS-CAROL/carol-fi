@@ -50,11 +50,11 @@ def signal_handler(sig, frame):
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
         os.system(cmd + " > /dev/null 2>&1")
+    exit_injector = True
 
     os.system("rm -f {}/bin/*".format(current_path))
     for th in gpus_threads:
         th.join()
-    exit_injector = True
     sys.exit(0)
 
 
