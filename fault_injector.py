@@ -475,29 +475,40 @@ def fault_injection_by_signal(**kwargs):
             injection_time = fi_toc - fi_tic
 
             if fault_injected:
-                output_str = ""
                 row = [unique_id, register, num_rounds, fault_model, thread,
                        block, old_val, new_val, injection_site,
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, user_defined_val]
 
-                for i, name, value in zip(range(len(row)), header, row):
-                    output_str += " {}: {},".format(name, value)
-                    if i % 5 == 0:
-                        output_str = output_str[1:-1] + "\n"
-
-                # :-1 to remove the last comma
-                output_str = output_str[:-1] + "\n"
-                cf.printf(output_str)
+                pretty_print(header, row)
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
             else:
-                cf.printf("Fault {} was not injected, trying again".format(num_rounds))
-            cf.printf()
+                pretty_print(header=header, row=[])
 
             if exit_injector:
                 return
+
+
+"""
+print the info for each fault
+"""
+
+
+def pretty_print(header, row):
+    if len(row) != 0:
+        output_str = "fault status: Injected"
+
+        for name, value in zip(header, row):
+            output_str += "{}: {}\n".format(name, value)
+    else:
+        output_str = "fault status: Failed"
+
+        for name in header:
+            output_str += "{}: {}\n".format(name, '')
+
+    cf.printf(output_str, '\r')
 
 
 """
@@ -533,7 +544,7 @@ def main():
     # First set env vars
     current_path = cf.set_python_env()
 
-    cf.printf("Starting fault injection, it will inject {} faults".format(args.iterations))
+    # cf.printf("Starting fault injection, it will inject {} faults".format(args.iterations))
     ########################################################################
 
     # Creating a summary csv file
