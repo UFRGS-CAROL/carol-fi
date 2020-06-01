@@ -448,6 +448,7 @@ def pretty_print(header, row):
             output_str += "{}: --\n".format(name)
 
     cf.printf(output_str)
+    cf.printf()
 
 """
 This injector has two injection options
