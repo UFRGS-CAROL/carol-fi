@@ -45,7 +45,7 @@ CTRL + C event
 
 
 def signal_handler(sig, frame):
-    global kill_strings, current_path, gpus_threads
+    global kill_strings, current_path, gpus_threads, exit_injector
     cf.printf("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
@@ -54,6 +54,7 @@ def signal_handler(sig, frame):
     os.system("rm -f {}/bin/*".format(current_path))
     for th in gpus_threads:
         th.join()
+    exit_injector = True
     sys.exit(0)
 
 
@@ -564,7 +565,6 @@ def main():
 
     each_thread_iterations = iterations / num_gpus
 
-    gpus_threads = []
     kernel_info_dict = cf.load_file(cp.KERNEL_INFO_DIR)
 
     for thread_id in range(0, num_gpus):
@@ -615,5 +615,8 @@ def main():
 kill_strings = None
 current_path = None
 lock = None
+exit_injector = False
+gpus_threads = []
+
 if __name__ == "__main__":
     main()
