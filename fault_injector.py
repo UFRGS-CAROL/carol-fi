@@ -32,19 +32,13 @@ def user_defined_function(injection_output_path):
     # This is a temporary example for carol-fi-codes suite
     # it will search for a LOGFILENAME int the benchmark output if it finds
     # then the desired pattern will be returned
-    new_lines = []
-    log_filename = ''
+
     with open(injection_output_path, "r") as fp:
         for l in fp.readlines():
             m = re.match(r"LOGFILENAME:.*/(\S+).*", l)
             if m:
-                log_filename = m.group(1)
-            else:
-                new_lines.append(l)
-    with open(injection_output_path, "w") as fp:
-        fp.writelines(new_lines)
-
-    return log_filename
+                return m.group(1)
+   
 
 """
 CTRL + C event

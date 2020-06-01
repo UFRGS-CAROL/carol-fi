@@ -30,7 +30,7 @@ DIFF_ERR_LOG = LOGS_PATH + '/tmp/diff_err_{}.log'
 
 # Debug env vars
 # Debug FI process
-DEBUG = True
+DEBUG = False
 # Debug profiler process
 DEBUG_PROFILER = True
 
@@ -72,7 +72,7 @@ SIGNALS = ['SIGKILL', 'SIGTERM', 'SIGQUIT', 'SIGHUP',  # termination codes
 # Using the Regular Expression format (python re)
 
 POSSIBLE_USELESS_GDB_OUTPUT_PATTERNS = [
-        r'.*Thread.*received signal SIGINT, Interrupt.*',  # Thread SIGINT message
+        r'.*received signal SIGINT, Interrupt.*',  # Thread SIGINT message
         r'.*New Thread.*',  # New GDB Thread creation
         r'.*Thread debugging using.*enabled.*',  # Lib thread enabled
         r'.*Using host.*library.*',  # Using host library
