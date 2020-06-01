@@ -46,16 +46,15 @@ CTRL + C event
 
 def signal_handler(sig, frame):
     global kill_strings, current_path, gpus_threads, exit_injector
-    cf.printf("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     kill_cmds = kill_strings.split(";")
     for cmd in kill_cmds:
         os.system(cmd + " > /dev/null 2>&1")
     exit_injector = True
 
-    os.system("rm -f {}/bin/*".format(current_path))
-    for th in gpus_threads:
-        th.join()
-    sys.exit(0)
+    # os.system("rm -f {}/bin/*".format(current_path))
+    # for th in gpus_threads:
+    #     th.join()
+    # sys.exit(0)
 
 
 """
@@ -503,7 +502,7 @@ def pretty_print(header, row):
         for name, value in zip(header, row):
             output_str += "{}: {}\n".format(name, value)
     else:
-        output_str = "fault status: Failed"
+        output_str = "fault status: Failed\n"
 
         for name in header:
             output_str += "{}: --\n".format(name)
@@ -618,7 +617,10 @@ def main():
         thread.join()
 
     os.system("rm -f {}/bin/*".format(current_path))
-    cf.printf("Fault injection finished, results can be found in {}".format(csv_file))
+    if exit_injector:
+        cf.printf("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
+    else:
+        cf.printf("Fault injection finished, results can be found in {}".format(csv_file))
     ########################################################################
 
 
