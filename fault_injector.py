@@ -440,7 +440,7 @@ by sending a SIGINT signal to the application
 
 def fault_injection_by_signal(**kwargs):
     # Global rows list
-    global lock
+    global lock, exit_injector
     benchmark_binary = kwargs.get('benchmark_binary')
     kwargs['signal_cmd'] = "killall -2 {}".format(os.path.basename(benchmark_binary))
     fault_models = kwargs.get('fault_models')
@@ -495,6 +495,9 @@ def fault_injection_by_signal(**kwargs):
             else:
                 cf.printf("Fault {} was not injected, trying again".format(num_rounds))
             cf.printf()
+
+            if exit_injector:
+                return
 
 
 """
