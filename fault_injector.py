@@ -455,6 +455,9 @@ def fault_injection_by_signal(**kwargs):
         # Execute iterations number of fault injection for a specific app
         num_rounds = 1
         while num_rounds <= iterations:
+            if exit_injector:
+                return
+
             # Generate an unique id for this fault injection
             # Thread is for multi gpu
             unique_id = "{}_{}_{}".format(num_rounds, fault_model, host_thread)
@@ -487,8 +490,6 @@ def fault_injection_by_signal(**kwargs):
             else:
                 pretty_print(header=header, row=[])
 
-            if exit_injector:
-                return
 
 
 """
@@ -498,7 +499,7 @@ print the info for each fault
 
 def pretty_print(header, row):
     if len(row) != 0:
-        output_str = "fault status: Injected"
+        output_str = "fault status: Injected\n"
 
         for name, value in zip(header, row):
             output_str += "{}: {}\n".format(name, value)
@@ -508,7 +509,7 @@ def pretty_print(header, row):
         for name in header:
             output_str += "{}: {}\n".format(name, '')
 
-    cf.printf(output_str, '\r')
+    cf.printf(output_str, end='\r')
 
 
 """
