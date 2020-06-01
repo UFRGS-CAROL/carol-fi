@@ -483,13 +483,12 @@ def fault_injection_by_signal(**kwargs):
                        fault_injected, hang, crash, sdc, injection_time,
                        signal_init_time, bits_to_flip, user_defined_val]
 
-                pretty_print(header, row)
+                pretty_print(header=header, row=row)
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
             else:
                 pretty_print(header=header, row=[])
-
 
 
 """
@@ -507,7 +506,7 @@ def pretty_print(header, row):
         output_str = "fault status: Failed"
 
         for name in header:
-            output_str += "{}: {}\n".format(name, '')
+            output_str += "{}: --\n".format(name)
 
     cf.printf(output_str, end='\r')
 
