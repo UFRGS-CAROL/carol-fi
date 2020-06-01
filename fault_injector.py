@@ -32,12 +32,19 @@ def user_defined_function(injection_output_path):
     # This is a temporary example for carol-fi-codes suite
     # it will search for a LOGFILENAME int the benchmark output if it finds
     # then the desired pattern will be returned
+    new_lines = []
+    log_filename = ''
     with open(injection_output_path, "r") as fp:
         for l in fp.readlines():
             m = re.match(r"LOGFILENAME:.*/(\S+).*", l)
             if m:
-                return m.group(1)
+                log_filename = m.group(1)
+            else:
+                new_lines.append(l)
+    with open(injection_output_path, "w") as fp:
+        fp.writelines(new_lines)
 
+    return log_filename
 
 """
 CTRL + C event
@@ -436,16 +443,20 @@ print the info for each fault
 
 
 def pretty_print(header, row):
-    if len(row) != 0:
-        output_str = "fault status: Injected\n"
-
-        for name, value in zip(header, row):
+    fault_injected = row[9]
+    normal_print =   "\033[0;37;49m"
+    failed_print =   "\033[1;37;41m"
+    injected_print = "\033[1;37;42m"
+    
+    output_str = "fault status: "
+    output_str += injected_print + "Injected" if fault_injected else failed_print + "Failed"
+    output_str += normal_print
+    
+    cf.printf(output_str)
+    output_str = ""
+    for name, value in zip(header, row):
+        if name != "fault_successful":
             output_str += "{}: {}\n".format(name, value)
-    else:
-        output_str = "fault status: Failed\n"
-
-        for name in header:
-            output_str += "{}: --\n".format(name)
 
     cf.printf(output_str)
     cf.printf()
@@ -495,19 +506,16 @@ def fault_injection_by_signal(**kwargs):
 
             # FI injection time
             injection_time = fi_toc - fi_tic
-
+            row = [unique_id, register, num_rounds, fault_model, thread,
+                                   block, old_val, new_val, injection_site,
+                                   fault_injected, hang, crash, sdc, injection_time,
+                                   signal_init_time, bits_to_flip, user_defined_val]
             if fault_injected:
-                row = [unique_id, register, num_rounds, fault_model, thread,
-                       block, old_val, new_val, injection_site,
-                       fault_injected, hang, crash, sdc, injection_time,
-                       signal_init_time, bits_to_flip, user_defined_val]
-
-                pretty_print(header=header, row=row)
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
-            else:
-                pretty_print(header=header, row=[])
+            
+            pretty_print(header=header, row=row)
 
 
 """
