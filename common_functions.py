@@ -129,10 +129,9 @@ to allow pretty printing
 """
 
 
-def printf(*args, **kwargs):
+def printf(*args):
     string_to_print = ""  # ""\r"
     for i in args:
         string_to_print += "{0} ".format(i)
 
-    end = kwargs.get('end')
-    print(string_to_print, end=end)
+    print(string_to_print)

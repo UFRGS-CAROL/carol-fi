@@ -431,6 +431,25 @@ def bit_flip_selection(fault_model):
 
 
 """
+print the info for each fault
+"""
+
+
+def pretty_print(header, row):
+    if len(row) != 0:
+        output_str = "fault status: Injected\n"
+
+        for name, value in zip(header, row):
+            output_str += "{}: {}\n".format(name, value)
+    else:
+        output_str = "fault status: Failed\n"
+
+        for name in header:
+            output_str += "{}: --\n".format(name)
+
+    cf.printf(output_str)
+
+"""
 This injector has two injection options
 this function performs fault injection
 by sending a SIGINT signal to the application
@@ -488,26 +507,6 @@ def fault_injection_by_signal(**kwargs):
                 num_rounds += 1
             else:
                 pretty_print(header=header, row=[])
-
-
-"""
-print the info for each fault
-"""
-
-
-def pretty_print(header, row):
-    if len(row) != 0:
-        output_str = "fault status: Injected\n"
-
-        for name, value in zip(header, row):
-            output_str += "{}: {}\n".format(name, value)
-    else:
-        output_str = "fault status: Failed\n"
-
-        for name in header:
-            output_str += "{}: --\n".format(name)
-
-    cf.printf(output_str, end='\r')
 
 
 """
@@ -618,7 +617,7 @@ def main():
 
     os.system("rm -f {}/bin/*".format(current_path))
     if exit_injector:
-        cf.printf("\n\tKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
+        cf.printf("\nKeyboardInterrupt detected, exiting gracefully!( at least trying :) )")
     else:
         cf.printf("Fault injection finished, results can be found in {}".format(csv_file))
     ########################################################################
