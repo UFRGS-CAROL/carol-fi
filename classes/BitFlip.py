@@ -60,16 +60,16 @@ class BitFlip:
 
             return
 
-        # try:
+        try:
             # Do the fault injection magic
             # RF is the default mode of injection
-        if 'RF' in self.__injection_mode or self.__injection_mode is None:
-            self.fault_injected = self.__rf_generic_injector()
-        elif 'INST' in self.__injection_mode:
-            self.fault_injected = self.__inst_generic_injector()
-        # except Exception as err:
-        #     self.__logging.exception("fault_injection_python_exception: {}".format(err))
-        #     self.__logging.exception(self.__exception_str())
+            if 'RF' in self.__injection_mode or self.__injection_mode is None:
+                self.fault_injected = self.__rf_generic_injector()
+            elif 'INST' in self.__injection_mode:
+                self.fault_injected = self.__inst_generic_injector()
+        except Exception as err:
+            self.__logging.exception("fault_injection_python_exception: {}".format(err))
+            self.__logging.exception(self.__exception_str())
 
         # Test fault injection result
         if self.fault_injected:
@@ -127,49 +127,50 @@ class BitFlip:
     """
 
     def __rf_generic_injector(self):
-        # get register content
-        reg_cmd = cf.execute_command(gdb, "p/t ${}".format(self.__register))
-        m = re.match(r'\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
+        try:
+            # get register content
+            reg_cmd = cf.execute_command(gdb, "p/t ${}".format(self.__register))
+            m = re.match(r'\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
 
-        reg_content_old = str(m.group(2))
-        # Make sure that binary value will have max size register
-        reg_content_full_bits = str('0' * (cp.SINGLE_MAX_SIZE_REGISTER - len(reg_content_old))) + reg_content_old
+            reg_content_old = str(m.group(2))
+            # Make sure that binary value will have max size register
+            reg_content_full_bits = str('0' * (cp.SINGLE_MAX_SIZE_REGISTER - len(reg_content_old))) + reg_content_old
 
-        reg_content_new = ''
+            reg_content_new = ''
 
-        # Single bit flip or Least significant bits
-        if self.__fault_model in [0, 1, 4, 5]:
-            try:
-                # single bit flip or Double bit flip
-                reg_content_new = reg_content_full_bits
-                for bit_to_flip in self.__bits_to_flip:
-                    reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
-                reg_content_new = hex(int(reg_content_new, 2))
-            except Exception as err:
-                self.__logging.exception("exception: {}".format(err))
-                self.__logging.exception(self.__exception_str())
+            # Single bit flip or Least significant bits
+            if self.__fault_model in [0, 1, 4, 5]:
+    
+                    # single bit flip or Double bit flip
+                    reg_content_new = reg_content_full_bits
+                    for bit_to_flip in self.__bits_to_flip:
+                        reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
+                    reg_content_new = hex(int(reg_content_new, 2))
 
-        # Random value or Zero value
-        elif self.__fault_model in [2, 3]:
-            # random value is stored at bits_to_flip[0]
-            reg_content_new = self.__bits_to_flip[0]
+            # Random value or Zero value
+            elif self.__fault_model in [2, 3]:
+                # random value is stored at bits_to_flip[0]
+                reg_content_new = self.__bits_to_flip[0]
 
-        # send the new value to gdb
-        flip_command = "set ${} = {}".format(self.__register, reg_content_new)
-        reg_cmd_flipped = cf.execute_command(gdb, flip_command)
+            # send the new value to gdb
+            flip_command = "set ${} = {}".format(self.__register, reg_content_new)
+            reg_cmd_flipped = cf.execute_command(gdb, flip_command)
 
-        # ['$2 = 100000000111111111111111']
-        reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
+            # ['$2 = 100000000111111111111111']
+            reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
 
-        # LOGGING
-        # Logging info result extracted from register
-        self.__logging.info("old_value:{}".format(reg_content_old))
-        # Also logging the new value
-        self.__logging.info("new_value:{}".format(reg_modified))
+            # LOGGING
+            # Logging info result extracted from register
+            self.__logging.info("old_value:{}".format(reg_content_old))
+            # Also logging the new value
+            self.__logging.info("new_value:{}".format(reg_modified))
 
-        # Log command return only something was printed
-        if len(reg_cmd_flipped) > 0:
-            self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
+            # Log command return only something was printed
+            if len(reg_cmd_flipped) > 0:
+                self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
+        except Exception as err:
+            self.__logging.exception("exception: {}".format(err))
+            self.__logging.exception(self.__exception_str())
 
         # Return the fault confirmation
         return reg_content_old != reg_modified
