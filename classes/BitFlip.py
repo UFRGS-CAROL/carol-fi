@@ -60,16 +60,16 @@ class BitFlip:
 
             return
 
-        try:
+        # try:
             # Do the fault injection magic
             # RF is the default mode of injection
-            if 'RF' in self.__injection_mode or self.__injection_mode is None:
-                self.fault_injected = self.__rf_generic_injector()
-            elif 'INST' in self.__injection_mode:
-                self.fault_injected = self.__inst_generic_injector()
-        except Exception as err:
-            self.__logging.exception("fault_injection_python_exception: {}".format(err))
-            self.__logging.exception(self.__exception_str())
+        if 'RF' in self.__injection_mode or self.__injection_mode is None:
+            self.fault_injected = self.__rf_generic_injector()
+        elif 'INST' in self.__injection_mode:
+            self.fault_injected = self.__inst_generic_injector()
+        # except Exception as err:
+        #     self.__logging.exception("fault_injection_python_exception: {}".format(err))
+        #     self.__logging.exception(self.__exception_str())
 
         # Test fault injection result
         if self.fault_injected:
