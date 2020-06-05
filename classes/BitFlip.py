@@ -1,4 +1,6 @@
 import random
+import sys
+
 import gdb
 import re
 import common_functions as cf  # All common functions will be at common_functions module
@@ -21,6 +23,14 @@ class BitFlip:
         self.fault_injected = False
 
     """
+    print exception info
+    """
+    @staticmethod
+    def __exception_str():
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        return "Exception type {} at line {}".format(exc_type, exc_tb.tb_lineno)
+
+    """
     TODO: Describe the method
     """
 
@@ -39,13 +49,15 @@ class BitFlip:
         except Exception as err:
             # Even if CUDA focus was not successful we keep going
             self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED. KEEP GOING, with error {}".format(err))
-            # return
+            self.__logging.exception(self.__exception_str())
 
         try:
             self.__select_register()
         except Exception as err:
             err_str = "CANNOT SELECT THE REGISTER, PROBABLY FAULT WILL NOT BE INJECTED. Error {}".format(err)
             self.__logging.exception(err_str)
+            self.__logging.exception(self.__exception_str())
+
             return
 
         try:
@@ -57,14 +69,13 @@ class BitFlip:
                 self.fault_injected = self.__inst_generic_injector()
         except Exception as err:
             self.__logging.exception("fault_injection_python_exception: {}".format(err))
-            self.__logging.exception("Fault Injection Went Wrong")
+            self.__logging.exception(self.__exception_str())
 
         # Test fault injection result
         if self.fault_injected:
             self.__logging.info("Fault Injection Successful")
         else:
             self.__logging.info("Fault Injection Went Wrong")
-
 
     """
     Selects a valid thread for a specific
@@ -82,7 +93,7 @@ class BitFlip:
         while not block:
             block_index = random.randint(0, block_len)
             if 'running' in blocks[block_index] and '*' not in blocks[block_index]:
-                m = re.match(".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", blocks[block_index])
+                m = re.match(r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", blocks[block_index])
                 if m:
                     block = "{},{},{}".format(m.group(4), m.group(5), m.group(6))
 
@@ -99,7 +110,7 @@ class BitFlip:
 
         while not thread:
             thread_index = random.randint(0, thread_len)
-            pattern = ".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*"
+            pattern = r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*"
             m = re.match(pattern, threads[thread_index])
             if m:
                 thread = "{},{},{}".format(m.group(10), m.group(11), m.group(12))
@@ -118,7 +129,7 @@ class BitFlip:
     def __rf_generic_injector(self):
         # get register content
         reg_cmd = cf.execute_command(gdb, "p/t ${}".format(self.__register))
-        m = re.match('\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
+        m = re.match(r'\$(\d+)[ ]*=[ ]*(\S+).*', reg_cmd[0])
 
         reg_content_old = str(m.group(2))
         # Make sure that binary value will have max size register
@@ -174,14 +185,14 @@ class BitFlip:
     """
 
     def __select_register(self):
-        # registers_list = deque(cf.execute_command(gdb=gdb, to_execute="info registers"))
-        # max_num_register = 1
-        # registers_list.popleft()
-        # for line in registers_list:
-        #     m = re.match(".*R.*0x([0-9a-fA-F]+).*", line)
-        #     if m and m.group(1) != '0':
-        #         max_num_register += 1
-        max_num_register = 42
+        registers_list = deque(cf.execute_command(gdb=gdb, to_execute="info registers"))
+        max_num_register = 1
+        registers_list.popleft()
+        for line in registers_list:
+            m = re.match(r".*R.*0x([0-9a-fA-F]+).*", line)
+            if m and m.group(1) != '0':
+                max_num_register += 1
+
         self.__register = "R{}".format(random.randint(0, max_num_register))
         self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
 
@@ -196,7 +207,7 @@ class BitFlip:
                 break
 
         fault_is_injected = False
-        find_inst = re.match(".*:\t(\S+) .*", line)
+        find_inst = re.match(r".*:\t(\S+) .*", line)
         instruction_to_inject = ""
         # There is an instruction on this line
         # Then
@@ -210,11 +221,11 @@ class BitFlip:
             # If the first line is not right then inject it on the possible input
             for i in range(program_counter, len(disassemble_array)):
                 line = disassemble_array[i]
-                find_inst = re.match(".*:\t(\S+) .*", line)
+                find_inst = re.match(r".*:\t(\S+) .*", line)
                 if find_inst:
                     instruction_to_inject = find_inst.group(1).rstrip()
                     if any(inst in instruction_to_inject for inst in cp.INSTRUCTIONS_TO_INJECT):
-                        self.__register = "R{}".format(re.findall("R(\d+)", line)[-1])
+                        self.__register = "R{}".format(re.findall(r"R(\d+)", line)[-1])
                         fault_is_injected = True
                         break
 

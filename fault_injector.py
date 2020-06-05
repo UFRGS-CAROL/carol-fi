@@ -38,7 +38,7 @@ def user_defined_function(injection_output_path):
             m = re.match(r"LOGFILENAME:.*/(\S+).*", l)
             if m:
                 return m.group(1)
-   
+
 
 """
 CTRL + C event
@@ -51,7 +51,6 @@ def signal_handler(sig, frame):
 
     for cmd in kill_strings.split(";"):
         os.system(cmd + " > /dev/null 2>&1")
-
 
 
 """
@@ -434,14 +433,14 @@ print the info for each fault
 
 def pretty_print(header, row):
     fault_injected = row[9]
-    normal_print =   "\033[0;37;49m"
-    failed_print =   "\033[1;37;41m"
+    normal_print = "\033[0;37;49m"
+    failed_print = "\033[1;37;41m"
     injected_print = "\033[1;37;42m"
-    
+
     output_str = "fault status: "
     output_str += injected_print + "Injected" if fault_injected else failed_print + "Failed"
     output_str += normal_print
-    
+
     cf.printf(output_str)
     output_str = ""
     for name, value in zip(header, row):
@@ -450,6 +449,7 @@ def pretty_print(header, row):
 
     cf.printf(output_str)
     cf.printf()
+
 
 """
 This injector has two injection options
@@ -497,14 +497,14 @@ def fault_injection_by_signal(**kwargs):
             # FI injection time
             injection_time = fi_toc - fi_tic
             row = [unique_id, register, num_rounds, fault_model, thread,
-                                   block, old_val, new_val, injection_site,
-                                   fault_injected, hang, crash, sdc, injection_time,
-                                   signal_init_time, bits_to_flip, user_defined_val]
+                   block, old_val, new_val, injection_site,
+                   fault_injected, hang, crash, sdc, injection_time,
+                   signal_init_time, bits_to_flip, user_defined_val]
             if fault_injected:
                 with lock:
                     summary_file.write_row(row)
                 num_rounds += 1
-            
+
             pretty_print(header=header, row=row)
 
 
