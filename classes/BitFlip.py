@@ -139,11 +139,15 @@ class BitFlip:
 
         # Single bit flip or Least significant bits
         if self.__fault_model in [0, 1, 4, 5]:
-            # single bit flip or Double bit flip
-            reg_content_new = reg_content_full_bits
-            for bit_to_flip in self.__bits_to_flip:
-                reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
-            reg_content_new = hex(int(reg_content_new, 2))
+            try:
+                # single bit flip or Double bit flip
+                reg_content_new = reg_content_full_bits
+                for bit_to_flip in self.__bits_to_flip:
+                    reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
+                reg_content_new = hex(int(reg_content_new, 2))
+            except Exception as err:
+                self.__logging.exception("exception: {}".format(err))
+                self.__logging.exception(self.__exception_str())
 
         # Random value or Zero value
         elif self.__fault_model in [2, 3]:
