@@ -6,7 +6,7 @@ set -e
 #set -x
 
 FAULTS=10
-CONFFILE=carol-fi-codes/gemm_tensorcores/single_mxm_no_tensor.conf
+CONFFILE=codes/matrixMul/matrixmul.conf
 
 echo "Step 1 - Profiling the application for fault injection"
 ./app_profiler.py -c ${CONFFILE}
