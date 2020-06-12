@@ -16,10 +16,10 @@ to implement the bit flip process
 class BitFlip:
     def __init__(self, **kwargs):
         # If kernel is not accessible it must return
-        self.__bits_to_flip = kwargs.pop('bits_to_flip') if 'bits_to_flip' in kwargs else None
-        self.__fault_model = kwargs.pop('fault_model') if 'fault_model' in kwargs else None
-        self.__logging = kwargs.pop('logging') if 'logging' in kwargs else None
-        self.__injection_mode = kwargs.pop('injection_mode') if 'injection_mode' in kwargs else None
+        self.__bits_to_flip = kwargs.get('bits_to_flip')
+        self.__fault_model = kwargs.get('fault_model')
+        self.__logging = kwargs.get('logging')
+        self.__injection_site = kwargs.get('injection_site')
         self.fault_injected = False
 
     """
@@ -39,7 +39,7 @@ class BitFlip:
         # This if avoid the creation of another event connection
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
-        self.__logging.debug("Trying Fault Injection with {} mode".format(self.__injection_mode))
+        self.__logging.debug("Trying Fault Injection with {} mode".format(self.__injection_site))
 
         # Register if fault was injected or not
         self.fault_injected = False
@@ -53,7 +53,7 @@ class BitFlip:
             self.__logging.exception(self.__exception_str())
 
         try:
-            if 'RF' == self.__injection_mode:
+            if cp.RF == self.__injection_site:
                 try:
                     self.__select_register()
                 except Exception as err:
@@ -66,10 +66,10 @@ class BitFlip:
                 # RF is the default mode of injection
                 self.fault_injected = self.__rf_generic_injector()
 
-            elif 'INST_OUT' == self.__injection_mode:
+            elif cp.INST_OUT == self.__injection_site:
                 self.fault_injected = self.__inst_generic_injector()
 
-            elif 'INST_ADD' == self.__injection_mode:
+            elif cp.INST_ADD == self.__injection_site:
                 self.__logging.exception("INST_ADD NOT IMPLEMENTED YET")
                 self.__logging.exception(self.__exception_str())
 
@@ -140,8 +140,8 @@ class BitFlip:
 
         reg_content_new = ''
 
-        # Single bit flip or Least significant bits
-        if self.__fault_model in [0, 1, 4, 5]:
+        # Single or double bit flip or Least significant bits
+        if self.__fault_model in [cp.FLIP_SINGLE_BIT, cp.FLIP_TWO_BITS, cp.LEAST_16_BITS, cp.LEAST_8_BITS]:
             try:
                 # single bit flip or Double bit flip
                 reg_content_new = reg_content_full_bits
@@ -153,7 +153,7 @@ class BitFlip:
                 self.__logging.exception(self.__exception_str())
 
         # Random value or Zero value
-        elif self.__fault_model in [2, 3]:
+        elif self.__fault_model == cp.RANDOM_VALUE or self.__fault_model == cp.ZERO_VALUE:
             # random value is stored at bits_to_flip[0]
             reg_content_new = self.__bits_to_flip[0]
 
@@ -203,6 +203,10 @@ class BitFlip:
         self.__register = "R{}".format(random.randint(0, max_num_register))
         self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
 
+    """
+    Instruction injector    
+    """
+
     def __inst_generic_injector(self):
         disassemble_array = cf.execute_command(gdb=gdb, to_execute="disassemble")
         program_counter = 0
@@ -226,7 +230,7 @@ class BitFlip:
                 # If it gets the PC + 1 then I must inject in the input of the instruction
                 # Which is the most right register (-1 index)
                 self.__register = "R{}".format(re.findall(r"R(\d+)", line)[-1])
-                self.__logging.info("SELECTED_REGISTER_ON_INST_INJECTOR:{}".format(self.__register))
+                self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
                 self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
                 self.__logging.info("ASSM_LINE:{}".format(line))
                 return self.__rf_generic_injector()

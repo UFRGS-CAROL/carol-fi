@@ -85,3 +85,25 @@ POSSIBLE_USELESS_GDB_OUTPUT_PATTERNS = [
         r'.*0x.*in.*',  # General API call
         r'.*Inferior.*\(process.*\).*',  # General inferior process
     ]
+
+
+# Injection sites
+RF = 0
+INST_OUT = 1
+INST_ADD = 2
+
+INJECTION_SITES = {
+    'RF': RF,
+    'INST_OUT': INST_OUT,
+    'INST_ADD': INST_ADD
+}
+
+# Which fault model to use, 0 -> single; 1 -> double;
+# 2 -> random; 3 -> zeros; 4 -> least 16 significant bits (LSB);
+# 5 -> least 8 significant bits (LSB)
+FLIP_SINGLE_BIT = 0
+FLIP_TWO_BITS = 1
+RANDOM_VALUE = 2
+ZERO_VALUE = 3
+LEAST_16_BITS = 4
+LEAST_8_BITS = 5

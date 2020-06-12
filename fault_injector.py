@@ -10,7 +10,7 @@ import datetime
 import signal
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
-import sys
+
 from threading import Thread, Lock
 from classes.RunGDB import RunGDB
 from classes.SummaryFile import SummaryFile
@@ -321,6 +321,10 @@ def gdb_inject_fault(**kwargs):
     if cp.DEBUG:
         cf.printf("THREAD {} PROCESS JOINED".format(host_thread))
 
+    # Change the behavior of this function if any other information
+    # needs to be added in the final summary
+    user_defined_string = user_defined_function(injection_output_path=inj_output_path)
+
     # # Check output files for SDCs
     is_sdc, is_crash = check_sdcs_and_app_crash(logging=logging, sdc_check_script=sdc_check_script,
                                                 inj_output_path=inj_output_path, inj_err_path=inj_err_path,
@@ -328,8 +332,38 @@ def gdb_inject_fault(**kwargs):
     if cp.DEBUG:
         cf.printf("THREAD {} CHECK SDCs OK".format(host_thread))
 
+    # Check if the carolfi logfile contains the information
+    # to confirm the fault injection outcome
+    block, fi_successful, new_value, old_value, register, thread = check_injection_outcome(host_thread=host_thread,
+                                                                                           logging=logging,
+                                                                                           injection_site=injection_site
+                                                                                           )
+
+    # Copy output files to a folder
+    save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
+                flip_log_file=flip_log_file, inj_output_path=inj_output_path, inj_err_path=inj_err_path,
+                diff_log_path=diff_log_path, diff_err_path=diff_err_path, signal_app_log_path=signal_app_log,
+                thread=host_thread)
+
+    if cp.DEBUG:
+        cf.printf("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
+
+    return_list = [register, old_value, new_value, fi_successful,
+                   is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread, user_defined_string]
+    return return_list
+
+
+"""
+Check the carolfi-xxx logfile
+the status of the injected fault
+"""
+
+
+def check_injection_outcome(host_thread, logging, injection_site):
     # Search for set values for register
     # Must be done before save output
+
+    # Check THREAD FOCUS. Check if could change the block and the thread
     register = block = thread = "___"
     block_focus = logging.search("CUDA_BLOCK_FOCUS")
     if block_focus:
@@ -337,15 +371,15 @@ def gdb_inject_fault(**kwargs):
         m = re.search(r"CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", block_focus)
         if m:
             block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
-
     thread_focus = logging.search("CUDA_THREAD_FOCUS")
+
     if thread_focus:
         # Search for thread
         m = re.search(r"CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", thread_focus)
         if m:
             thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
-
     register_selected = logging.search("SELECTED_REGISTER")
+
     if register_selected:
         m = re.search(r"SELECTED_REGISTER:(\S+).*", register_selected)
         if m:
@@ -363,22 +397,14 @@ def gdb_inject_fault(**kwargs):
             cf.printf("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, te))
             cf.printf()
 
-    # Change the behavior of this function if any other information
-    # needs to be added in the final summary
-    user_defined_string = user_defined_function(injection_output_path=inj_output_path)
+    # Check specific outcomes
+    # No need to process for RF
+    if injection_site == cp.INST_OUT:
+        pass
+    elif injection_site == cp.INST_OUT:
+        pass
 
-    # Copy output files to a folder
-    save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
-                flip_log_file=flip_log_file, inj_output_path=inj_output_path, inj_err_path=inj_err_path,
-                diff_log_path=diff_log_path, diff_err_path=diff_err_path, signal_app_log_path=signal_app_log,
-                thread=host_thread)
-
-    if cp.DEBUG:
-        cf.printf("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
-
-    return_list = [register, old_value, new_value, fi_successful,
-                   is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread, user_defined_string]
-    return return_list
+    return block, fi_successful, new_value, old_value, register, thread
 
 
 """

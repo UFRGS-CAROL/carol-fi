@@ -1,6 +1,7 @@
 import gdb
 from classes.BitFlip import BitFlip
 from classes.Logging import Logging
+import common_parameters as cp
 
 """
 Handler attached to exit event
@@ -43,7 +44,7 @@ Main function
 
 
 def main():
-    global global_logging, register, injection_mode, bits_to_flip, fault_model, was_hit, bit_lip, arg0
+    global global_logging, register, injection_site, bits_to_flip, fault_model, was_hit, bit_lip, arg0
 
     was_hit = False
 
@@ -62,7 +63,7 @@ def main():
     # Get variables values from environment
     # First parse line
     [bits_to_flip, fault_model, flip_log_file,
-     gdb_init_strings, injection_mode] = arg0.split('|')
+     gdb_init_strings, injection_site] = arg0.split('|')
 
     # Logging
     global_logging = Logging(log_file=flip_log_file)
@@ -79,7 +80,7 @@ def main():
     bits_to_flip = [i for i in bits_to_flip.split(",")]
     fault_model = int(fault_model)
     bit_lip = BitFlip(bits_to_flip=bits_to_flip, fault_model=fault_model,
-                      logging=global_logging, injection_mode=injection_mode)
+                      logging=global_logging, injection_site=cp.INJECTION_SITES[injection_site])
 
     # Start app execution
     gdb.execute("r")
@@ -105,7 +106,7 @@ register = None
 bits_to_flip = None
 fault_model = None
 was_hit = False
-injection_mode = None
+injection_site = None
 bit_lip = None
 
 main()
