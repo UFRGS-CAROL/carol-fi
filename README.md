@@ -195,8 +195,8 @@ Currently, we have five fault models implemented:
 Currently, we have only RF injection site implemented:
 
 * RF - Register File
-* INST_OUT - Instruction Output (NOT IMPLEMENTED YET)
-* INST_ADD -> Instruction Adress (NOT IMPLEMENTED YET)
+* INST_OUT - Instruction Output
+* INST_ADD -> Instruction Adress (NOT READY YET)
 
 
 ## 4 How to run matrix multiplication test
