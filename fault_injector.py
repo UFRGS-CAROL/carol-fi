@@ -271,7 +271,6 @@ def check_injection_outcome(host_thread, logging, injection_site):
     if injection_site == cp.INST_OUT:
         assm_line = logging.search("ASSM_LINE")
         instruction = re.match(r".*:\t(\S+) .*", assm_line).group(1)
-        print("INSTRUCTION {}".format(instruction))
 
     elif injection_site == cp.INST_OUT:
         pass
@@ -408,7 +407,7 @@ def gdb_inject_fault(**kwargs):
         cf.printf("THREAD {} SAVE OUTPUT AND RETURN".format(host_thread))
 
     return_list = [register, old_value, new_value, fi_successful,
-                   is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread, user_defined_string]
+                   is_hang, is_crash, is_sdc, signal_init_wait_time, block, thread, instruction, user_defined_string]
     return return_list
 
 
@@ -520,7 +519,7 @@ def fault_injection_by_signal(**kwargs):
             fi_tic = int(time.time())
             [register, old_val, new_val, fault_injected,
              hang, crash, sdc, signal_init_time, block,
-             thread, user_defined_val] = gdb_inject_fault(**kwargs)
+             thread, instruction, user_defined_val] = gdb_inject_fault(**kwargs)
 
             # Time toc
             fi_toc = int(time.time())
@@ -530,7 +529,7 @@ def fault_injection_by_signal(**kwargs):
             row = [unique_id, register, num_rounds, fault_model, thread,
                    block, old_val, new_val, injection_site,
                    fault_injected, hang, crash, sdc, injection_time,
-                   signal_init_time, bits_to_flip, user_defined_val]
+                   signal_init_time, bits_to_flip, instruction, user_defined_val]
             if fault_injected:
                 with lock:
                     summary_file.write_row(row)
@@ -577,8 +576,8 @@ def main():
 
     # Csv log
     fieldnames = ['unique_id', 'register', 'iteration', 'fault_model', 'thread', 'block', 'old_value',
-                  'new_value', 'inj_mode', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
-                  'inj_time_location', 'bits_flipped', 'user_defined']
+                  'new_value', 'inj_site', 'fault_successful', 'hang', 'crash', 'sdc', 'time',
+                  'inj_time_location', 'bits_flipped', 'instruction', 'user_defined']
     summary_file = SummaryFile(filename=csv_file, fieldnames=fieldnames, mode='w')
     # Lock for summary file parallel
     lock = Lock()
