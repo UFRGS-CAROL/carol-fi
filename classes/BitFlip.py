@@ -39,8 +39,6 @@ class BitFlip:
         # This if avoid the creation of another event connection
         # for some reason gdb cannot breakpoint addresses before
         # a normal breakpoint is hit
-        self.__logging.debug("Trying Fault Injection with {} mode".format(self.__injection_site))
-
         # Register if fault was injected or not
         self.fault_injected = False
 
@@ -213,14 +211,15 @@ class BitFlip:
         # Search the line to inject
         # => defines where the program counter is
         for line in disassemble_array:
+            # It will use the next instruction after program counter
             program_counter += 1
             if "=>" in line:
                 break
 
-        # sometimes => is not the correct one
+        # sometimes => is not the correct one (no feasible instruction at line =>)
         # then search for the feasible line
-        # It will use the next instruction after program counter
-        for line in disassemble_array[(program_counter + 1):]:
+        for i in range(program_counter, len(disassemble_array)):
+            line = disassemble_array[i]
             # There is an instruction on this line
             # then inject in the output register
             if re.match(r".*:\t(\S+) .*", line):
@@ -230,6 +229,5 @@ class BitFlip:
                 self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
                 self.__logging.info("ASSM_LINE:{}".format(line))
                 return self.__rf_generic_injector()
-
         else:
             return False

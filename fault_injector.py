@@ -222,6 +222,64 @@ def check_sdcs_and_app_crash(logging, sdc_check_script, inj_output_path, inj_err
 
 
 """
+Check the carolfi-xxx logfile
+the status of the injected fault
+"""
+
+
+def check_injection_outcome(host_thread, logging, injection_site):
+    # Search for set values for register
+    # Must be done before save output
+
+    # Check THREAD FOCUS. Check if could change the block and the thread
+    register = block = thread = "___"
+    block_focus = logging.search("CUDA_BLOCK_FOCUS")
+    if block_focus:
+        # Search for block
+        m = re.search(r"CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", block_focus)
+        if m:
+            block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
+    thread_focus = logging.search("CUDA_THREAD_FOCUS")
+
+    if thread_focus:
+        # Search for thread
+        m = re.search(r"CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", thread_focus)
+        if m:
+            thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
+    register_selected = logging.search("SELECTED_REGISTER")
+
+    if register_selected:
+        m = re.search(r"SELECTED_REGISTER:(\S+).*", register_selected)
+        if m:
+            register = m.group(1)
+
+    # Was fault injected?
+    try:
+        old_value = re.findall(r'old_value:(\S+)', logging.search("old_value"))[0]
+        new_value = re.findall(r'new_value:(\S+)', logging.search("new_value"))[0]
+        fi_successful = True
+    except TypeError as te:
+        new_value = old_value = None
+        fi_successful = False
+        if cp.DEBUG:
+            cf.printf("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, te))
+            cf.printf()
+
+    # Check specific outcomes
+    # No need to process for RF
+    instruction = 'register'
+    if injection_site == cp.INST_OUT:
+        assm_line = logging.search("ASSM_LINE")
+        instruction = re.match(r".*:\t(\S+) .*", assm_line).group(1)
+        print("INSTRUCTION {}".format(instruction))
+
+    elif injection_site == cp.INST_OUT:
+        pass
+
+    return block, fi_successful, new_value, old_value, register, thread, instruction
+
+
+"""
 Function to run one execution of the fault injector
 return old register value, new register value
 """
@@ -334,10 +392,11 @@ def gdb_inject_fault(**kwargs):
 
     # Check if the carolfi logfile contains the information
     # to confirm the fault injection outcome
-    block, fi_successful, new_value, old_value, register, thread = check_injection_outcome(host_thread=host_thread,
-                                                                                           logging=logging,
-                                                                                           injection_site=injection_site
-                                                                                           )
+    block, fi_successful, new_value, old_value, register, thread, instruction = check_injection_outcome(
+                                                                                        host_thread=host_thread,
+                                                                                        logging=logging,
+                                                                                        injection_site=injection_site
+                                                                                    )
 
     # Copy output files to a folder
     save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
@@ -354,61 +413,6 @@ def gdb_inject_fault(**kwargs):
 
 
 """
-Check the carolfi-xxx logfile
-the status of the injected fault
-"""
-
-
-def check_injection_outcome(host_thread, logging, injection_site):
-    # Search for set values for register
-    # Must be done before save output
-
-    # Check THREAD FOCUS. Check if could change the block and the thread
-    register = block = thread = "___"
-    block_focus = logging.search("CUDA_BLOCK_FOCUS")
-    if block_focus:
-        # Search for block
-        m = re.search(r"CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", block_focus)
-        if m:
-            block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
-    thread_focus = logging.search("CUDA_THREAD_FOCUS")
-
-    if thread_focus:
-        # Search for thread
-        m = re.search(r"CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", thread_focus)
-        if m:
-            thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
-    register_selected = logging.search("SELECTED_REGISTER")
-
-    if register_selected:
-        m = re.search(r"SELECTED_REGISTER:(\S+).*", register_selected)
-        if m:
-            register = m.group(1)
-
-    # Was fault injected?
-    try:
-        old_value = re.findall(r'old_value:(\S+)', logging.search("old_value"))[0]
-        new_value = re.findall(r'new_value:(\S+)', logging.search("new_value"))[0]
-        fi_successful = True
-    except TypeError as te:
-        new_value = old_value = None
-        fi_successful = False
-        if cp.DEBUG:
-            cf.printf("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, te))
-            cf.printf()
-
-    # Check specific outcomes
-    # No need to process for RF
-    if injection_site == cp.INST_OUT:
-        assm_line = logging.search("ASSM_LINE")
-
-    elif injection_site == cp.INST_OUT:
-        pass
-
-    return block, fi_successful, new_value, old_value, register, thread
-
-
-"""
 This function will select the bits that will be flipped
 if it is least significant bits it will reduce the starting bit range
 """
@@ -422,11 +426,11 @@ def bit_flip_selection(fault_model):
     bits_to_flip = [0]
 
     # Single bit flip
-    if fault_model == 0:
+    if fault_model == cp.FLIP_SINGLE_BIT:
         bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
 
     # Double bit flip
-    elif fault_model == 1:
+    elif fault_model == cp.FLIP_TWO_BITS:
         bits_to_flip = [0] * 2
         bits_to_flip[0] = random.randint(0, max_size_register_fault_model - 1)
         # Make sure that the same bit is not going to be selected
@@ -435,19 +439,19 @@ def bit_flip_selection(fault_model):
         bits_to_flip[1] = random.choice(r)
 
     # Random value
-    elif fault_model == 2:
+    elif fault_model == cp.RANDOM_VALUE:
         bits_to_flip[0] = str(hex(random.randint(0, cp.MAX_INT_32)))
 
     # Zero value
-    elif fault_model == 3:
+    elif fault_model == cp.ZERO_VALUE:
         bits_to_flip[0] = 0
 
     # Least 16 bits
-    elif fault_model == 4:
+    elif fault_model == cp.LEAST_16_BITS:
         bits_to_flip[0] = random.randint(0, 15)
 
     # Least 8 bits
-    elif fault_model == 5:
+    elif fault_model == cp.LEAST_8_BITS:
         bits_to_flip[0] = random.randint(0, 7)
 
     return bits_to_flip
@@ -567,9 +571,6 @@ def main():
 
     # First set env vars
     current_path = cf.set_python_env()
-
-    # cf.printf("Starting fault injection, it will inject {} faults".format(args.iterations))
-    ########################################################################
 
     # Creating a summary csv file
     csv_file = conf.get("DEFAULT", "csvFile")
