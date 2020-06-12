@@ -8,6 +8,10 @@ set -e
 FAULTS=10
 CONFFILE=codes/matrixMul/matrixmul.conf
 
+
+echo "Cleaning  the logs folder"
+rm logs/* -rf
+
 echo "Step 1 - Profiling the application for fault injection"
 ./app_profiler.py -c ${CONFFILE}
 
