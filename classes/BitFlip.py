@@ -78,7 +78,7 @@ class BitFlip:
             self.__logging.exception(self.__exception_str())
 
         # Test fault injection result
-        self.__logging.info("Fault Injection " + "Successful" if self.fault_injected else "Went Wrong")
+        self.__logging.info("Fault Injection " + ("Successful" if self.fault_injected else "Went Wrong"))
 
     """
     Selects a valid thread for a specific
