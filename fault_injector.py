@@ -268,11 +268,12 @@ def check_injection_outcome(host_thread, logging, injection_site):
     # Check specific outcomes
     # No need to process for RF
     instruction = 'register'
-    if injection_site == cp.INST_OUT:
+    inj_st = cp.INJECTION_SITES[injection_site]
+    if inj_st == cp.INST_OUT:
         assm_line = logging.search("ASSM_LINE")
         instruction = re.match(r".*:\t(\S+) .*", assm_line).group(1)
 
-    elif injection_site == cp.INST_OUT:
+    elif inj_st == cp.INST_OUT:
         pass
 
     return block, fi_successful, new_value, old_value, register, thread, instruction
