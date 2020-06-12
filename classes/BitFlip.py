@@ -25,6 +25,7 @@ class BitFlip:
     """
     print exception info
     """
+
     @staticmethod
     def __exception_str():
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -52,30 +53,32 @@ class BitFlip:
             self.__logging.exception(self.__exception_str())
 
         try:
-            self.__select_register()
-        except Exception as err:
-            err_str = "CANNOT SELECT THE REGISTER, PROBABLY FAULT WILL NOT BE INJECTED. Error {}".format(err)
-            self.__logging.exception(err_str)
-            self.__logging.exception(self.__exception_str())
+            if 'RF' == self.__injection_mode:
+                try:
+                    self.__select_register()
+                except Exception as err:
+                    err_str = "CANNOT SELECT THE REGISTER, PROBABLY FAULT WILL NOT BE INJECTED. Error {}".format(err)
+                    self.__logging.exception(err_str)
+                    self.__logging.exception(self.__exception_str())
+                    return
 
-            return
-
-        try:
-            # Do the fault injection magic
-            # RF is the default mode of injection
-            if 'RF' in self.__injection_mode or self.__injection_mode is None:
+                # Do the fault injection magic
+                # RF is the default mode of injection
                 self.fault_injected = self.__rf_generic_injector()
-            elif 'INST' in self.__injection_mode:
+
+            elif 'INST_OUT' == self.__injection_mode:
                 self.fault_injected = self.__inst_generic_injector()
+
+            elif 'INST_ADD' == self.__injection_mode:
+                self.__logging.exception("INST_ADD NOT IMPLEMENTED YET")
+                self.__logging.exception(self.__exception_str())
+
         except Exception as err:
             self.__logging.exception("fault_injection_python_exception: {}".format(err))
             self.__logging.exception(self.__exception_str())
 
         # Test fault injection result
-        if self.fault_injected:
-            self.__logging.info("Fault Injection Successful")
-        else:
-            self.__logging.info("Fault Injection Went Wrong")
+        self.__logging.info("Fault Injection " + "Successful" if self.fault_injected else "Went Wrong")
 
     """
     Selects a valid thread for a specific
@@ -218,7 +221,7 @@ class BitFlip:
         if find_inst:
             instruction_to_inject = find_inst.group(1).rstrip()
             if any(inst in instruction_to_inject for inst in cp.INSTRUCTIONS_TO_INJECT):
-                self.__register = "R{}".format(re.findall("R(\d+)", line)[0])
+                self.__register = "R{}".format(re.findall(r"R(\d+)", line)[0])
                 fault_is_injected = True
         else:
             # Search the line to inject

@@ -1,8 +1,6 @@
-import os
 import gdb
 from classes.BitFlip import BitFlip
 from classes.Logging import Logging
-import common_functions as cf
 
 """
 Handler attached to exit event
