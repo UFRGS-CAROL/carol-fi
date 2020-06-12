@@ -400,7 +400,8 @@ def check_injection_outcome(host_thread, logging, injection_site):
     # Check specific outcomes
     # No need to process for RF
     if injection_site == cp.INST_OUT:
-        pass
+        assm_line = logging.search("ASSM_LINE")
+
     elif injection_site == cp.INST_OUT:
         pass
 

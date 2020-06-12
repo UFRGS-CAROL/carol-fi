@@ -11,11 +11,11 @@ Handler attached to exit event
 def exit_handler(event):
     global global_logging
     global_logging.info(str("event type: exit"))
+    # If there is an exit code log it, otherwise return
     try:
         global_logging.info("exit code: {}".format(str(event.exit_code)))
-    except Exception as err:
-        err_str = "ERROR: {}".format(str(err))
-        global_logging.exception(err_str)
+    finally:
+        return
 
 
 """
@@ -34,8 +34,9 @@ def set_event(event):
             bit_lip.single_event()
             global_logging.info("BIT FLIP SET ON SIGNAL {}".format(event.stop_signal))
 
-    except Exception as err:
-        global_logging.exception("EVENT DIFFERENT FROM STOP SIGNAL: {}".format(str(err)))
+    # Do nothing if it is other type of event
+    finally:
+        return
 
 
 """

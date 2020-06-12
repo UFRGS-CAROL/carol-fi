@@ -223,15 +223,11 @@ class BitFlip:
         for line in disassemble_array[(program_counter + 1):]:
             # There is an instruction on this line
             # then inject in the output register
-            find_inst = re.match(r".*:\t(\S+) .*", line)
-            if find_inst:
-                instruction_to_inject = find_inst.group(1).rstrip()
-
-                # If it gets the PC + 1 then I must inject in the input of the instruction
+            if re.match(r".*:\t(\S+) .*", line):
+                # If it gets the PC + 1 then I must inject in the input of the next instruction
                 # Which is the most right register (-1 index)
                 self.__register = "R{}".format(re.findall(r"R(\d+)", line)[-1])
                 self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
-                self.__logging.info("INSTRUCTION:{}".format(instruction_to_inject))
                 self.__logging.info("ASSM_LINE:{}".format(line))
                 return self.__rf_generic_injector()
 
