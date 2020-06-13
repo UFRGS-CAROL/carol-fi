@@ -253,28 +253,25 @@ def check_injection_outcome(host_thread, logging, injection_site):
         if m:
             register = m.group(1)
 
-    # Was fault injected?
+    # Was the fault injected?
     try:
         old_value = re.findall(r'old_value:(\S+)', logging.search("old_value"))[0]
         new_value = re.findall(r'new_value:(\S+)', logging.search("new_value"))[0]
         fi_successful = True
+        # Check specific outcomes
+        # No need to process for RF
+        instruction = 'register'
+        inj_st = cp.INJECTION_SITES[injection_site]
+        if inj_st == cp.INST_OUT or inj_st == cp.INST_OUT:
+            # if fault was injected ASSM_LINE MUST be in the logfile
+            assm_line = logging.search("ASSM_LINE")
+            instruction = re.match(r".*:\t(\S+) .*", assm_line).group(1)
+
     except TypeError as te:
-        new_value = old_value = None
+        instruction = new_value = old_value = None
         fi_successful = False
         if cp.DEBUG:
             cf.printf("THREAD {} FAULT WAS NOT INJECTED. ERROR {}".format(host_thread, te))
-            cf.printf()
-
-    # Check specific outcomes
-    # No need to process for RF
-    instruction = 'register'
-    inj_st = cp.INJECTION_SITES[injection_site]
-    if inj_st == cp.INST_OUT:
-        assm_line = logging.search("ASSM_LINE")
-        instruction = re.match(r".*:\t(\S+) .*", assm_line).group(1)
-
-    elif inj_st == cp.INST_OUT:
-        pass
 
     return block, fi_successful, new_value, old_value, register, thread, instruction
 
@@ -393,10 +390,10 @@ def gdb_inject_fault(**kwargs):
     # Check if the carolfi logfile contains the information
     # to confirm the fault injection outcome
     block, fi_successful, new_value, old_value, register, thread, instruction = check_injection_outcome(
-                                                                                        host_thread=host_thread,
-                                                                                        logging=logging,
-                                                                                        injection_site=injection_site
-                                                                                    )
+        host_thread=host_thread,
+        logging=logging,
+        injection_site=injection_site
+    )
 
     # Copy output files to a folder
     save_output(is_sdc=is_sdc, is_hang=is_hang, logging=logging, unique_id=unique_id,
