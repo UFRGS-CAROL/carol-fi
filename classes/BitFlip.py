@@ -9,7 +9,8 @@ from collections import deque
 
 """
 BitFlip class
-to implement the bit flip process
+to implement the bit flip process.
+The methods in this class will execute only inside a CUDA kernel
 """
 
 
@@ -47,8 +48,13 @@ class BitFlip:
             self.__thread_focus()
         except Exception as err:
             # Even if CUDA focus was not successful we keep going
-            self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED. KEEP GOING, with error {}".format(err))
+            err_str = str(err)
+            self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED. KEEP GOING, with error " + err_str)
             self.__logging.exception(self.__exception_str())
+
+            # No need to continue if no active kernel
+            if err_str == "Focus not set on any active CUDA kernel.":
+                return
 
         try:
             if cp.RF == self.__injection_site:
