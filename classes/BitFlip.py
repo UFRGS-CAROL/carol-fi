@@ -110,12 +110,13 @@ class BitFlip:
 
         except Exception as err:
             # Even if CUDA focus was not successful we keep going
-            err_str = str(err)
-            self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + err_str)
-            self.__logging.exception(self.__exception_str())
+            # err_str = str(err)
+            # It takes too much time to write on file
+            # self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + err_str)
+            # self.__logging.exception(self.__exception_str())
 
             # No need to continue if no active kernel
-            if err_str == cp.FOCUS_ERROR_STRING:
+            if str(err) == cp.FOCUS_ERROR_STRING:
                 return False
 
         # If we are inside the kernel return true
