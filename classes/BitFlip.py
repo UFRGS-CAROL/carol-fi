@@ -71,7 +71,6 @@ class BitFlip:
     """
 
     def __thread_focus(self):
-
         try:
             # Selecting the block
             blocks = cf.execute_command(gdb=gdb, to_execute="info cuda blocks")
@@ -88,8 +87,10 @@ class BitFlip:
             change_focus_block_cmd = "cuda block {}".format(block)
             block_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_block_cmd)
 
-            # Thread focus return information
-            self.__logging.info("CUDA_BLOCK_FOCUS:{}".format(block_focus))
+            # empty lists are always false
+            if block_focus:
+                # Thread focus return information
+                self.__logging.info("CUDA_BLOCK_FOCUS:{}".format(block_focus))
 
             # Selecting the thread
             threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
@@ -106,8 +107,10 @@ class BitFlip:
             change_focus_thread_cmd = "cuda thread {}".format(thread)
             thread_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_thread_cmd)
 
-            # Thread focus return information
-            self.__logging.info("CUDA_THREAD_FOCUS:{}".format(thread_focus))
+            # empty lists are always false
+            if thread_focus:
+                # Thread focus return information
+                self.__logging.info("CUDA_THREAD_FOCUS:{}".format(thread_focus))
 
         except Exception as err:
             # Even if CUDA focus was not successful we keep going
@@ -158,17 +161,14 @@ class BitFlip:
             reg_cmd_flipped = cf.execute_command(gdb, flip_command)
 
             # ['$2 = 100000000111111111111111']
-            reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
+            modify_output = cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]
+
+            # With string split it is easier to crash
+            reg_modified = re.match(r"(.*)=(.*)", modify_output).group(2).strip()
 
             # Return the fault confirmation
             self.fault_injected = reg_content_old != reg_modified
 
-        except Exception as err:
-            self.__logging.exception("fault_injection_python_exception: {}".format(err))
-            self.__logging.exception(self.__exception_str())
-            self.fault_injected = False
-
-        else:
             # Log the register only if the fault was injected, reduce unnecessary file write
             if self.fault_injected:
                 # LOGGING
@@ -179,7 +179,14 @@ class BitFlip:
                 self.__logging.info("new_value:{}".format(reg_modified))
 
                 # Log if something was printed
-                self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
+                # empty list is always false
+                if reg_cmd_flipped:
+                    self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
+
+        except Exception as err:
+            self.__logging.exception("fault_injection_python_exception: {}".format(err))
+            self.__logging.exception(self.__exception_str())
+            self.fault_injected = False
 
     """
     Flip only a bit in a register content
@@ -187,9 +194,8 @@ class BitFlip:
 
     @staticmethod
     def __flip_a_bit(bit_to_flip, reg_content):
-        new_bit = '0' if reg_content[bit_to_flip] == '1' else '1'
-        reg_content = reg_content[:bit_to_flip] + new_bit + reg_content[bit_to_flip + 1:]
-        return reg_content
+        return reg_content[:bit_to_flip] + ('0' if reg_content[bit_to_flip] == '1' else '1') + reg_content[
+                                                                                               bit_to_flip + 1:]
 
     """
     Runtime select register
