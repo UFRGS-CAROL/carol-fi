@@ -107,3 +107,6 @@ RANDOM_VALUE = 2
 ZERO_VALUE = 3
 LEAST_16_BITS = 4
 LEAST_8_BITS = 5
+
+# Focus error string
+FOCUS_ERROR_STRING = "Focus not set on any active CUDA kernel."
