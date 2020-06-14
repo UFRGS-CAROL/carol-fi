@@ -111,16 +111,15 @@ class BitFlip:
         except Exception as err:
             # Even if CUDA focus was not successful we keep going
             err_str = str(err)
-            self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED. KEEP GOING, with error " + err_str)
+            self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + err_str)
             self.__logging.exception(self.__exception_str())
 
             # No need to continue if no active kernel
             if err_str == cp.FOCUS_ERROR_STRING:
                 return False
 
-        # If we focus but the string returned that we are inside the kernel return true
-        finally:
-            return True
+        # If we are inside the kernel return true
+        return True
 
     """
     Flip a bit or multiple bits based on a fault model
