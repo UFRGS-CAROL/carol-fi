@@ -87,9 +87,9 @@ class BitFlip:
 
             change_focus_block_cmd = "cuda block {}".format(block)
             block_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_block_cmd)
+
             # Thread focus return information
-            self.__logging.info(
-                "CUDA_BLOCK_FOCUS:{}".format(str(block_focus)))
+            self.__logging.info("CUDA_BLOCK_FOCUS:{}".format(block_focus))
 
             # Selecting the thread
             threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
@@ -107,7 +107,7 @@ class BitFlip:
             thread_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_thread_cmd)
 
             # Thread focus return information
-            self.__logging.info("CUDA_THREAD_FOCUS:{}".format(str(thread_focus)))
+            self.__logging.info("CUDA_THREAD_FOCUS:{}".format(thread_focus))
 
         except Exception as err:
             # Even if CUDA focus was not successful we keep going

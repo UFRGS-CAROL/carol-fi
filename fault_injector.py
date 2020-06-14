@@ -222,7 +222,7 @@ def check_sdcs_and_app_crash(logging, sdc_check_script, inj_output_path, inj_err
 
 
 """
-Check the carolfi-xxx logfile
+Check the carolfi-xxxx logfile
 the status of the injected fault
 """
 
@@ -233,25 +233,20 @@ def check_injection_outcome(host_thread, logging, injection_site):
 
     # Check THREAD FOCUS. Check if could change the block and the thread
     register = block = thread = "___"
-    block_focus = logging.search("CUDA_BLOCK_FOCUS")
-    if block_focus:
-        # Search for block
-        m = re.search(r"CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", block_focus)
-        if m:
-            block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
-    thread_focus = logging.search("CUDA_THREAD_FOCUS")
+    # Search for block
+    m = re.search(r"CUDA_BLOCK_FOCUS:.*block[ ]+\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_BLOCK_FOCUS"))
+    if m:
+        block = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
-    if thread_focus:
-        # Search for thread
-        m = re.search(r"CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", thread_focus)
-        if m:
-            thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
-    register_selected = logging.search("SELECTED_REGISTER")
+    # Search for thread
+    m = re.search(r"CUDA_THREAD_FOCUS:.*thread[ ]+\((\d+),(\d+),(\d+)\).*", logging.search("CUDA_THREAD_FOCUS"))
+    if m:
+        thread = "{}_{}_{}".format(m.group(1), m.group(2), m.group(3))
 
-    if register_selected:
-        m = re.search(r"SELECTED_REGISTER:(\S+).*", register_selected)
-        if m:
-            register = m.group(1)
+    # Search for the selected register
+    m = re.search(r"SELECTED_REGISTER:(\S+).*", logging.search("SELECTED_REGISTER"))
+    if m:
+        register = m.group(1)
 
     # Was the fault injected?
     try:
