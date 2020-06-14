@@ -5,6 +5,7 @@ import gdb
 import re
 import common_functions as cf  # All common functions will be at common_functions module
 import common_parameters as cp  # All common parameters will be at common_parameters module
+
 # from collections import deque
 
 """
@@ -141,15 +142,11 @@ class BitFlip:
 
             # Single or double bit flip or Least significant bits
             if self.__fault_model in [cp.FLIP_SINGLE_BIT, cp.FLIP_TWO_BITS, cp.LEAST_16_BITS, cp.LEAST_8_BITS]:
-                try:
-                    # single bit flip or Double bit flip
-                    reg_content_new = reg_content_full_bits
-                    for bit_to_flip in self.__bits_to_flip:
-                        reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
-                    reg_content_new = hex(int(reg_content_new, 2))
-                except Exception as err:
-                    self.__logging.exception("exception: {}".format(err))
-                    self.__logging.exception(self.__exception_str())
+                # single bit flip or Double bit flip
+                reg_content_new = reg_content_full_bits
+                for bit_to_flip in self.__bits_to_flip:
+                    reg_content_new = self.__flip_a_bit(int(bit_to_flip), reg_content_new)
+                reg_content_new = hex(int(reg_content_new, 2))
 
             # Random value or Zero value
             elif self.__fault_model == cp.RANDOM_VALUE or self.__fault_model == cp.ZERO_VALUE:
@@ -163,16 +160,6 @@ class BitFlip:
             # ['$2 = 100000000111111111111111']
             reg_modified = str(cf.execute_command(gdb, "p/t ${}".format(self.__register))[0]).split("=")[1].strip()
 
-            # LOGGING
-            # Logging info result extracted from register
-            self.__logging.info("old_value:{}".format(reg_content_old))
-            # Also logging the new value
-            self.__logging.info("new_value:{}".format(reg_modified))
-
-            # Log command return only something was printed
-            if len(reg_cmd_flipped) > 0:
-                self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
-
             # Return the fault confirmation
             self.fault_injected = reg_content_old != reg_modified
 
@@ -180,6 +167,19 @@ class BitFlip:
             self.__logging.exception("fault_injection_python_exception: {}".format(err))
             self.__logging.exception(self.__exception_str())
             self.fault_injected = False
+
+        else:
+            # Log the register only if the fault was injected, reduce unnecessary file write
+            if self.fault_injected:
+                # LOGGING
+                self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
+                # Logging info result extracted from register
+                self.__logging.info("old_value:{}".format(reg_content_old))
+                # Also logging the new value
+                self.__logging.info("new_value:{}".format(reg_modified))
+
+                # Log if something was printed
+                self.__logging.info("flip command return:{}".format(reg_cmd_flipped))
 
     """
     Flip only a bit in a register content
@@ -196,8 +196,6 @@ class BitFlip:
     """
 
     def __select_register(self):
-        # try:
-        # registers_list = deque(cf.execute_command(gdb=gdb, to_execute="info registers"))
         # Start on 1 to consider R0
         max_num_register = 1
         # registers_list.popleft()
@@ -208,13 +206,6 @@ class BitFlip:
                 max_num_register += 1
 
         self.__register = "R{}".format(random.randint(0, max_num_register))
-        self.__logging.info("SELECTED_REGISTER:{}".format(self.__register))
-        #     return True
-        # except Exception as err:
-        #     err_str = "CANNOT SELECT THE REGISTER, FAULT WILL NOT BE INJECTED. Error {}".format(err)
-        #     self.__logging.exception(err_str)
-        #     self.__logging.exception(self.__exception_str())
-        #     return False
 
     """
     Instruction injector    
