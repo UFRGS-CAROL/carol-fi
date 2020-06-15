@@ -75,13 +75,13 @@ class BitFlip:
             # Selecting the block
             blocks = cf.execute_command(gdb=gdb, to_execute="info cuda blocks")
             # it must be a valid block
-            block, block_len = None, len(blocks)
+            block = None  # , block_len = None, len(blocks)
             while not block:
-                block_index = random.randint(0, block_len)
-                if 'running' in blocks[block_index] and '*' not in blocks[block_index]:
-                    m = re.match(r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", blocks[block_index])
-                    if m:
-                        block = "{},{},{}".format(m.group(4), m.group(5), m.group(6))
+                # block_index = random.randint(0, block_len)
+                chosen_block = random.choice(blocks)
+                if 'running' in chosen_block and '*' not in chosen_block:
+                    m = re.match(r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", chosen_block)
+                    block = "{},{},{}".format(m.group(4), m.group(5), m.group(6)) if m else None
 
             change_focus_block_cmd = "cuda block {}".format(block)
             block_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_block_cmd)
@@ -93,14 +93,14 @@ class BitFlip:
 
             # Selecting the thread
             threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
-            thread, thread_len = None, len(threads)
+            thread = None  # , thread_len = None, len(threads)
 
             while not thread:
-                thread_index = random.randint(0, thread_len)
-                patt = r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*"
-                m = re.match(patt, threads[thread_index])
-                if m:
-                    thread = "{},{},{}".format(m.group(10), m.group(11), m.group(12))
+                chosen_thread = random.choice(threads)  # random.randint(0, thread_len)
+                m = re.match(
+                    r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*",
+                    chosen_thread)
+                thread = "{},{},{}".format(m.group(10), m.group(11), m.group(12)) if m else None
 
             change_focus_thread_cmd = "cuda thread {}".format(thread)
             thread_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_thread_cmd)
@@ -112,9 +112,8 @@ class BitFlip:
 
         except Exception as err:
             # Even if CUDA focus was not successful we keep going
-            # err_str = str(err)
             # It takes too much time to write on file
-            # self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + err_str)
+            # self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + str(err))
             # self.__logging.exception(self.__exception_str())
 
             # No need to continue if no active kernel
