@@ -75,9 +75,8 @@ class BitFlip:
             # Selecting the block
             blocks = cf.execute_command(gdb=gdb, to_execute="info cuda blocks")
             # it must be a valid block
-            block = None  # , block_len = None, len(blocks)
+            block = None
             while not block:
-                # block_index = random.randint(0, block_len)
                 chosen_block = random.choice(blocks)
                 if 'running' in chosen_block and '*' not in chosen_block:
                     m = re.match(r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", chosen_block)
@@ -93,8 +92,7 @@ class BitFlip:
 
             # Selecting the thread
             threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
-            thread = None  # , thread_len = None, len(threads)
-
+            thread = None
             while not thread:
                 chosen_thread = random.choice(threads)  # random.randint(0, thread_len)
                 m = re.match(
@@ -111,15 +109,12 @@ class BitFlip:
                 self.__logging.info("CUDA_THREAD_FOCUS:{}".format(thread_focus))
 
         except Exception as err:
-            # Even if CUDA focus was not successful we keep going
-            # It takes too much time to write on file
             # self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + str(err))
-            # self.__logging.exception(self.__exception_str())
 
             # No need to continue if no active kernel
             if str(err) == cp.FOCUS_ERROR_STRING:
                 return False
-
+        # Even if CUDA focus was not successful we keep going
         # If we are inside the kernel return true
         return True
 
