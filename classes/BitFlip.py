@@ -75,8 +75,7 @@ class BitFlip:
             # Selecting the block
             blocks = cf.execute_command(gdb=gdb, to_execute="info cuda blocks")
             # it must be a valid block
-            block = None
-            block_len = len(blocks)
+            block, block_len = None, len(blocks)
             while not block:
                 block_index = random.randint(0, block_len)
                 if 'running' in blocks[block_index] and '*' not in blocks[block_index]:
@@ -94,8 +93,7 @@ class BitFlip:
 
             # Selecting the thread
             threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
-            thread = None
-            thread_len = len(threads)
+            thread, thread_len = None, len(threads)
 
             while not thread:
                 thread_index = random.randint(0, thread_len)
