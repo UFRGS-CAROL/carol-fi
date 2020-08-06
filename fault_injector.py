@@ -65,7 +65,7 @@ def check_finish(max_wait_time, logging, timestamp_start, process, thread, kill_
     if diff_time < max_wait_time:
         logging.info("Execution on thread {} finished before waitTime. {} seconds.".format(thread, diff_time))
     else:
-        logging.info("Execution on thread {} finished before waitTime. {} seconds.".format(thread, diff_time))
+        logging.info("Execution on thread {} finished after waitTime. {} seconds.".format(thread, diff_time))
         is_hang = True
 
     logging.debug("now: {}".format(now))
