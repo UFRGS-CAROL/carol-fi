@@ -61,6 +61,10 @@ If you have a question about the CAROL-FI CUDA branch or found a bug in the code
 - CUDA GDB (installed with CUDA drivers)
 - Python 2.7
 - Libpython2.7 sudo apt install libpython2.7
+- Optional for output csv parser
+    * pandas
+    * openpyxl
+    * numpy
 
 
 # Getting started
