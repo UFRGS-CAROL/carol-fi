@@ -109,7 +109,7 @@ class BitFlip:
                 self.__logging.info("CUDA_THREAD_FOCUS:{}".format(thread_focus))
 
         except Exception as err:
-            # self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + str(err))
+            self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + str(err))
 
             # No need to continue if no active kernel
             if str(err) == cp.FOCUS_ERROR_STRING:
@@ -230,4 +230,5 @@ class BitFlip:
                 self.__rf_generic_injector()
                 break  # avoid execute the else
         else:
+            self.__logging.exception("SEARCH_FOR_PC_INDICATOR_FAILED")
             self.fault_injected = False
