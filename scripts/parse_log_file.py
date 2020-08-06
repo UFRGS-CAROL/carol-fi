@@ -21,6 +21,10 @@ def main():
     histogram = avf_log_df[['sdc', 'hang', 'crash', 'register', 'instruction']]
     inst_histogram = histogram['instruction'].value_counts(normalize=True)
     rf_histogram = histogram['register'].value_counts(normalize=True)
+    rf_histogram.index = rf_histogram.index.map(lambda s: int(s.replace("R", "")))
+    rf_histogram = rf_histogram.sort_index()
+    rf_histogram.index = rf_histogram.index.map("R{}".format)
+
     avf = histogram[['sdc', 'hang', 'crash']].astype(int)
     avf['sdc'] = avf['sdc'].value_counts()
     avf['hang'] = avf['hang'].value_counts()
