@@ -228,7 +228,7 @@ class BitFlip:
 
                 # __rf_generic_injector will set fault_injected attribute
                 self.__rf_generic_injector()
-                return  # avoid execute the rest
-
-        self.__logging.exception("SEARCH_FOR_PC_INDICATOR_FAILED")
-        self.fault_injected = False
+                break  # avoid execute the else
+        else:
+            self.__logging.exception("SEARCH_FOR_PC_INDICATOR_FAILED")
+            self.fault_injected = False
