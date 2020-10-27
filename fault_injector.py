@@ -241,8 +241,7 @@ def check_injection_outcome(host_thread, logging, injection_site):
         # Check specific outcomes
         # No need to process for RF
         instruction = 'register'
-        inj_st = cp.INJECTION_SITES[injection_site]
-        if inj_st == cp.INST_OUT or inj_st == cp.INST_OUT:
+        if cp.INJECTION_SITES[injection_site] in [cp.INST_OUT, cp.INST_ADD]:
             # if fault was injected ASSM_LINE MUST be in the logfile
             assm_line = logging.search("ASSM_LINE")
             instruction = re.match(r".*:\t(\S+) .*", assm_line).group(1)
