@@ -103,7 +103,7 @@ class BitFlip:
             while threads:
                 chosen_thread = random.choice(threads)
                 # remove it from the options
-                blocks.remove(chosen_thread)
+                threads.remove(chosen_thread)
 
                 m = re.match(r".*\(.*\).*\(.*\).*\(.*\).*\((\d+),(\d+),(\d+)\).*", chosen_thread)
                 thread = ",".join(m.groups()) if m else None
