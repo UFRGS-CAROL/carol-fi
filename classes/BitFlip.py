@@ -72,9 +72,8 @@ class BitFlip:
 
     def __thread_focus(self):
         try:
-            # Selecting the block
+            # Selecting the block, it must be a valid block
             blocks = cf.execute_command(gdb=gdb, to_execute="info cuda blocks")
-            # it must be a valid block
             # empty lists are always false
             while blocks:
                 chosen_block = random.choice(blocks)
@@ -82,11 +81,9 @@ class BitFlip:
                 blocks.remove(chosen_block)
 
                 m = re.match(r".*\(.*\).*\((\d+),(\d+),(\d+)\).*", chosen_block)
-                block = ",".join(m.groups()) if m else None
-
                 # Try to focus
-                if block:
-                    change_focus_block_cmd = "cuda block {}".format(block)
+                if m:
+                    change_focus_block_cmd = "cuda block {},{},{}".format(m.group(1), m.group(2), m.group(3))
                     block_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_block_cmd)
                     # empty lists are always false
                     if block_focus:
@@ -103,11 +100,9 @@ class BitFlip:
                 threads.remove(chosen_thread)
 
                 m = re.match(r".*\(.*\).*\(.*\).*\(.*\).*\((\d+),(\d+),(\d+)\).*", chosen_thread)
-                thread = ",".join(m.groups()) if m else None
-
                 # Try to focus
-                if thread:
-                    change_focus_thread_cmd = "cuda thread {}".format(thread)
+                if m:
+                    change_focus_thread_cmd = "cuda thread {},{},{}".format(m.group(1), m.group(2), m.group(3))
                     thread_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_thread_cmd)
 
                     # empty lists are always false
