@@ -81,9 +81,6 @@ class BitFlip:
                 # remove it from the options
                 blocks.remove(chosen_block)
 
-                # To not chose the current block
-                # if 'running' in chosen_block and '*' not in chosen_block:
-                #         m = re.match(r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", chosen_block)
                 m = re.match(r".*\(.*\).*\((\d+),(\d+),(\d+)\).*", chosen_block)
                 block = ",".join(m.groups()) if m else None
 
@@ -121,12 +118,13 @@ class BitFlip:
                         break
 
         except Exception as err:
-            self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + str(err))
+            err_str = str(err)
+            self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + err_str)
 
             # No need to continue if no active kernel
-            if str(err) == cp.FOCUS_ERROR_STRING:
+            if err_str == cp.FOCUS_ERROR_STRING:
                 return False
-        # Even if CUDA focus was not successful we keep going
+
         # If we are inside the kernel return true
         return True
 
