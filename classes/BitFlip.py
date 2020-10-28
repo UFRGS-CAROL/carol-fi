@@ -75,38 +75,50 @@ class BitFlip:
             # Selecting the block
             blocks = cf.execute_command(gdb=gdb, to_execute="info cuda blocks")
             # it must be a valid block
-            block = None
-            while not block:
-                chosen_block = random.choice(blocks)
-                if 'running' in chosen_block and '*' not in chosen_block:
-                    m = re.match(r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", chosen_block)
-                    block = "{},{},{}".format(m.group(4), m.group(5), m.group(6)) if m else None
-
-            change_focus_block_cmd = "cuda block {}".format(block)
-            block_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_block_cmd)
-
             # empty lists are always false
-            if block_focus:
-                # Thread focus return information
-                self.__logging.info("CUDA_BLOCK_FOCUS:{}".format(block_focus))
+            while blocks:
+                chosen_block = random.choice(blocks)
+                # remove it from the options
+                blocks.remove(chosen_block)
+
+                # To not chose the current block
+                # if 'running' in chosen_block and '*' not in chosen_block:
+                #         m = re.match(r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*", chosen_block)
+                m = re.match(r".*\(.*\).*\((\d+),(\d+),(\d+)\).*", chosen_block)
+                block = ",".join(m.groups()) if m else None
+
+                # Try to focus
+                if block:
+                    change_focus_block_cmd = "cuda block {}".format(block)
+                    block_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_block_cmd)
+                    # empty lists are always false
+                    if block_focus:
+                        # Thread focus return information
+                        self.__logging.info("CUDA_BLOCK_FOCUS:{}".format(block_focus))
+                        # No need to continue to seek
+                        break
 
             # Selecting the thread
             threads = cf.execute_command(gdb=gdb, to_execute="info cuda threads")
-            thread = None
-            while not thread:
-                chosen_thread = random.choice(threads)  # random.randint(0, thread_len)
-                m = re.match(
-                    r".*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*\((\d+),(\d+),(\d+)\).*",
-                    chosen_thread)
-                thread = "{},{},{}".format(m.group(10), m.group(11), m.group(12)) if m else None
+            while threads:
+                chosen_thread = random.choice(threads)
+                # remove it from the options
+                blocks.remove(chosen_thread)
 
-            change_focus_thread_cmd = "cuda thread {}".format(thread)
-            thread_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_thread_cmd)
+                m = re.match(r".*\(.*\).*\(.*\).*\(.*\).*\((\d+),(\d+),(\d+)\).*", chosen_thread)
+                thread = ",".join(m.groups()) if m else None
 
-            # empty lists are always false
-            if thread_focus:
-                # Thread focus return information
-                self.__logging.info("CUDA_THREAD_FOCUS:{}".format(thread_focus))
+                # Try to focus
+                if thread:
+                    change_focus_thread_cmd = "cuda thread {}".format(thread)
+                    thread_focus = cf.execute_command(gdb=gdb, to_execute=change_focus_thread_cmd)
+
+                    # empty lists are always false
+                    if thread_focus:
+                        # Thread focus return information
+                        self.__logging.info("CUDA_THREAD_FOCUS:{}".format(thread_focus))
+                        # No need to continue to seek
+                        break
 
         except Exception as err:
             self.__logging.exception("CUDA_FOCUS_CANNOT_BE_REQUESTED, ERROR:" + str(err))
